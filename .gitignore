@@ -32,6 +32,7 @@ deploy_key*
 
 # macOS
 .DS_Store
+.mib2c-updaterc
 .AppleDouble
 .LSOverride
 
