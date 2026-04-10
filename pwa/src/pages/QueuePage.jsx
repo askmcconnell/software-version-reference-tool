@@ -205,8 +205,10 @@ export default function QueuePage() {
               </thead>
               <tbody>
                 {active.map(job => {
-                  // Increment elapsed by tick so it updates live without re-fetching
-                  const elapsed = (job.elapsed_secs ?? 0) + Math.floor((Date.now() - lastPoll) / 1000)
+                  // Compute elapsed client-side — server timestamp has no timezone suffix,
+                  // treat as UTC (append 'Z') to avoid local-time offset inflation.
+                  const createdMs = job.created_at ? new Date(job.created_at + 'Z').getTime() : null
+                  const elapsed   = createdMs ? Math.max(0, Math.floor((Date.now() - createdMs) / 1000)) : 0
                   const isStale = elapsed > 360 && job.status === 'processing'
                   return (
                     <tr key={job.uuid}>

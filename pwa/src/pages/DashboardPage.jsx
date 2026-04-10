@@ -244,7 +244,7 @@ export default function DashboardPage() {
                 value={row.machines}
                 maxValue={maxEol}
                 color="var(--eol)"
-                right={`${fmt(row.machines)} machine${row.machines !== 1 ? 's' : ''}`}
+                right={`${fmt(row.machines)} machine${row.machines !== 1 ? 's' : ''}${row.occurrences > row.machines ? ` · ${fmt(row.occurrences)} instances` : ''}`}
               />
             ))
           )}
@@ -346,6 +346,7 @@ export default function DashboardPage() {
                   <th style={{ textAlign: 'right' }}>EOL date</th>
                   <th>Latest</th>
                   <th style={{ textAlign: 'right' }}>Machines</th>
+                  <th style={{ textAlign: 'right' }}>Instances</th>
                 </tr>
               </thead>
               <tbody>
@@ -362,6 +363,9 @@ export default function DashboardPage() {
                     <td className="mono" style={{ fontSize: '0.8rem' }}>{row.latest_version || '—'}</td>
                     <td className="mono" style={{ textAlign: 'right', color: 'var(--eol)', fontWeight: 600 }}>
                       {fmt(row.machines)}
+                    </td>
+                    <td className="mono muted" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
+                      {fmt(row.occurrences)}
                     </td>
                   </tr>
                 ))}
