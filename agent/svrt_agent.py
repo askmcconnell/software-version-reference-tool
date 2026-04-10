@@ -788,7 +788,7 @@ def import_csv(conn, csv_path, batch_size=100):
 def run_research(conn, max_items=200, delay_sec=0.5):
     """
     Process pending items from the research queue.
-    Runs endoflife.date first (free), Claude as fallback.
+    Runs endoflife.date first (free), then multi-LLM consensus as fallback.
     """
     log.info("Starting research run (max=%d items)", max_items)
 
@@ -840,10 +840,10 @@ def run_research(conn, max_items=200, delay_sec=0.5):
             time.sleep(0.2)  # gentle rate limit
             continue
 
-        # Step 3: Claude (costs money — only if key is set)
-        if CLAUDE_KEY and item['attempts'] <= 2:
+        # Step 3: Multi-LLM consensus (Claude + OpenAI + Gemini in parallel)
+        if item['attempts'] <= 2:
             api_calls += 1
-            result = query_claude(vendor, product, version, platform, conn=conn)
+            result = run_consensus(vendor, product, version, platform, conn=conn)
             if result:
                 save_result(conn, vendor, product, version, platform, result)
                 conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
@@ -948,25 +948,40 @@ def print_status(conn):
         print(f"\n  Last Run: {last_run['run_date']}  →  {last_run['items_out']} resolved, "
               f"{last_run['api_calls']} API calls")
 
-    # ── API Cost Summary ──────────────────────────────────────────────────
-    cost_today = conn.execute("""
-        SELECT COUNT(*) as calls, SUM(input_tokens) as total_in,
-               SUM(output_tokens) as total_out, SUM(cost_usd) as total_cost
-        FROM svrt_api_cost_log WHERE call_date=date('now')
-    """).fetchone()
-    cost_month = conn.execute("""
-        SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost
-        FROM svrt_api_cost_log
-        WHERE call_date >= date('now','start of month')
-    """).fetchone()
+    # ── API Cost Summary (all models) ─────────────────────────────────────
     cost_alltime = conn.execute("""
         SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost
         FROM svrt_api_cost_log
     """).fetchone()
 
     if cost_alltime and cost_alltime['calls']:
-        print(f"\n  Claude API Cost (model: {CLAUDE_MODEL})")
+        print(f"\n  API Cost — All Models")
         print(f"  {'─'*50}")
+
+        # Per-model breakdown
+        model_rows = conn.execute("""
+            SELECT model,
+                   COUNT(*) as calls,
+                   SUM(cost_usd) as total_cost
+            FROM svrt_api_cost_log
+            GROUP BY model ORDER BY total_cost DESC
+        """).fetchall()
+        for row in model_rows:
+            print(f"  {row['model']:<28}: {row['calls']:>5} calls  ${row['total_cost']:.4f}")
+
+        print(f"  {'─'*50}")
+
+        # Today / month / all-time totals
+        cost_today = conn.execute("""
+            SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost,
+                   SUM(input_tokens) as total_in, SUM(output_tokens) as total_out
+            FROM svrt_api_cost_log WHERE call_date=date('now')
+        """).fetchone()
+        cost_month = conn.execute("""
+            SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost
+            FROM svrt_api_cost_log WHERE call_date >= date('now','start of month')
+        """).fetchone()
+
         if cost_today and cost_today['calls']:
             print(f"  Today          : {cost_today['calls']:>5} calls  "
                   f"${cost_today['total_cost']:.4f}  "
@@ -976,13 +991,12 @@ def print_status(conn):
                   f"${cost_month['total_cost']:.4f}")
         print(f"  All time       : {cost_alltime['calls']:>5} calls  "
               f"${cost_alltime['total_cost']:.4f}")
-        # Queue cost estimate
+
         q_remaining = conn.execute(
             "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
         ).fetchone()[0]
         avg_cost = cost_alltime['total_cost'] / cost_alltime['calls'] if cost_alltime['calls'] else 0.00056
-        est_remaining = q_remaining * avg_cost
-        print(f"  Queue remaining: {q_remaining:>5} items  ~${est_remaining:.2f} est.")
+        print(f"  Queue remaining: {q_remaining:>5} items  ~${q_remaining * avg_cost * 3:.2f} est. (3 LLMs/item)")
 
     print(f"{'═'*55}\n")
 
