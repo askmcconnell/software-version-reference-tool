@@ -22,6 +22,8 @@ import urllib.request, urllib.error, urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, date, timedelta
 from pathlib import Path
+import threading
+_db_write_lock = threading.Lock()
 
 try:
     import yaml as _yaml
@@ -94,7 +96,7 @@ log = logging.getLogger('svrt-agent')
 
 def get_db():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(DB_PATH))
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute('PRAGMA journal_mode=WAL')
     conn.execute('PRAGMA foreign_keys=ON')
@@ -472,12 +474,13 @@ def _log_api_cost(conn, model, input_tokens, output_tokens, cost_usd, product, s
     if not conn:
         return
     try:
-        conn.execute("""
-            INSERT INTO svrt_api_cost_log
-                (model, input_tokens, output_tokens, cost_usd, product_name, result_status)
-            VALUES (?,?,?,?,?,?)
-        """, (model, input_tokens, output_tokens, cost_usd, product, status))
-        conn.commit()
+        with _db_write_lock:
+            conn.execute("""
+                INSERT INTO svrt_api_cost_log
+                    (model, input_tokens, output_tokens, cost_usd, product_name, result_status)
+                VALUES (?,?,?,?,?,?)
+            """, (model, input_tokens, output_tokens, cost_usd, product, status))
+            conn.commit()
     except Exception:
         pass
 
