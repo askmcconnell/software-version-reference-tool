@@ -1,0 +1,44 @@
+software_name: Microsoft Windows
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "xp"
+    eol_status: eol
+    eol_date: "2014-04-08"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-xp
+    notes: Windows XP end of support April 8, 2014
+  - major: "vista"
+    eol_status: eol
+    eol_date: "2017-04-11"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-vista
+  - major: "7"
+    eol_status: eol
+    eol_date: "2020-01-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-7
+    notes: Extended Security Updates ended January 10, 2023 for ESU customers
+  - major: "8"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-8
+  - major: "8.1"
+    eol_status: eol
+    eol_date: "2023-01-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-81
+  - major: "10"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "22H2"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-10-home-and-pro
+    notes: Windows 10 mainstream support ends October 14, 2025
+  - major: "11"
+    eol_status: supported
+    latest_version: "24H2"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-11-home-and-pro
+aliases:
+  - "Windows XP"
+  - "Windows Vista"
+  - "Windows 7"
+  - "Windows 8"
+  - "Windows 8.1"
+  - "Windows 10"
+  - "Windows 11"

@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.env
+
+# Node / PWA build
+node_modules/
+pwa/dist/
+pwa/.env
+pwa/.env.*
+
+# Exports and local DB snapshots
+db/
+*.db
+*.db-shm
+*.db-wal
+db/exports/
+seed-data/
+
+# Logs
+logs/
+*.log
+
+# Deploy artifacts
+*.zip
+.deploy.env
+deploy_key*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Pi-specific paths (never commit live data or credentials)
+/home/svrt/.env

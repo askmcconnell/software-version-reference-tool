@@ -1,0 +1,25 @@
+software_name: Internet Explorer
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "11"
+    eol_status: eol
+    eol_date: "2022-06-15"
+    latest_version: ""
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-explorer-11
+    notes: IE11 end of support June 15, 2022
+  - major: "10"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-explorer-10
+  - major: "9"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-explorer-9
+  - major: "8"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-explorer-8
+aliases:
+  - "MSIE"
+  - "Microsoft Internet Explorer"

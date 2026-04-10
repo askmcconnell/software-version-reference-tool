@@ -1,0 +1,22 @@
+software_name: Firefox
+vendor: Mozilla
+platform: cross-platform
+versions:
+  - major: "esr-115"
+    eol_status: eol
+    eol_date: "2024-03-26"
+    source_url: https://www.mozilla.org/en-US/firefox/releases/
+    notes: Firefox 115 ESR was the oldest supported release; succeeded by ESR 128
+  - major: "esr-128"
+    eol_status: lts
+    latest_version: "128.9.0"
+    source_url: https://www.mozilla.org/en-US/firefox/enterprise/
+    notes: Firefox ESR 128 — active LTS; supported until ~mid-2025
+  - major: "stable"
+    eol_status: supported
+    latest_version: "136.0"
+    source_url: https://www.mozilla.org/en-US/firefox/releases/
+    notes: Releases every 4 weeks; versions below 115 are all EOL
+aliases:
+  - "Mozilla Firefox"
+  - "Firefox ESR"
