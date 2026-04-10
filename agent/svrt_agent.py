@@ -3,8 +3,9 @@
 SVRT Research Agent — Raspberry Pi
 Ask McConnell's Software Version Reference Tool
 
-Runs locally on the Pi. Queries endoflife.date, scrapes manufacturer pages,
-and uses Claude API as a last resort to populate the reference database.
+Runs locally on the Pi. Queries endoflife.date, then uses a multi-LLM
+consensus engine (Claude Haiku + GPT-4o-mini + Gemini Flash in parallel,
+Grok as optional tiebreaker) to populate the reference database.
 
 Nightly cron pushes the SQLite DB to IONOS via rsync/sftp.
 
@@ -18,6 +19,7 @@ Usage:
 
 import os, sys, json, re, csv, time, sqlite3, hashlib, argparse, logging
 import urllib.request, urllib.error, urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
@@ -42,22 +44,35 @@ DB_PATH      = BASE_DIR / 'db' / 'svrt_reference.db'
 LOG_PATH     = BASE_DIR / 'logs' / 'agent.log'
 SYNC_SCRIPT  = BASE_DIR / 'sync' / 'push_to_ionos.sh'
 CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
+OPENAI_KEY   = os.environ.get('OPENAI_API_KEY', '')
+GOOGLE_KEY   = os.environ.get('GOOGLE_API_KEY', '')
+XAI_KEY      = os.environ.get('XAI_API_KEY', '')        # Grok — tiebreaker, optional
 
 EOL_DATE_API  = 'https://endoflife.date/api'
 CLAUDE_API    = 'https://api.anthropic.com/v1/messages'
-CLAUDE_MODEL  = 'claude-haiku-4-5'          # cheapest model
+OPENAI_API    = 'https://api.openai.com/v1/chat/completions'
+GEMINI_API    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+XAI_API       = 'https://api.x.ai/v1/chat/completions'
+CLAUDE_MODEL  = 'claude-haiku-4-5'
+OPENAI_MODEL  = 'gpt-4o-mini'
+GEMINI_MODEL  = 'gemini-2.0-flash'
+XAI_MODEL     = 'grok-3-mini'
 GITHUB_REPO   = 'askmcconnell/software-version-reference-tool'
 GITHUB_YAML_PATH = 'reference-db/products'
 
-# Claude Haiku pricing (per million tokens)
-CLAUDE_INPUT_COST_PER_M  = 0.80   # $0.80 / 1M input tokens
-CLAUDE_OUTPUT_COST_PER_M = 4.00   # $4.00 / 1M output tokens
+# Pricing per million tokens (input / output)
+CLAUDE_INPUT_COST_PER_M  = 0.80;  CLAUDE_OUTPUT_COST_PER_M  = 4.00
+OPENAI_INPUT_COST_PER_M  = 0.15;  OPENAI_OUTPUT_COST_PER_M  = 0.60
+GEMINI_INPUT_COST_PER_M  = 0.075; GEMINI_OUTPUT_COST_PER_M  = 0.30
+XAI_INPUT_COST_PER_M     = 0.30;  XAI_OUTPUT_COST_PER_M     = 0.50
 
 # Lookup chain confidence scores
 CONF_ENDOFLIFE_DATE = 85
 CONF_CLAUDE         = 60
 CONF_MANUAL         = 95
-CONF_COMMUNITY      = 90   # 3+ agreeing Claude calls
+CONF_CONSENSUS_3    = 92   # all 3 LLMs agree
+CONF_CONSENSUS_2    = 82   # 2 of 3 LLMs agree
+CONF_COMMUNITY      = 90   # GitHub YAML community entries
 
 # TTLs (days before re-checking)
 TTL_EOL_FACT    = 90
@@ -418,6 +433,263 @@ Rules:
         return None
 
 
+def _build_eol_prompt(vendor, product, version, platform):
+    return f"""You are a software lifecycle expert. Answer ONLY with a JSON object — no other text.
+
+Product: {product}
+Vendor: {vendor}
+Version: {version}
+Platform: {platform}
+
+Respond with exactly this JSON:
+{{
+  "eol_status": "eol|supported|lts|unknown|no_patch",
+  "eol_date": "YYYY-MM-DD or empty string",
+  "latest_stable_version": "version string or empty",
+  "source_url": "URL of official lifecycle page or empty",
+  "confidence": 50,
+  "notes": "brief explanation"
+}}
+
+Rules:
+- eol = officially end of life or end of support
+- no_patch = no security patches for 12+ months but no official EOL announced
+- lts = long term support release (still patched)
+- supported = currently supported
+- unknown = cannot determine with high confidence
+- confidence: 30-80 based on certainty. Use "unknown" when unsure."""
+
+
+def _parse_llm_json(text):
+    """Extract and parse the JSON object from an LLM response string."""
+    m = re.search(r'\{.*\}', text, re.DOTALL)
+    if not m:
+        return None
+    return json.loads(m.group(0))
+
+
+def _log_api_cost(conn, model, input_tokens, output_tokens, cost_usd, product, status):
+    if not conn:
+        return
+    try:
+        conn.execute("""
+            INSERT INTO svrt_api_cost_log
+                (model, input_tokens, output_tokens, cost_usd, product_name, result_status)
+            VALUES (?,?,?,?,?,?)
+        """, (model, input_tokens, output_tokens, cost_usd, product, status))
+        conn.commit()
+    except Exception:
+        pass
+
+
+def query_openai(vendor, product, version, platform, conn=None):
+    """Query GPT-4o-mini for EOL status."""
+    if not OPENAI_KEY:
+        return None
+    prompt = _build_eol_prompt(vendor, product, version, platform)
+    try:
+        payload = json.dumps({
+            'model': OPENAI_MODEL,
+            'max_tokens': 300,
+            'messages': [{'role': 'user', 'content': prompt}],
+        }).encode()
+        req = urllib.request.Request(OPENAI_API, data=payload, headers={
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {OPENAI_KEY}',
+        })
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+
+        usage        = data.get('usage', {})
+        in_tok       = usage.get('prompt_tokens', 0)
+        out_tok      = usage.get('completion_tokens', 0)
+        cost         = in_tok / 1_000_000 * OPENAI_INPUT_COST_PER_M + out_tok / 1_000_000 * OPENAI_OUTPUT_COST_PER_M
+        text         = data['choices'][0]['message']['content'].strip()
+        result       = _parse_llm_json(text)
+        if not result:
+            return None
+        status = result.get('eol_status', 'unknown')
+        _log_api_cost(conn, OPENAI_MODEL, in_tok, out_tok, cost, product, status)
+        return {
+            'eol_status':     status,
+            'eol_date':       result.get('eol_date', ''),
+            'latest_version': result.get('latest_stable_version', ''),
+            'source_url':     result.get('source_url', ''),
+            'confidence':     min(80, max(30, int(result.get('confidence', 50)))),
+            'source':         'openai',
+            'notes':          result.get('notes', ''),
+        }
+    except Exception as e:
+        log.warning("OpenAI error for %s: %s", product, e)
+        return None
+
+
+def query_gemini(vendor, product, version, platform, conn=None):
+    """Query Gemini Flash for EOL status."""
+    if not GOOGLE_KEY:
+        return None
+    prompt = _build_eol_prompt(vendor, product, version, platform)
+    url = f"{GEMINI_API}?key={GOOGLE_KEY}"
+    try:
+        payload = json.dumps({
+            'contents': [{'parts': [{'text': prompt}]}],
+            'generationConfig': {'maxOutputTokens': 300, 'temperature': 0.1},
+        }).encode()
+        req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+
+        usage   = data.get('usageMetadata', {})
+        in_tok  = usage.get('promptTokenCount', 0)
+        out_tok = usage.get('candidatesTokenCount', 0)
+        cost    = in_tok / 1_000_000 * GEMINI_INPUT_COST_PER_M + out_tok / 1_000_000 * GEMINI_OUTPUT_COST_PER_M
+        text    = data['candidates'][0]['content']['parts'][0]['text'].strip()
+        result  = _parse_llm_json(text)
+        if not result:
+            return None
+        status = result.get('eol_status', 'unknown')
+        _log_api_cost(conn, GEMINI_MODEL, in_tok, out_tok, cost, product, status)
+        return {
+            'eol_status':     status,
+            'eol_date':       result.get('eol_date', ''),
+            'latest_version': result.get('latest_stable_version', ''),
+            'source_url':     result.get('source_url', ''),
+            'confidence':     min(80, max(30, int(result.get('confidence', 50)))),
+            'source':         'gemini',
+            'notes':          result.get('notes', ''),
+        }
+    except Exception as e:
+        log.warning("Gemini error for %s: %s", product, e)
+        return None
+
+
+def query_xai(vendor, product, version, platform, conn=None):
+    """Query Grok as a tiebreaker — only called when 3-way consensus fails."""
+    if not XAI_KEY:
+        return None
+    prompt = _build_eol_prompt(vendor, product, version, platform)
+    try:
+        payload = json.dumps({
+            'model': XAI_MODEL,
+            'max_tokens': 300,
+            'messages': [{'role': 'user', 'content': prompt}],
+        }).encode()
+        req = urllib.request.Request(XAI_API, data=payload, headers={
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {XAI_KEY}',
+        })
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+
+        usage   = data.get('usage', {})
+        in_tok  = usage.get('prompt_tokens', 0)
+        out_tok = usage.get('completion_tokens', 0)
+        cost    = in_tok / 1_000_000 * XAI_INPUT_COST_PER_M + out_tok / 1_000_000 * XAI_OUTPUT_COST_PER_M
+        text    = data['choices'][0]['message']['content'].strip()
+        result  = _parse_llm_json(text)
+        if not result:
+            return None
+        status = result.get('eol_status', 'unknown')
+        _log_api_cost(conn, XAI_MODEL, in_tok, out_tok, cost, product, status)
+        return {
+            'eol_status':     status,
+            'eol_date':       result.get('eol_date', ''),
+            'latest_version': result.get('latest_stable_version', ''),
+            'source_url':     result.get('source_url', ''),
+            'confidence':     min(80, max(30, int(result.get('confidence', 50)))),
+            'source':         'xai',
+            'notes':          result.get('notes', ''),
+        }
+    except Exception as e:
+        log.warning("Grok error for %s: %s", product, e)
+        return None
+
+
+def run_consensus(vendor, product, version, platform, conn=None):
+    """
+    Query Claude, OpenAI, and Gemini in parallel.
+    Apply majority vote on eol_status:
+      3/3 agree → confidence CONF_CONSENSUS_3 (92), source='consensus'
+      2/3 agree → confidence CONF_CONSENSUS_2 (82), source='consensus'
+      0/3 agree → Grok tiebreaker if available, else best single result
+    Returns result dict or None if all queries failed.
+    """
+    callers = {
+        'claude': lambda: query_claude(vendor, product, version, platform, conn=conn),
+        'openai': lambda: query_openai(vendor, product, version, platform, conn=conn),
+        'gemini': lambda: query_gemini(vendor, product, version, platform, conn=conn),
+    }
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        futures = {ex.submit(fn): name for name, fn in callers.items()}
+        for future in as_completed(futures):
+            name = futures[future]
+            try:
+                results[name] = future.result()
+            except Exception as e:
+                log.warning("Consensus worker %s raised: %s", name, e)
+                results[name] = None
+
+    valid = {name: r for name, r in results.items() if r and r.get('eol_status') not in ('unknown', None)}
+    if not valid:
+        log.info("Consensus: all LLMs returned unknown for %s", product)
+        return None
+
+    # Count votes per eol_status
+    from collections import Counter
+    vote_counts = Counter(r['eol_status'] for r in valid.values())
+    top_status, top_count = vote_counts.most_common(1)[0]
+
+    if top_count >= 2:
+        conf = CONF_CONSENSUS_3 if top_count == 3 else CONF_CONSENSUS_2
+        # Aggregate: pick best source_url and eol_date from agreeing results
+        agreeing = [r for r in valid.values() if r['eol_status'] == top_status]
+        best = max(agreeing, key=lambda r: r.get('confidence', 0))
+        voters = [name for name, r in valid.items() if r and r['eol_status'] == top_status]
+        log.info("✓ Consensus (%d/3): %s → %s (conf=%d) [%s]",
+                 top_count, product, top_status, conf, ', '.join(voters))
+        return {
+            'eol_status':     top_status,
+            'eol_date':       best.get('eol_date', ''),
+            'latest_version': best.get('latest_version', ''),
+            'source_url':     best.get('source_url', ''),
+            'confidence':     conf,
+            'source':         'consensus',
+            'notes':          f"{top_count}/3 LLMs agree ({', '.join(voters)}). {best.get('notes', '')}".strip(),
+        }
+
+    # No majority — try Grok as tiebreaker
+    log.info("No 3-LLM consensus for %s — trying Grok tiebreaker", product)
+    grok = query_xai(vendor, product, version, platform, conn=conn)
+    if grok and grok.get('eol_status') not in ('unknown', None):
+        # Check if Grok breaks the tie
+        grok_status = grok['eol_status']
+        grok_votes  = vote_counts.get(grok_status, 0) + 1
+        if grok_votes >= 2:
+            agreeing = [r for r in valid.values() if r and r['eol_status'] == grok_status] + [grok]
+            best = max(agreeing, key=lambda r: r.get('confidence', 0))
+            log.info("✓ Grok broke the tie: %s → %s", product, grok_status)
+            return {
+                'eol_status':     grok_status,
+                'eol_date':       best.get('eol_date', ''),
+                'latest_version': best.get('latest_version', ''),
+                'source_url':     best.get('source_url', ''),
+                'confidence':     CONF_CONSENSUS_2,
+                'source':         'consensus',
+                'notes':          f"Grok tiebreaker agreed with one LLM. {best.get('notes', '')}".strip(),
+            }
+
+    # All 3 disagree and no tiebreaker — fall back to highest-confidence single result
+    all_valid = list(valid.values())
+    if grok and grok.get('eol_status') not in ('unknown', None):
+        all_valid.append(grok)
+    best = max(all_valid, key=lambda r: r.get('confidence', 0))
+    log.info("No consensus for %s — using best single result: %s (conf=%d)",
+             product, best['eol_status'], best.get('confidence', 0))
+    return best
+
+
 def resolve(conn, vendor, product, version, platform='linux', force=False):
     """
     Full 3-step lookup chain.
@@ -439,10 +711,9 @@ def resolve(conn, vendor, product, version, platform='linux', force=False):
         save_result(conn, vendor, product_norm, version, platform, result)
         return result
 
-    # Step 3: Claude API
-    result = query_claude(vendor, product_norm, version, platform, conn=conn)
+    # Step 3: Multi-LLM consensus (Claude + GPT-4o-mini + Gemini Flash in parallel)
+    result = run_consensus(vendor, product_norm, version, platform, conn=conn)
     if result:
-        log.info("✓ Claude: %s → %s (conf=%d)", product_norm, result['eol_status'], result['confidence'])
         save_result(conn, vendor, product_norm, version, platform, result)
         return result
 
