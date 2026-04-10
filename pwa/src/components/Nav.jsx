@@ -41,14 +41,9 @@ export default function Nav() {
             <Link to="/docs" style={pathname === '/docs' ? { color: 'var(--text)' } : {}}>
               Docs
             </Link>
-            <a
-              href="https://askmcconnell.com/svrt/support"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', fontSize: '0.85rem' }}
-            >
+            <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
-            </a>
+            </Link>
             <span className="text-muted hide-mobile" style={{ fontSize: '0.8rem' }}>
               {user.name}
             </span>
@@ -60,14 +55,9 @@ export default function Nav() {
               Dashboard
             </Link>
             <Link to="/docs">Docs</Link>
-            <a
-              href="https://askmcconnell.com/svrt/support"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', fontSize: '0.85rem' }}
-            >
+            <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
-            </a>
+            </Link>
             <Link to="/login">Sign in</Link>
             <Link to="/register" className="btn btn-primary btn-sm">Get started</Link>
           </>

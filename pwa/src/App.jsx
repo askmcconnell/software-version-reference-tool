@@ -9,6 +9,7 @@ import ReferencePage from './pages/ReferencePage'
 import DocsPage from './pages/DocsPage'
 import QueuePage from './pages/QueuePage'
 import DashboardPage from './pages/DashboardPage'
+import SupportPage from './pages/SupportPage'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/queue"     element={<QueuePage />} />
+          <Route path="/support"   element={<SupportPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

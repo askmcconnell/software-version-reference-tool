@@ -181,7 +181,7 @@ export default function UploadPage() {
         {/* Support callout */}
         <div className="mt-16" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
           SVRT is free and open-source.{' '}
-          <a href="https://askmcconnell.com/svrt/support" style={{ color: 'var(--accent)' }}>
+          <a href="/svrt/support" style={{ color: 'var(--accent)' }}>
             Support the project
           </a>{' '}
           if it's useful to you.
