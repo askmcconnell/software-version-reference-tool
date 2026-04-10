@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: SVRT — Software Version Reference Tool
- * Description: Backend for askmcconnell.com/svrt — subscriber auth, inventory upload, EOL report generation, and reference DB download.
+ * Description: Backend for askmcconnell.com/svrt — open-source EOL detection tool. Contributor auth, inventory upload, EOL report generation, and reference DB management.
  * Version: 1.0.0
  * Author: Ask McConnell
  */
@@ -486,12 +486,12 @@ function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
     wp_update_user(['ID' => $user_id, 'first_name' => $first, 'last_name' => $last]);
     update_user_meta($user_id, '_svrt_company', $company);
 
-    // Create subscriber record
+    // Create contributor record
     global $wpdb;
     $wpdb->insert("{$wpdb->prefix}svrt_subscribers", [
         'user_id'      => $user_id,
-        'plan'         => 'trial',
-        'upload_quota' => 10,
+        'plan'         => 'contributor',
+        'upload_quota' => 0,
         'uploads_used' => 0,
         'company'      => $company,
     ]);
@@ -502,7 +502,7 @@ function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
         'user_id' => $user_id,
         'email'   => $email,
         'name'    => "$first $last",
-        'plan'    => 'trial',
+        'plan'    => 'contributor',
     ], 201);
 }
 
@@ -527,7 +527,7 @@ function svrt_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
         'user_id' => $user->ID,
         'email'   => $user->user_email,
         'name'    => trim($user->first_name . ' ' . $user->last_name),
-        'plan'    => $sub['plan'] ?? 'trial',
+        'plan'    => $sub['plan'] ?? 'contributor',
     ], 200);
 }
 
@@ -545,8 +545,7 @@ function svrt_api_me(WP_REST_Request $req): WP_REST_Response {
         'email'        => $user->user_email,
         'name'         => trim($user->first_name . ' ' . $user->last_name),
         'company'      => get_user_meta($user->ID, '_svrt_company', true),
-        'plan'         => $sub['plan'] ?? 'trial',
-        'upload_quota' => (int) ($sub['upload_quota'] ?? 10),
+        'plan'         => $sub['plan'] ?? 'contributor',
         'uploads_used' => (int) ($sub['uploads_used'] ?? 0),
     ], 200);
 }
@@ -561,13 +560,7 @@ function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
 
     if (!$sub) {
-        return new WP_Error('no_subscription', 'Subscriber record not found.', ['status' => 403]);
-    }
-    if ($sub['uploads_used'] >= $sub['upload_quota']) {
-        return new WP_Error('quota_exceeded',
-            "Upload quota reached ({$sub['upload_quota']} uploads). Please upgrade your plan.",
-            ['status' => 429]
-        );
+        return new WP_Error('no_account', 'Contributor account record not found.', ['status' => 403]);
     }
 
     // Get uploaded file
@@ -1308,7 +1301,7 @@ function svrt_api_stats(WP_REST_Request $req): WP_REST_Response {
         'reference_entries'   => $ref_total,
         'eol_entries'         => $ref_eol,
         'supported_entries'   => $ref_supp,
-        'subscribers'         => $subs,
+        'contributors'        => $subs,
         'scans_completed'     => $jobs,
         'format_version'      => '1.0',
         'last_updated'        => get_option('svrt_last_reference_import', ''),
@@ -1968,7 +1961,7 @@ function svrt_admin_page(): void {
             <?php foreach ([
                 ['Reference Entries', $ref_count, '#2271b1'],
                 ['EOL Entries',       $eol_count, '#d63638'],
-                ['Subscribers',       $sub_count, '#00a32a'],
+                ['Contributors',       $sub_count, '#00a32a'],
                 ['Total Scans',       $job_count, '#996800'],
             ] as [$label, $val, $col]): ?>
             <div style="background:#fff;border:1px solid #ddd;border-top:4px solid <?php echo $col ?>;padding:16px;border-radius:4px">
@@ -2003,7 +1996,7 @@ function svrt_admin_page(): void {
         <h2>Quick Links</h2>
         <ul>
             <li><a href="<?php echo rest_url('svrt/v1/stats') ?>" target="_blank">Stats endpoint (public)</a></li>
-            <li><a href="<?php echo rest_url('svrt/v1/admin/subscribers') ?>" target="_blank">Subscribers list</a></li>
+            <li><a href="<?php echo rest_url('svrt/v1/admin/subscribers') ?>" target="_blank">Contributors list</a></li>
             <li><a href="<?php echo rest_url('svrt/v1/admin/jobs') ?>" target="_blank">Recent jobs</a></li>
         </ul>
     </div>

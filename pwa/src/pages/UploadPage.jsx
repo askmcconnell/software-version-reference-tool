@@ -58,10 +58,6 @@ export default function UploadPage() {
     }
   }
 
-  const quotaUsed = user?.uploads_used ?? 0
-  const quotaMax  = user?.upload_quota ?? 10
-  const quotaPct  = Math.round(quotaUsed / quotaMax * 100)
-
   // ── Confirmation screen ───────────────────────────────────────────────────
   if (confirmed) {
     return (
@@ -182,15 +178,13 @@ export default function UploadPage() {
           </button>
         )}
 
-        {/* Quota */}
-        <div className="mt-16">
-          <div className="flex-between mb-8" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <span>Upload quota</span>
-            <span>{quotaUsed} / {quotaMax} used</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${quotaPct}%`, background: quotaPct >= 90 ? 'var(--warning)' : undefined }} />
-          </div>
+        {/* Support callout */}
+        <div className="mt-16" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+          SVRT is free and open-source.{' '}
+          <a href="https://askmcconnell.com/svrt/support" style={{ color: 'var(--accent)' }}>
+            Support the project
+          </a>{' '}
+          if it's useful to you.
         </div>
       </div>
 
