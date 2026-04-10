@@ -229,6 +229,23 @@ fi
 DB_SIZE=$(du -sh "$DB_PATH" | cut -f1)
 notify_slack "✓ Nightly sync complete. DB=$DB_SIZE, $CSV_ROWS known products."
 
+# ── Pull GitHub YAML reference DB → upsert into local SQLite ─────────────────
+# Community-curated YAML files at confidence=90 fill gaps between endoflife.date
+# and Claude. Won't overwrite manual (95) entries.
+
+if python3 -c "import yaml" 2>/dev/null; then
+    log "Syncing GitHub YAML reference DB..."
+    python3 "$AGENT_SCRIPT" --sync-yaml 2>&1 | \
+        while IFS= read -r line; do log "  [yaml] $line"; done
+    if [ $? -eq 0 ]; then
+        log "✓ GitHub YAML sync complete"
+    else
+        log "⚠ GitHub YAML sync encountered errors (non-fatal)"
+    fi
+else
+    log "PyYAML not installed — skipping GitHub YAML sync (run: pip3 install pyyaml)"
+fi
+
 # ── Pull unknown software from IONOS → seed Pi research queue ─────────────────
 # IONOS has inventory rows where eol_status='unknown' (no match in reference DB).
 # We fetch those as a CSV so the Pi knows what to research next (two-way sync).

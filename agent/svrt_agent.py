@@ -21,6 +21,12 @@ import urllib.request, urllib.error, urllib.parse
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
+try:
+    import yaml as _yaml
+    _YAML_AVAILABLE = True
+except ImportError:
+    _YAML_AVAILABLE = False
+
 # ── Load .env file if present (before any config reads) ───────────────────────
 _ENV_FILE = Path.home() / '.env'
 if _ENV_FILE.exists():
@@ -37,9 +43,11 @@ LOG_PATH     = BASE_DIR / 'logs' / 'agent.log'
 SYNC_SCRIPT  = BASE_DIR / 'sync' / 'push_to_ionos.sh'
 CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
 
-EOL_DATE_API = 'https://endoflife.date/api'
-CLAUDE_API   = 'https://api.anthropic.com/v1/messages'
-CLAUDE_MODEL = 'claude-haiku-4-5'          # cheapest model
+EOL_DATE_API  = 'https://endoflife.date/api'
+CLAUDE_API    = 'https://api.anthropic.com/v1/messages'
+CLAUDE_MODEL  = 'claude-haiku-4-5'          # cheapest model
+GITHUB_REPO   = 'askmcconnell/software-version-reference-tool'
+GITHUB_YAML_PATH = 'reference-db/products'
 
 # Claude Haiku pricing (per million tokens)
 CLAUDE_INPUT_COST_PER_M  = 0.80   # $0.80 / 1M input tokens
@@ -708,6 +716,124 @@ def print_status(conn):
     print(f"{'═'*55}\n")
 
 
+# ── GitHub YAML Reference DB Sync ────────────────────────────────────────────
+
+def fetch_json(url):
+    req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return json.loads(r.read())
+
+
+def sync_github_yaml(conn):
+    """
+    Pull community-curated YAML product files from the GitHub reference-db and
+    upsert into svrt_reference at confidence=90 ('github-yaml' source).
+
+    Won't overwrite entries that already have a higher confidence score
+    (e.g. manual=95 seeded entries).
+
+    Requires PyYAML:  pip3 install pyyaml
+    """
+    if not _YAML_AVAILABLE:
+        log.error("PyYAML not installed. Run: pip3 install pyyaml")
+        return 0
+
+    api_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_YAML_PATH}"
+    log.info("Fetching YAML file list from GitHub: %s", api_url)
+
+    try:
+        files = fetch_json(api_url)
+    except Exception as e:
+        log.error("GitHub API error: %s", e)
+        return 0
+
+    yaml_files = [f for f in files if f['name'].endswith('.yaml') and f['type'] == 'file']
+    log.info("Found %d YAML files in reference-db/products/", len(yaml_files))
+
+    upserted = skipped = errors = 0
+    now = datetime.utcnow().isoformat()
+
+    for file_meta in yaml_files:
+        raw_url = file_meta['download_url']
+        fname   = file_meta['name']
+
+        try:
+            req = urllib.request.Request(raw_url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                raw_text = r.read().decode('utf-8')
+            data = _yaml.safe_load(raw_text)
+        except Exception as e:
+            log.warning("Failed to load %s: %s", fname, e)
+            errors += 1
+            continue
+
+        software_name = data.get('software_name', '')
+        vendor        = data.get('vendor', '')
+        platform      = data.get('platform', 'cross-platform')
+        versions      = data.get('versions', [])
+
+        if not software_name or not versions:
+            log.warning("Skipping %s — missing software_name or versions", fname)
+            errors += 1
+            continue
+
+        for v in versions:
+            major      = str(v.get('major', ''))
+            eol_status = v.get('eol_status', '')
+            source_url = v.get('source_url', '')
+            eol_date   = v.get('eol_date', '')
+            latest_ver = v.get('latest_version', '')
+            notes      = v.get('notes', '')
+
+            if not eol_status or not source_url:
+                continue
+
+            key = make_lookup_key(vendor, software_name, major)
+
+            # Don't overwrite higher-confidence entries
+            existing = conn.execute(
+                "SELECT confidence FROM svrt_reference WHERE lookup_key=?", (key,)
+            ).fetchone()
+            if existing and existing[0] > 90:
+                skipped += 1
+                continue
+
+            ttl_days = TTL_EOL_FACT if eol_status == 'eol' else TTL_SUPPORTED
+            expires  = (datetime.utcnow() + timedelta(days=ttl_days)).isoformat()
+
+            conn.execute("""
+                INSERT INTO svrt_reference
+                    (lookup_key, software_name, vendor, version, platform,
+                     eol_status, eol_date, latest_version, latest_source_url,
+                     confidence, source, notes, hit_count, created_at, checked_at, expires_at)
+                VALUES (?,?,?,?,?,?,?,?,?,90,'github-yaml',?,1,?,?,?)
+                ON CONFLICT(lookup_key) DO UPDATE SET
+                    eol_status=excluded.eol_status,
+                    eol_date=excluded.eol_date,
+                    latest_version=excluded.latest_version,
+                    latest_source_url=excluded.latest_source_url,
+                    confidence=excluded.confidence,
+                    source=excluded.source,
+                    notes=excluded.notes,
+                    checked_at=excluded.checked_at,
+                    expires_at=excluded.expires_at,
+                    hit_count=svrt_reference.hit_count+1
+                WHERE svrt_reference.confidence <= 90
+            """, (
+                key, software_name, vendor, major, platform,
+                eol_status, eol_date, latest_ver, source_url,
+                notes, now, now, expires,
+            ))
+            upserted += 1
+
+        conn.commit()
+        log.info("  ✓ %s — %d version(s)", fname, len(versions))
+
+    log.info("GitHub YAML sync: %d upserted, %d skipped (higher conf), %d errors",
+             upserted, skipped, errors)
+    return upserted
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
@@ -716,6 +842,7 @@ def main():
     parser.add_argument('--lookup',      metavar='PRODUCT',   help='Look up a single product')
     parser.add_argument('--import-csv',  metavar='FILE',      help='Import inventory CSV into queue')
     parser.add_argument('--sync',        action='store_true', help='Push DB to IONOS now')
+    parser.add_argument('--sync-yaml',   action='store_true', help='Pull community YAML files from GitHub into reference DB')
     parser.add_argument('--max',         type=int, default=200, help='Max items per research run')
     parser.add_argument('--delay',       type=float, default=0.5, help='Seconds between Claude calls')
     parser.add_argument('--force',       action='store_true', help='Bypass cache (re-research all)')
@@ -739,6 +866,11 @@ def main():
 
     if args.sync:
         push_to_ionos()
+        return
+
+    if args.sync_yaml:
+        n = sync_github_yaml(conn)
+        log.info("GitHub YAML sync complete: %d entries updated", n)
         return
 
     # Default: full research run
