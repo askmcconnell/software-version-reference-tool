@@ -59,6 +59,10 @@ CLAUDE_MODEL  = 'claude-haiku-4-5'
 OPENAI_MODEL  = 'gpt-4o-mini'
 GEMINI_MODEL  = 'gemini-2.5-flash'
 XAI_MODEL     = 'grok-3-mini'
+GITHUB_TOKEN  = os.environ.get('GITHUB_TOKEN', '')
+GITHUB_API    = 'https://api.github.com'
+REPOLOGY_API  = 'https://repology.org/api/v1/project'
+
 GITHUB_REPO   = 'askmcconnell/software-version-reference-tool'
 GITHUB_YAML_PATH = 'reference-db/products'
 
@@ -70,6 +74,8 @@ XAI_INPUT_COST_PER_M     = 0.30;  XAI_OUTPUT_COST_PER_M     = 0.50
 
 # Lookup chain confidence scores
 CONF_ENDOFLIFE_DATE = 85
+CONF_GITHUB         = 72   # GitHub archived/activity signal
+CONF_REPOLOGY       = 70   # Repology cross-distro package signal
 CONF_CLAUDE         = 60
 CONF_MANUAL         = 95
 CONF_CONSENSUS_3    = 92   # all 3 LLMs agree
@@ -334,6 +340,311 @@ def query_endoflife_date(product_name):
     except Exception as e:
         log.warning("endoflife.date parse error for %s: %s", slug, e)
         return None
+
+
+def _gh_headers():
+    """Build GitHub API request headers, with auth token if available."""
+    h = {'User-Agent': 'SVRT-Agent/1.0', 'Accept': 'application/vnd.github+json'}
+    if GITHUB_TOKEN:
+        h['Authorization'] = f'Bearer {GITHUB_TOKEN}'
+    return h
+
+
+def _normalize_pkg_name(name):
+    """Normalize a package/product name for fuzzy comparison."""
+    n = name.lower().strip()
+    n = re.sub(r'^lib', '', n)           # strip lib prefix (libgif → gif)
+    n = re.sub(r'[-_\s\.]+', '', n)      # strip separators
+    n = re.sub(r'\d+$', '', n)           # strip trailing version numbers (python3 → python)
+    return n
+
+
+def _name_match_score(search_name, repo_name):
+    """Return 0.0–1.0 similarity between a product name and a GitHub repo name."""
+    a = _normalize_pkg_name(search_name)
+    b = _normalize_pkg_name(repo_name)
+    if not a or not b:
+        return 0.0
+    if a == b:
+        return 1.0
+    if a in b or b in a:
+        return 0.85
+    # Allow one to be a prefix of the other (min 3 chars)
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    if len(shorter) >= 3 and longer.startswith(shorter):
+        return 0.75
+    return 0.0
+
+
+def query_github(vendor, product, version, platform, conn=None):
+    """
+    Step 2.5a: GitHub repo activity check.
+    Searches GitHub for the best-matching repo, then interprets:
+      - archived=True          → no_patch (conf=72)
+      - pushed_at > 2 years    → no_patch (conf=65)
+      - pushed_at 1–2 years    → no_patch (conf=55)
+      - active (< 1 year)      → supported (conf=62), pulls latest release version
+    Returns result dict or None if no reliable signal.
+    """
+    try:
+        # Build search query: prefer vendor-qualified if vendor looks like an org name
+        q = product
+        if vendor and len(vendor) > 2:
+            q = f'{product}+{vendor}'
+        q = urllib.parse.quote_plus(q)
+        url = f'{GITHUB_API}/search/repositories?q={q}+in:name&sort=stars&order=desc&per_page=10'
+        req = urllib.request.Request(url, headers=_gh_headers())
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+
+        items = data.get('items', [])
+        if not items:
+            return None
+
+        # Keywords that identify distro packaging repos — not the upstream project
+        _PACKAGING_OWNER_KEYWORDS = (
+            'packages', 'packaging', 'ports', 'overlay', 'pkgs', 'pkg',
+            'homebrew', 'aur', 'flatpak', 'snap', 'copr', 'ppa', 'rpm',
+            'debian', 'ubuntu', 'fedora', 'solus', 'void', 'alpine',
+            'gentoo', 'nixpkgs', 'archlinux',
+        )
+
+        # Find best name match among credible repos
+        best_repo = None
+        best_score = 0.0
+        for repo in items:
+            score = _name_match_score(product, repo['name'])
+            if score <= best_score:
+                continue
+            # Skip packaging/distro repos — they reflect packaging activity, not the project
+            owner = repo.get('owner', {}).get('login', '').lower()
+            if any(kw in owner for kw in _PACKAGING_OWNER_KEYWORDS):
+                log.debug("GitHub: skipping packaging repo %s", repo['full_name'])
+                continue
+            # Require minimum star count to filter out personal forks/clones
+            # Exception: archived repos are useful signal regardless of stars
+            if repo.get('stargazers_count', 0) < 50 and not repo.get('archived', False):
+                log.debug("GitHub: skipping low-star repo %s (%d stars)",
+                          repo['full_name'], repo.get('stargazers_count', 0))
+                continue
+            best_score = score
+            best_repo = repo
+
+        if best_score < 0.75 or not best_repo:
+            log.debug("GitHub: no credible repo match for '%s' (best=%.2f)", product, best_score)
+            return None
+
+        repo_url    = best_repo['html_url']
+        archived    = best_repo.get('archived', False)
+        disabled    = best_repo.get('disabled', False)
+        pushed_raw  = best_repo.get('pushed_at', '')
+        owner_repo  = best_repo['full_name']
+
+        if archived or disabled:
+            log.info("GitHub: %s repo '%s' is archived/disabled → no_patch", product, owner_repo)
+            return {
+                'eol_status':     'no_patch',
+                'eol_date':       '',
+                'latest_version': version,
+                'source_url':     repo_url,
+                'confidence':     CONF_GITHUB,
+                'source':         'github',
+                'notes':          f'GitHub repo {owner_repo} is archived/disabled — no active maintenance.',
+            }
+
+        # Determine age of last push
+        if pushed_raw:
+            try:
+                pushed_dt = datetime.strptime(pushed_raw[:10], '%Y-%m-%d')
+                age_days  = (datetime.utcnow() - pushed_dt).days
+            except Exception:
+                age_days = 0
+        else:
+            age_days = 0
+
+        # Try to get latest release version
+        latest_ver = ''
+        try:
+            rel_url = f'{GITHUB_API}/repos/{owner_repo}/releases/latest'
+            rel_req = urllib.request.Request(rel_url, headers=_gh_headers())
+            with urllib.request.urlopen(rel_req, timeout=8) as rel_resp:
+                rel_data = json.loads(rel_resp.read())
+            tag = rel_data.get('tag_name', '')
+            # Strip leading 'v' from tag names
+            latest_ver = re.sub(r'^v', '', tag, flags=re.IGNORECASE)
+        except Exception:
+            pass
+
+        if age_days > 730:  # > 2 years since last push
+            conf = 65 if age_days > 1095 else 55   # > 3yr = 65, 2–3yr = 55
+            log.info("GitHub: %s repo '%s' last pushed %d days ago → no_patch (conf=%d)",
+                     product, owner_repo, age_days, conf)
+            return {
+                'eol_status':     'no_patch',
+                'eol_date':       '',
+                'latest_version': latest_ver or version,
+                'source_url':     repo_url,
+                'confidence':     conf,
+                'source':         'github',
+                'notes':          f'GitHub repo {owner_repo} last pushed {age_days} days ago — no recent activity.',
+            }
+
+        # Active repo
+        log.info("GitHub: %s repo '%s' active (%d days) → supported (conf=62)", product, owner_repo, age_days)
+        return {
+            'eol_status':     'supported',
+            'eol_date':       '',
+            'latest_version': latest_ver or version,
+            'source_url':     repo_url,
+            'confidence':     62,
+            'source':         'github',
+            'notes':          f'GitHub repo {owner_repo} actively maintained (last push {age_days} days ago).',
+        }
+
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            log.warning("GitHub: rate limited (403) for %s", product)
+        elif e.code != 404:
+            log.warning("GitHub HTTP %d for %s", e.code, product)
+        return None
+    except Exception as e:
+        log.debug("GitHub error for %s: %s", product, e)
+        return None
+
+
+# Current distro repo identifiers in Repology (prefix-matched)
+_REPOLOGY_CURRENT_REPOS = (
+    'debian_12', 'debian_13', 'debian_bookworm', 'debian_trixie',
+    'ubuntu_2404', 'ubuntu_2204', 'ubuntu_2310', 'ubuntu_2404',
+    'fedora_41', 'fedora_42', 'fedora_40',
+    'opensuse_tumbleweed', 'arch', 'alpine_316', 'alpine_320',
+    'nixpkgs_stable',
+)
+_REPOLOGY_OLD_REPOS = (
+    'debian_9', 'debian_10', 'debian_11', 'debian_wheezy', 'debian_jessie',
+    'debian_stretch', 'debian_buster', 'debian_bullseye',
+    'ubuntu_1804', 'ubuntu_2004',
+)
+
+
+def query_repology(vendor, product, version, platform, conn=None):
+    """
+    Step 2.5b: Repology cross-distro package status.
+    Checks if the package exists in current stable Linux distros.
+      - In current stable (Debian 12, Ubuntu 22+, Fedora 41+) → supported (conf=70)
+      - Only in old/obsolete distros → no_patch (conf=65)
+      - Unknown/not found → None
+    Rate-limit: 1 req/sec is polite; we add a minimal sleep after each call.
+    """
+    # Repology is only useful for Linux packages
+    if platform and platform.lower() not in ('linux', 'unknown', ''):
+        return None
+
+    pkg = product.lower().strip()
+    # Repology slugifies names: spaces/underscores → hyphens, lowercase
+    pkg_slug = re.sub(r'[\s_]+', '-', pkg)
+
+    # Build list of slugs to try:
+    # 1. Exact name (e.g. "libgif")
+    # 2. Without leading "lib" (e.g. "giflib", "gif") — many Linux libs use the
+    #    source package name which drops the lib prefix
+    slugs_to_try = [pkg_slug]
+    if pkg_slug.startswith('lib') and len(pkg_slug) > 4:
+        stripped = pkg_slug[3:]          # libgif      → gif
+        slugs_to_try.append(stripped)
+        slugs_to_try.append(stripped + 'lib')   # libgif → giflib (common src pkg pattern)
+        # Strip trailing digits too (libgnutls28 → gnutls28 → gnutls)
+        stripped_no_digits = re.sub(r'\d+$', '', stripped)
+        if stripped_no_digits != stripped:
+            slugs_to_try.append(stripped_no_digits)
+
+    packages = None
+    used_slug = pkg_slug
+    for slug in slugs_to_try:
+        url = f'{REPOLOGY_API}/{urllib.parse.quote(slug)}'
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0 (https://askmcconnell.com/svrt/)'})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                packages = json.loads(resp.read())
+            if packages:
+                used_slug = slug
+                log.debug("Repology: found '%s' under slug '%s'", product, slug)
+                break
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                continue   # try next slug
+            log.debug("Repology HTTP %d for %s (slug=%s)", e.code, product, slug)
+            continue
+        except Exception as e:
+            log.debug("Repology error for %s: %s", product, e)
+            continue
+
+    if not packages:
+        return None
+
+    # Filter to packages whose name closely matches our product
+    matched = [p for p in packages
+               if _name_match_score(product, p.get('name', p.get('srcname', ''))) >= 0.75]
+    if not matched:
+        matched = packages  # fall back to all if no name match
+
+    # Separate current vs old repo entries
+    in_current = [p for p in matched if any(p.get('repo', '').startswith(r) for r in _REPOLOGY_CURRENT_REPOS)]
+    in_old_only = [p for p in matched if any(p.get('repo', '').startswith(r) for r in _REPOLOGY_OLD_REPOS)]
+
+    if in_current:
+        # Pick the entry with the newest-looking version
+        newest = sorted(in_current, key=lambda p: p.get('version', ''), reverse=True)[0]
+        latest_ver = newest.get('version', '')
+        repo_name  = newest.get('repo', '')
+        log.info("Repology: %s found in current repo '%s' → supported (conf=%d)", product, repo_name, CONF_REPOLOGY)
+        return {
+            'eol_status':     'supported',
+            'eol_date':       '',
+            'latest_version': latest_ver,
+            'source_url':     f'https://repology.org/project/{used_slug}/versions',
+            'confidence':     CONF_REPOLOGY,
+            'source':         'repology',
+            'notes':          f'Package found in {repo_name} (Repology). Version {latest_ver}.',
+        }
+
+    if in_old_only and not in_current:
+        # Only in old distros — likely abandoned or replaced
+        newest = sorted(in_old_only, key=lambda p: p.get('version', ''), reverse=True)[0]
+        latest_ver = newest.get('version', '')
+        repo_name  = newest.get('repo', '')
+        log.info("Repology: %s only in old repos ('%s') → no_patch (conf=65)", product, repo_name)
+        return {
+            'eol_status':     'no_patch',
+            'eol_date':       '',
+            'latest_version': latest_ver,
+            'source_url':     f'https://repology.org/project/{used_slug}/versions',
+            'confidence':     65,
+            'source':         'repology',
+            'notes':          f'Package only found in older distros ({repo_name}) in Repology — no longer in current stable.',
+        }
+
+    return None
+
+
+def query_precheck(vendor, product, version, platform, conn=None):
+    """
+    Step 2.5: GitHub + Repology pre-check before LLM fallback.
+    Tries GitHub first (works well for open-source projects on any platform),
+    then Repology (works well for Linux system packages).
+    Returns a result dict, or None if neither source has useful signal.
+    """
+    # GitHub works for any platform (open-source tools show up regardless)
+    gh = query_github(vendor, product, version, platform, conn=conn)
+    if gh and gh.get('eol_status') not in ('unknown', None):
+        return gh
+
+    # Repology: Linux packages only
+    rp = query_repology(vendor, product, version, platform, conn=conn)
+    if rp and rp.get('eol_status') not in ('unknown', None):
+        return rp
+
+    return None
 
 
 def query_claude(vendor, product, version, platform, conn=None):
@@ -711,13 +1022,26 @@ def resolve(conn, vendor, product, version, platform='linux', force=False):
     if not force:
         cached = lookup_local(conn, vendor, product_norm, version)
         if cached:
-            log.debug("Cache hit: %s", product_norm)
-            return cached
+            # Don't trust a bare unknown (confidence=0, source='none') — fall through
+            # so step 2.5 can try GitHub/Repology before giving up again.
+            if cached.get('eol_status') == 'unknown' and cached.get('confidence', 0) == 0:
+                log.debug("Cache: stale unknown for %s — re-running lookup chain", product_norm)
+            else:
+                log.debug("Cache hit: %s", product_norm)
+                return cached
 
     # Step 2: endoflife.date
     result = query_endoflife_date(product_norm)
     if result:
         log.info("✓ endoflife.date: %s → %s", product_norm, result['eol_status'])
+        save_result(conn, vendor, product_norm, version, platform, result)
+        return result
+
+    # Step 2.5: GitHub + Repology pre-check (free APIs, no LLM cost)
+    result = query_precheck(vendor, product_norm, version, platform, conn=conn)
+    if result:
+        log.info("✓ precheck (%s): %s → %s (conf=%d)", result['source'], product_norm,
+                 result['eol_status'], result.get('confidence', 0))
         save_result(conn, vendor, product_norm, version, platform, result)
         return result
 
@@ -848,6 +1172,16 @@ def run_research(conn, max_items=200, delay_sec=0.5):
             conn.commit()
             resolved += 1
             time.sleep(0.2)  # gentle rate limit
+            continue
+
+        # Step 2.5: GitHub + Repology (free APIs, saves LLM calls)
+        result = query_precheck(vendor, product, version, platform, conn=conn)
+        if result:
+            save_result(conn, vendor, product, version, platform, result)
+            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.commit()
+            resolved += 1
+            time.sleep(0.5)  # Repology asks for ~1 req/sec politeness
             continue
 
         # Step 3: Multi-LLM consensus (Claude + OpenAI + Gemini in parallel)
@@ -1006,7 +1340,7 @@ def print_status(conn):
             "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
         ).fetchone()[0]
         avg_cost = cost_alltime['total_cost'] / cost_alltime['calls'] if cost_alltime['calls'] else 0.00056
-        print(f"  Queue remaining: {q_remaining:>5} items  ~${q_remaining * avg_cost * 3:.2f} est. (3 LLMs/item)")
+        print(f"  Queue remaining: {q_remaining:>5} items  ~${q_remaining * avg_cost * 3:.2f} est. (3 LLMs/item, assumes no GitHub/Repology hits)")
 
     print(f"{'═'*55}\n")
 
