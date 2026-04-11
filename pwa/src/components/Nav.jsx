@@ -41,6 +41,7 @@ export default function Nav() {
             <Link to="/docs" style={pathname === '/docs' ? { color: 'var(--text)' } : {}}>
               Docs
             </Link>
+            <Link to="/privacy" style={{ fontSize: '0.85rem' }}>Privacy</Link>
             <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
             </Link>
@@ -55,6 +56,7 @@ export default function Nav() {
               Dashboard
             </Link>
             <Link to="/docs">Docs</Link>
+            <Link to="/privacy" style={{ fontSize: '0.85rem' }}>Privacy</Link>
             <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
             </Link>
