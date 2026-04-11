@@ -463,11 +463,18 @@ Rules:
 
 
 def _parse_llm_json(text):
-    """Extract and parse the JSON object from an LLM response string."""
+    """Extract and parse the JSON object from an LLM response string.
+    Handles plain JSON, markdown fences (```json...```), and extra prose."""
+    # Strip markdown code fences if present
+    text = re.sub(r'^```(?:json)?\s*', '', text.strip(), flags=re.IGNORECASE)
+    text = re.sub(r'\s*```$', '', text.strip())
     m = re.search(r'\{.*\}', text, re.DOTALL)
     if not m:
         return None
-    return json.loads(m.group(0))
+    try:
+        return json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return None
 
 
 def _log_api_cost(conn, model, input_tokens, output_tokens, cost_usd, product, status):
@@ -536,7 +543,7 @@ def query_gemini(vendor, product, version, platform, conn=None):
     try:
         payload = json.dumps({
             'contents': [{'parts': [{'text': prompt}]}],
-            'generationConfig': {'maxOutputTokens': 300, 'temperature': 0.1},
+            'generationConfig': {'maxOutputTokens': 600, 'temperature': 0.1},
         }).encode()
         req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
         with urllib.request.urlopen(req, timeout=30) as resp:
