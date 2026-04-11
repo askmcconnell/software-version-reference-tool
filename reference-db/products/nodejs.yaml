@@ -1,0 +1,64 @@
+software_name: Node.js
+vendor: OpenJS Foundation
+platform: cross-platform
+versions:
+  - major: "10"
+    eol_status: eol
+    eol_date: "2021-04-30"
+    source_url: https://nodejs.org/en/about/previous-releases
+  - major: "12"
+    eol_status: eol
+    eol_date: "2022-04-30"
+    source_url: https://nodejs.org/en/about/previous-releases
+  - major: "14"
+    eol_status: eol
+    eol_date: "2023-04-30"
+    source_url: https://nodejs.org/en/about/previous-releases
+  - major: "16"
+    eol_status: eol
+    eol_date: "2023-09-11"
+    source_url: https://nodejs.org/en/about/previous-releases
+  - major: "17"
+    eol_status: eol
+    eol_date: "2022-06-01"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Odd-numbered releases are short-term; no LTS
+  - major: "18"
+    eol_status: eol
+    eol_date: "2025-04-30"
+    latest_version: "18.20.5"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Node.js 18 LTS — end of life April 30, 2025
+  - major: "19"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Short-term release, no LTS
+  - major: "20"
+    eol_status: lts
+    eol_date: "2026-04-30"
+    latest_version: "20.18.1"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Node.js 20 LTS — active LTS until April 2026
+  - major: "21"
+    eol_status: eol
+    eol_date: "2024-06-01"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Short-term release, no LTS
+  - major: "22"
+    eol_status: lts
+    eol_date: "2027-04-30"
+    latest_version: "22.13.0"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Node.js 22 LTS — current recommended LTS as of 2026
+  - major: "23"
+    eol_status: supported
+    eol_date: "2025-06-01"
+    latest_version: "23.x"
+    source_url: https://nodejs.org/en/about/previous-releases
+    notes: Short-term current release; will be superseded by Node 24
+aliases:
+  - "Node"
+  - "NodeJS"
+  - "node.js"
+  - "Node.js LTS"

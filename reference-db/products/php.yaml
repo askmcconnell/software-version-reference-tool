@@ -1,0 +1,64 @@
+software_name: PHP
+vendor: The PHP Group
+platform: cross-platform
+versions:
+  - major: "5.6"
+    eol_status: eol
+    eol_date: "2018-12-31"
+    source_url: https://www.php.net/supported-versions.php
+    notes: PHP 5.6 — EOL December 31, 2018; very widely still found on legacy servers
+  - major: "7.0"
+    eol_status: eol
+    eol_date: "2019-01-10"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "7.1"
+    eol_status: eol
+    eol_date: "2019-12-01"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "7.2"
+    eol_status: eol
+    eol_date: "2020-11-30"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "7.3"
+    eol_status: eol
+    eol_date: "2021-12-06"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "7.4"
+    eol_status: eol
+    eol_date: "2022-11-28"
+    source_url: https://www.php.net/supported-versions.php
+    notes: PHP 7.4 — EOL November 28, 2022; still extremely common on shared hosting
+  - major: "8.0"
+    eol_status: eol
+    eol_date: "2023-11-26"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "8.1"
+    eol_status: eol
+    eol_date: "2025-12-31"
+    latest_version: "8.1.31"
+    source_url: https://www.php.net/supported-versions.php
+    notes: PHP 8.1 security support ends December 31, 2025
+  - major: "8.2"
+    eol_status: supported
+    eol_date: "2026-12-31"
+    latest_version: "8.2.27"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "8.3"
+    eol_status: supported
+    eol_date: "2027-12-31"
+    latest_version: "8.3.15"
+    source_url: https://www.php.net/supported-versions.php
+  - major: "8.4"
+    eol_status: supported
+    eol_date: "2028-12-31"
+    latest_version: "8.4.2"
+    source_url: https://www.php.net/supported-versions.php
+    notes: PHP 8.4 — current stable release as of 2026
+aliases:
+  - "PHP 5"
+  - "PHP 7"
+  - "PHP 8"
+  - "PHP-FPM"
+  - "php5"
+  - "php7"
+  - "php8"

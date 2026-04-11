@@ -1,0 +1,47 @@
+software_name: Oracle Database
+vendor: Oracle Corporation
+platform: cross-platform
+versions:
+  - major: "10g"
+    eol_status: eol
+    eol_date: "2013-07-31"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 10g R2 — end of extended support July 2013
+  - major: "11g"
+    eol_status: eol
+    eol_date: "2020-12-31"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 11g R2 — end of extended support December 2020; still widely deployed
+  - major: "12c"
+    eol_status: eol
+    eol_date: "2022-07-31"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 12c R2 — end of extended support July 2022
+  - major: "18c"
+    eol_status: eol
+    eol_date: "2021-06-30"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 18c — short-term innovation release, EOL June 2021
+  - major: "19c"
+    eol_status: lts
+    eol_date: "2027-04-30"
+    latest_version: "19.25"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 19c LTS — current recommended long-term release; Premier support ends April 2024, Extended until April 2027
+  - major: "21c"
+    eol_status: eol
+    eol_date: "2024-04-30"
+    source_url: https://www.oracle.com/us/support/library/lifetime-support-technology-069183.pdf
+    notes: Oracle Database 21c — innovation release, EOL April 2024
+  - major: "23ai"
+    eol_status: supported
+    latest_version: "23ai"
+    source_url: https://www.oracle.com/database/
+    notes: Oracle Database 23ai — current long-term release as of 2026; formerly called 23c
+aliases:
+  - "Oracle DB"
+  - "Oracle 11g"
+  - "Oracle 12c"
+  - "Oracle 19c"
+  - "Oracle 23ai"
+  - "Oracle RDBMS"

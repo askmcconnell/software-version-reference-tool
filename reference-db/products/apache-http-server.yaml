@@ -1,0 +1,25 @@
+software_name: Apache HTTP Server
+vendor: Apache Software Foundation
+platform: cross-platform
+versions:
+  - major: "2.0"
+    eol_status: eol
+    eol_date: "2013-07-10"
+    source_url: https://httpd.apache.org/
+    notes: Apache 2.0 — EOL July 2013
+  - major: "2.2"
+    eol_status: eol
+    eol_date: "2017-12-31"
+    source_url: https://httpd.apache.org/
+    notes: Apache 2.2 — EOL December 31, 2017; still found on legacy Linux servers
+  - major: "2.4"
+    eol_status: supported
+    latest_version: "2.4.62"
+    source_url: https://httpd.apache.org/
+    notes: Apache 2.4 — current stable branch; actively maintained
+aliases:
+  - "Apache"
+  - "Apache Web Server"
+  - "Apache2"
+  - "httpd"
+  - "apache2"

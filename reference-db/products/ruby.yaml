@@ -1,0 +1,52 @@
+software_name: Ruby
+vendor: Ruby Core Team
+platform: cross-platform
+versions:
+  - major: "2.4"
+    eol_status: eol
+    eol_date: "2020-03-31"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "2.5"
+    eol_status: eol
+    eol_date: "2021-03-31"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "2.6"
+    eol_status: eol
+    eol_date: "2022-03-31"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "2.7"
+    eol_status: eol
+    eol_date: "2023-03-31"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+    notes: Ruby 2.7 — EOL March 31, 2023; common in legacy Rails apps
+  - major: "3.0"
+    eol_status: eol
+    eol_date: "2024-03-31"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "3.1"
+    eol_status: eol
+    eol_date: "2025-03-31"
+    latest_version: "3.1.6"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+    notes: Ruby 3.1 — EOL March 31, 2025
+  - major: "3.2"
+    eol_status: supported
+    eol_date: "2026-03-31"
+    latest_version: "3.2.6"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "3.3"
+    eol_status: supported
+    eol_date: "2027-03-31"
+    latest_version: "3.3.6"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+  - major: "3.4"
+    eol_status: supported
+    eol_date: "2028-03-31"
+    latest_version: "3.4.1"
+    source_url: https://www.ruby-lang.org/en/downloads/branches/
+    notes: Ruby 3.4 — current stable release as of 2026
+aliases:
+  - "ruby"
+  - "MRI Ruby"
+  - "CRuby"
+  - "Ruby on Rails runtime"

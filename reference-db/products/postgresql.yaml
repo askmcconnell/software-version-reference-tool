@@ -1,0 +1,52 @@
+software_name: PostgreSQL
+vendor: PostgreSQL Global Development Group
+platform: cross-platform
+versions:
+  - major: "9.6"
+    eol_status: eol
+    eol_date: "2021-11-11"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "10"
+    eol_status: eol
+    eol_date: "2022-11-10"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "11"
+    eol_status: eol
+    eol_date: "2023-11-09"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "12"
+    eol_status: eol
+    eol_date: "2024-11-14"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "13"
+    eol_status: supported
+    eol_date: "2025-11-13"
+    latest_version: "13.19"
+    source_url: https://www.postgresql.org/support/versioning/
+    notes: PostgreSQL 13 — end of life November 13, 2025
+  - major: "14"
+    eol_status: supported
+    eol_date: "2026-11-12"
+    latest_version: "14.14"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "15"
+    eol_status: supported
+    eol_date: "2027-11-11"
+    latest_version: "15.9"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "16"
+    eol_status: supported
+    eol_date: "2028-11-09"
+    latest_version: "16.5"
+    source_url: https://www.postgresql.org/support/versioning/
+  - major: "17"
+    eol_status: supported
+    eol_date: "2029-11-08"
+    latest_version: "17.1"
+    source_url: https://www.postgresql.org/support/versioning/
+    notes: PostgreSQL 17 — current stable release as of 2026
+aliases:
+  - "Postgres"
+  - "PostgreSQL Server"
+  - "psql"
+  - "postgres"

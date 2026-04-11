@@ -1,0 +1,66 @@
+software_name: Python
+vendor: Python Software Foundation
+platform: cross-platform
+versions:
+  - major: "2.7"
+    eol_status: eol
+    eol_date: "2020-01-01"
+    source_url: https://www.python.org/doc/sunset-python-2/
+    notes: Python 2.7 — end of life January 1, 2020. Widely still found in the wild.
+  - major: "3.5"
+    eol_status: eol
+    eol_date: "2020-09-30"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.6"
+    eol_status: eol
+    eol_date: "2021-12-23"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.7"
+    eol_status: eol
+    eol_date: "2023-06-27"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.8"
+    eol_status: eol
+    eol_date: "2024-10-07"
+    source_url: https://devguide.python.org/versions/
+    notes: Python 3.8 — end of life October 7, 2024
+  - major: "3.9"
+    eol_status: supported
+    eol_date: "2025-10-05"
+    latest_version: "3.9.21"
+    source_url: https://devguide.python.org/versions/
+    notes: End of life October 5, 2025
+  - major: "3.10"
+    eol_status: supported
+    eol_date: "2026-10-04"
+    latest_version: "3.10.16"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.11"
+    eol_status: supported
+    eol_date: "2027-10-24"
+    latest_version: "3.11.11"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.12"
+    eol_status: supported
+    eol_date: "2028-10-02"
+    latest_version: "3.12.8"
+    source_url: https://devguide.python.org/versions/
+  - major: "3.13"
+    eol_status: supported
+    eol_date: "2029-10-01"
+    latest_version: "3.13.1"
+    source_url: https://devguide.python.org/versions/
+    notes: Current stable release as of 2026
+aliases:
+  - "Python 2"
+  - "Python 2.7"
+  - "Python 3"
+  - "Python 3.6"
+  - "Python 3.7"
+  - "Python 3.8"
+  - "Python 3.9"
+  - "Python 3.10"
+  - "Python 3.11"
+  - "Python 3.12"
+  - "Python 3.13"
+  - "CPython"
