@@ -23,6 +23,7 @@ BASE_DIR="$(dirname "$SCRIPT_DIR")"
 DB_PATH="$BASE_DIR/db/svrt_reference.db"
 EXPORT_DIR="$BASE_DIR/db/exports"
 LOG_FILE="$BASE_DIR/logs/sync.log"
+AGENT_SCRIPT="$BASE_DIR/agent/svrt_agent.py"
 
 # Load env file if present
 ENV_FILE="/home/svrt/.env"
@@ -252,7 +253,6 @@ fi
 
 WP_PROCESS_SECRET="${WP_PROCESS_SECRET:-}"
 WP_BASE="${WP_BASE:-https://askmcconnell.com/wp-json/svrt/v1}"
-AGENT_SCRIPT="$BASE_DIR/agent/svrt_agent.py"
 UNKNOWN_CSV="$BASE_DIR/db/exports/ionos_unknown_software.csv"
 
 if [ -n "$WP_PROCESS_SECRET" ] && [ -f "$AGENT_SCRIPT" ]; then
