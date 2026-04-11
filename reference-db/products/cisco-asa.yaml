@@ -1,0 +1,47 @@
+software_name: Cisco ASA
+vendor: Cisco Systems
+platform: cross-platform
+versions:
+  - major: "8.x"
+    eol_status: eol
+    eol_date: "2017-08-07"
+    source_url: https://www.cisco.com/c/en/us/products/security/asa-5500-series-next-generation-firewalls/eos-eol-notice-listing.html
+    notes: Cisco ASA 8.x software — end of software maintenance
+  - major: "9.1"
+    eol_status: eol
+    eol_date: "2020-03-31"
+    source_url: https://www.cisco.com/c/en/us/products/collateral/security/asa-firepower-services/eos-eol-notice-c51-742312.html
+  - major: "9.6"
+    eol_status: eol
+    eol_date: "2021-09-30"
+    source_url: https://www.cisco.com/c/en/us/products/security/asa-5500-series-next-generation-firewalls/eos-eol-notice-listing.html
+  - major: "9.8"
+    eol_status: eol
+    eol_date: "2022-09-30"
+    source_url: https://www.cisco.com/c/en/us/products/security/asa-5500-series-next-generation-firewalls/eos-eol-notice-listing.html
+  - major: "9.12"
+    eol_status: eol
+    eol_date: "2023-09-30"
+    source_url: https://www.cisco.com/c/en/us/products/security/asa-5500-series-next-generation-firewalls/eos-eol-notice-listing.html
+  - major: "9.14"
+    eol_status: supported
+    latest_version: "9.14.x"
+    source_url: https://www.cisco.com/c/en/us/products/security/adaptive-security-appliance-asa-software/index.html
+  - major: "9.16"
+    eol_status: supported
+    latest_version: "9.16.x"
+    source_url: https://www.cisco.com/c/en/us/products/security/adaptive-security-appliance-asa-software/index.html
+  - major: "9.18"
+    eol_status: supported
+    latest_version: "9.18.x"
+    source_url: https://www.cisco.com/c/en/us/products/security/adaptive-security-appliance-asa-software/index.html
+    notes: Current recommended release train as of 2026
+aliases:
+  - "Cisco Adaptive Security Appliance"
+  - "ASA"
+  - "Cisco ASA 5505"
+  - "Cisco ASA 5510"
+  - "Cisco ASA 5520"
+  - "Cisco ASA 5540"
+  - "Cisco ASA 5505"
+  - "Cisco ASA Software"

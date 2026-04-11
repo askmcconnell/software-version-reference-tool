@@ -1,0 +1,98 @@
+software_name: Oracle Java SE
+vendor: Oracle Corporation
+platform: cross-platform
+versions:
+  - major: "7"
+    eol_status: eol
+    eol_date: "2015-04-14"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 7 (JDK 7) — public updates ended April 2015; known critical CVEs
+  - major: "8"
+    eol_status: lts
+    latest_version: "8u421"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: >
+      Java 8 LTS — free OpenJDK builds available from vendors (Temurin, Corretto, etc.);
+      Oracle commercial support extended; widely deployed but aging
+  - major: "9"
+    eol_status: eol
+    eol_date: "2018-03-20"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 9 — short-term release, EOL March 2018
+  - major: "10"
+    eol_status: eol
+    eol_date: "2018-09-25"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "11"
+    eol_status: lts
+    latest_version: "11.0.24"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 11 LTS — free OpenJDK support through 2026+; widely deployed
+  - major: "12"
+    eol_status: eol
+    eol_date: "2019-09-17"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "13"
+    eol_status: eol
+    eol_date: "2020-03-17"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "14"
+    eol_status: eol
+    eol_date: "2020-09-15"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "15"
+    eol_status: eol
+    eol_date: "2021-03-16"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "16"
+    eol_status: eol
+    eol_date: "2021-09-14"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "17"
+    eol_status: lts
+    latest_version: "17.0.12"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 17 LTS — current recommended LTS release; Oracle support through Sep 2029
+  - major: "18"
+    eol_status: eol
+    eol_date: "2022-09-20"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "19"
+    eol_status: eol
+    eol_date: "2023-03-21"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "20"
+    eol_status: eol
+    eol_date: "2023-09-19"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "21"
+    eol_status: lts
+    latest_version: "21.0.4"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 21 LTS — current long-term support release; Oracle support through Sep 2031
+  - major: "22"
+    eol_status: eol
+    eol_date: "2024-09-17"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "23"
+    eol_status: eol
+    eol_date: "2025-03-18"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+  - major: "24"
+    eol_status: supported
+    latest_version: "24"
+    source_url: https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+    notes: Java 24 — current short-term release; will be superseded by Java 25 LTS
+aliases:
+  - "Java"
+  - "JDK"
+  - "JRE"
+  - "Java SE"
+  - "Java Runtime"
+  - "Java Runtime Environment"
+  - "Java Development Kit"
+  - "OpenJDK"
+  - "Java 8"
+  - "Java 11"
+  - "Java 17"
+  - "Java 21"

@@ -1,0 +1,19 @@
+software_name: Adobe Flash Player
+vendor: Adobe Inc.
+platform: cross-platform
+versions:
+  - major: "all"
+    eol_status: eol
+    eol_date: "2020-12-31"
+    latest_version: "32.0.0.465"
+    source_url: https://www.adobe.com/products/flashplayer/end-of-life.html
+    notes: >
+      Adobe Flash Player reached end of life December 31, 2020. Adobe blocks Flash
+      content from running as of January 12, 2021. All versions are EOL.
+      Flash Player has known critical vulnerabilities and should be uninstalled immediately.
+aliases:
+  - "Flash Player"
+  - "Adobe Flash"
+  - "Macromedia Flash"
+  - "Flash Plugin"
+  - "flashplayer"

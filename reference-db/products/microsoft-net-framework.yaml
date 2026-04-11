@@ -1,0 +1,62 @@
+software_name: Microsoft .NET Framework
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "4.0"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-4
+    notes: .NET Framework 4.0 — end of support January 12, 2016
+  - major: "4.5"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/faq/dotnet
+    notes: .NET Framework 4.5 and 4.5.1 — end of support January 12, 2016
+  - major: "4.5.1"
+    eol_status: eol
+    eol_date: "2016-01-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/faq/dotnet
+  - major: "4.5.2"
+    eol_status: eol
+    eol_date: "2022-04-26"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-452
+    notes: End of support April 26, 2022
+  - major: "4.6"
+    eol_status: eol
+    eol_date: "2022-04-26"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-46
+    notes: .NET Framework 4.6 and 4.6.1 — end of support April 26, 2022
+  - major: "4.6.1"
+    eol_status: eol
+    eol_date: "2022-04-26"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-461
+  - major: "4.6.2"
+    eol_status: supported
+    latest_version: "4.6.2"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-462
+    notes: Supported as long as the underlying Windows version is supported
+  - major: "4.7"
+    eol_status: supported
+    latest_version: "4.7"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-47
+  - major: "4.7.1"
+    eol_status: supported
+    latest_version: "4.7.1"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-471
+  - major: "4.7.2"
+    eol_status: supported
+    latest_version: "4.7.2"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-472
+  - major: "4.8"
+    eol_status: lts
+    latest_version: "4.8.1"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-net-framework-48
+    notes: .NET Framework 4.8 is the final version of .NET Framework; 4.8.1 is the latest patch
+aliases:
+  - ".NET Framework"
+  - "dotnet framework"
+  - "Microsoft .NET 4"
+  - ".NET 4.5"
+  - ".NET 4.6"
+  - ".NET 4.7"
+  - ".NET 4.8"

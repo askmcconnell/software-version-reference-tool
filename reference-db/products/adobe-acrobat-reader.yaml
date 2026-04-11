@@ -1,0 +1,44 @@
+software_name: Adobe Acrobat Reader
+vendor: Adobe Inc.
+platform: cross-platform
+versions:
+  - major: "dc-classic-2015"
+    eol_status: eol
+    eol_date: "2020-04-07"
+    source_url: https://helpx.adobe.com/support/programs/eol-matrix.html
+    notes: Acrobat DC Classic Track 2015 — end of support April 7, 2020
+  - major: "dc-classic-2017"
+    eol_status: eol
+    eol_date: "2022-06-06"
+    source_url: https://helpx.adobe.com/support/programs/eol-matrix.html
+    notes: Acrobat DC Classic Track 2017 — end of support June 6, 2022
+  - major: "dc-classic-2020"
+    eol_status: supported
+    eol_date: "2025-06-01"
+    latest_version: "20.x"
+    source_url: https://helpx.adobe.com/support/programs/eol-matrix.html
+    notes: Acrobat Classic 2020 — end of support approximately mid-2025
+  - major: "dc-continuous"
+    eol_status: supported
+    latest_version: "current"
+    source_url: https://helpx.adobe.com/acrobat/release-note/release-notes-acrobat-reader.html
+    notes: Acrobat DC Continuous Track — receives monthly security updates; always current
+  - major: "xi"
+    eol_status: eol
+    eol_date: "2017-10-15"
+    source_url: https://helpx.adobe.com/support/programs/eol-matrix.html
+    notes: Acrobat XI (11.x) — end of support October 15, 2017
+  - major: "x"
+    eol_status: eol
+    eol_date: "2015-11-15"
+    source_url: https://helpx.adobe.com/support/programs/eol-matrix.html
+    notes: Acrobat X (10.x) — end of support November 15, 2015
+aliases:
+  - "Adobe Reader"
+  - "Adobe Acrobat"
+  - "Adobe Acrobat DC"
+  - "Adobe Acrobat Reader DC"
+  - "Acrobat Reader"
+  - "Acrobat XI"
+  - "Acrobat X"
+  - "Reader DC"

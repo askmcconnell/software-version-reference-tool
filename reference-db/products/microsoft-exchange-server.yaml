@@ -1,0 +1,39 @@
+software_name: Microsoft Exchange Server
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "2007"
+    eol_status: eol
+    eol_date: "2017-04-11"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-2007
+    notes: End of extended support April 11, 2017
+  - major: "2010"
+    eol_status: eol
+    eol_date: "2020-10-13"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-2010
+    notes: End of extended support October 13, 2020
+  - major: "2013"
+    eol_status: eol
+    eol_date: "2023-04-11"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-2013
+    notes: End of extended support April 11, 2023
+  - major: "2016"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "CU23"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-2016
+    notes: End of extended support October 14, 2025
+  - major: "2019"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "CU14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/exchange-server-2019
+    notes: End of extended support October 14, 2025; Microsoft recommends migrating to Exchange Online
+aliases:
+  - "Exchange Server 2007"
+  - "Exchange Server 2010"
+  - "Exchange Server 2013"
+  - "Exchange Server 2016"
+  - "Exchange Server 2019"
+  - "Exchange 2016"
+  - "Exchange 2019"

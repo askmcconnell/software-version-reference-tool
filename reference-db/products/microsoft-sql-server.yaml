@@ -1,0 +1,55 @@
+software_name: Microsoft SQL Server
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "2008"
+    eol_status: eol
+    eol_date: "2019-07-09"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2008
+    notes: End of extended support July 9, 2019; ESU available on Azure
+  - major: "2008r2"
+    eol_status: eol
+    eol_date: "2019-07-09"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2008-r2
+    notes: SQL Server 2008 R2 — end of extended support July 9, 2019
+  - major: "2012"
+    eol_status: eol
+    eol_date: "2022-07-12"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2012
+    notes: End of extended support July 12, 2022
+  - major: "2014"
+    eol_status: eol
+    eol_date: "2024-07-09"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2014
+    notes: End of extended support July 9, 2024
+  - major: "2016"
+    eol_status: supported
+    eol_date: "2026-07-14"
+    latest_version: "13.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2016
+    notes: End of extended support July 14, 2026
+  - major: "2017"
+    eol_status: supported
+    eol_date: "2027-10-12"
+    latest_version: "14.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2017
+    notes: End of extended support October 12, 2027
+  - major: "2019"
+    eol_status: supported
+    eol_date: "2030-01-08"
+    latest_version: "15.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2019
+  - major: "2022"
+    eol_status: supported
+    eol_date: "2033-01-11"
+    latest_version: "16.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/sql-server-2022
+aliases:
+  - "SQL Server 2008"
+  - "SQL Server 2012"
+  - "SQL Server 2014"
+  - "SQL Server 2016"
+  - "SQL Server 2017"
+  - "SQL Server 2019"
+  - "SQL Server 2022"
+  - "MSSQL"

@@ -1,0 +1,45 @@
+software_name: VMware vSphere
+vendor: Broadcom (VMware)
+platform: cross-platform
+versions:
+  - major: "5.5"
+    eol_status: eol
+    eol_date: "2018-09-19"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 5.5 (ESXi 5.5) — end of general support September 19, 2018
+  - major: "6.0"
+    eol_status: eol
+    eol_date: "2022-03-12"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 6.0 (ESXi 6.0) — end of general support March 12, 2022
+  - major: "6.5"
+    eol_status: eol
+    eol_date: "2023-10-15"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 6.5 (ESXi 6.5) — end of general support October 15, 2023
+  - major: "6.7"
+    eol_status: eol
+    eol_date: "2023-11-15"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 6.7 (ESXi 6.7) — end of general support November 15, 2023
+  - major: "7.0"
+    eol_status: supported
+    eol_date: "2025-04-02"
+    latest_version: "7.0 U3"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 7.0 — end of general support April 2, 2025; migrate to vSphere 8
+  - major: "8.0"
+    eol_status: supported
+    latest_version: "8.0 U3"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: vSphere 8.0 — current supported release as of 2026
+aliases:
+  - "VMware ESXi"
+  - "ESXi"
+  - "vSphere"
+  - "VMware vSphere ESXi"
+  - "VMware ESX"
+  - "ESXi 6.5"
+  - "ESXi 6.7"
+  - "ESXi 7.0"
+  - "ESXi 8.0"

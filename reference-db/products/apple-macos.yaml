@@ -1,0 +1,56 @@
+software_name: Apple macOS
+vendor: Apple Inc.
+platform: macos
+versions:
+  - major: "10.13"
+    eol_status: eol
+    eol_date: "2020-11-12"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS High Sierra — last security update November 2020
+  - major: "10.14"
+    eol_status: eol
+    eol_date: "2021-10-25"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Mojave — last security update October 2021
+  - major: "10.15"
+    eol_status: eol
+    eol_date: "2022-10-24"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Catalina — last security update October 2022
+  - major: "11"
+    eol_status: eol
+    eol_date: "2023-09-26"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Big Sur — last security update September 2023
+  - major: "12"
+    eol_status: eol
+    eol_date: "2024-09-16"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Monterey — last security update September 2024
+  - major: "13"
+    eol_status: supported
+    latest_version: "13.7"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Ventura — still receiving security updates as of 2026
+  - major: "14"
+    eol_status: supported
+    latest_version: "14.7"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Sonoma — still receiving security updates as of 2026
+  - major: "15"
+    eol_status: supported
+    latest_version: "15.4"
+    source_url: https://support.apple.com/en-us/111900
+    notes: macOS Sequoia — current release as of 2026
+aliases:
+  - "macOS"
+  - "Mac OS X"
+  - "OS X"
+  - "macOS High Sierra"
+  - "macOS Mojave"
+  - "macOS Catalina"
+  - "macOS Big Sur"
+  - "macOS Monterey"
+  - "macOS Ventura"
+  - "macOS Sonoma"
+  - "macOS Sequoia"

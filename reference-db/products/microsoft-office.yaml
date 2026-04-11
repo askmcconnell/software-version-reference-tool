@@ -1,0 +1,53 @@
+software_name: Microsoft Office
+vendor: Microsoft Corporation
+platform: windows
+versions:
+  - major: "2007"
+    eol_status: eol
+    eol_date: "2017-10-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-2007
+    notes: Mainstream support ended 2012; extended support ended Oct 10, 2017
+  - major: "2010"
+    eol_status: eol
+    eol_date: "2020-10-13"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-2010
+    notes: End of extended support October 13, 2020
+  - major: "2013"
+    eol_status: eol
+    eol_date: "2023-04-11"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-2013
+    notes: End of extended support April 11, 2023
+  - major: "2016"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "16.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-2016
+    notes: End of extended support October 14, 2025
+  - major: "2019"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "16.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-2019
+    notes: End of extended support October 14, 2025 — same date as Office 2016
+  - major: "2021"
+    eol_status: supported
+    eol_date: "2026-10-13"
+    latest_version: "16.0"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-office-ltsc-2021
+    notes: End of extended support October 13, 2026
+  - major: "365"
+    eol_status: supported
+    latest_version: "current"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/microsoft-365-apps-for-enterprise
+    notes: Microsoft 365 Apps receives monthly updates; no fixed EOL date
+aliases:
+  - "Microsoft Office 2007"
+  - "Microsoft Office 2010"
+  - "Microsoft Office 2013"
+  - "Microsoft Office 2016"
+  - "Microsoft Office 2019"
+  - "Microsoft Office 2021"
+  - "Microsoft Office LTSC"
+  - "Microsoft 365"
+  - "Office 365"
+  - "MS Office"

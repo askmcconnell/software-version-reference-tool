@@ -1,0 +1,52 @@
+software_name: OpenSSL
+vendor: OpenSSL Software Foundation
+platform: cross-platform
+versions:
+  - major: "1.0.1"
+    eol_status: eol
+    eol_date: "2016-12-31"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+    notes: OpenSSL 1.0.1 — EOL December 31, 2016; included original Heartbleed vulnerability
+  - major: "1.0.2"
+    eol_status: eol
+    eol_date: "2019-12-31"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+    notes: OpenSSL 1.0.2 — EOL December 31, 2019; LTS users only until that date
+  - major: "1.1.0"
+    eol_status: eol
+    eol_date: "2019-09-11"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+  - major: "1.1.1"
+    eol_status: eol
+    eol_date: "2023-09-11"
+    source_url: https://www.openssl.org/blog/blog/2023/09/11/eol-111/
+    notes: OpenSSL 1.1.1 LTS — EOL September 11, 2023; widely deployed, many systems still running this
+  - major: "3.0"
+    eol_status: lts
+    eol_date: "2026-09-07"
+    latest_version: "3.0.15"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+    notes: OpenSSL 3.0 LTS — supported until September 7, 2026
+  - major: "3.1"
+    eol_status: eol
+    eol_date: "2025-03-14"
+    latest_version: "3.1.x"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+    notes: OpenSSL 3.1 — EOL March 14, 2025
+  - major: "3.2"
+    eol_status: supported
+    latest_version: "3.2.x"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+  - major: "3.3"
+    eol_status: supported
+    latest_version: "3.3.x"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+  - major: "3.4"
+    eol_status: lts
+    latest_version: "3.4.1"
+    source_url: https://www.openssl.org/policies/releasestrat.html
+    notes: OpenSSL 3.4 LTS — current recommended release
+aliases:
+  - "OpenSSL Library"
+  - "libssl"
+  - "libcrypto"

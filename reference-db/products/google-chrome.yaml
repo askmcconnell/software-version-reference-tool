@@ -1,0 +1,21 @@
+software_name: Google Chrome
+vendor: Google LLC
+platform: cross-platform
+versions:
+  - major: "stable"
+    eol_status: supported
+    latest_version: "124"
+    source_url: https://chromereleases.googleblog.com/
+    notes: >
+      Chrome uses a rapid release cycle (~4 weeks). Only the current stable channel
+      receives security updates. Any version more than one release behind is effectively
+      unpatched. Check chromereleases.googleblog.com for the current version.
+  - major: "esr"
+    eol_status: supported
+    latest_version: "current"
+    source_url: https://support.google.com/chrome/a/answer/9027636
+    notes: Chrome Extended Stable — available for enterprise; updated every 8 weeks
+aliases:
+  - "Chrome"
+  - "Chromium"
+  - "Google Chrome Browser"

@@ -1,0 +1,29 @@
+software_name: VMware Workstation
+vendor: Broadcom (VMware)
+platform: cross-platform
+versions:
+  - major: "14"
+    eol_status: eol
+    eol_date: "2020-09-14"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: VMware Workstation 14 — end of general support September 14, 2020
+  - major: "15"
+    eol_status: eol
+    eol_date: "2022-09-14"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: VMware Workstation 15 — end of general support September 14, 2022
+  - major: "16"
+    eol_status: eol
+    eol_date: "2024-05-14"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: VMware Workstation 16 — end of general support May 14, 2024
+  - major: "17"
+    eol_status: supported
+    latest_version: "17.6"
+    source_url: https://support.broadcom.com/group/ecx/productlifecycle
+    notes: VMware Workstation Pro 17 — current release; free for personal use since May 2024
+aliases:
+  - "VMware Workstation Pro"
+  - "VMware Workstation Player"
+  - "VMware Player"
+  - "Workstation Pro"
