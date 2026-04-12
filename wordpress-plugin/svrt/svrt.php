@@ -317,7 +317,15 @@ function svrt_send_report_email(string $to, string $uuid, string $token, array $
         'From: SVRT <noreply@askmcconnell.com>',
     ];
 
-    wp_mail($to, $subject, $message, $headers);
+    $sent = wp_mail($to, $subject, $message, $headers);
+
+    if ( ! $sent ) {
+        $mailer = isset( $GLOBALS['phpmailer'] ) ? $GLOBALS['phpmailer'] : null;
+        $err    = $mailer ? $mailer->ErrorInfo : 'unknown error';
+        error_log( "[SVRT] wp_mail FAILED to {$to} (job {$uuid}): {$err}" );
+    } else {
+        error_log( "[SVRT] wp_mail sent OK to {$to} (job {$uuid})" );
+    }
 }
 
 function svrt_get_subscriber(int $user_id): ?array {
@@ -968,7 +976,7 @@ function svrt_process_job(int $job_id, int $time_limit = 20): void {
                 'status'               => 'complete',
                 'matched_count'        => $matched,
                 'eol_count'            => $eol,
-                'completed_at'         => current_time('mysql'),
+                'completed_at'         => gmdate('Y-m-d H:i:s'),
                 'report_token'         => $report_token,
                 'report_token_expires' => $token_expires,
             ],
