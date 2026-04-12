@@ -1034,7 +1034,7 @@ def query_gemini(vendor, product, version, platform, conn=None):
     try:
         payload = json.dumps({
             'contents': [{'parts': [{'text': prompt}]}],
-            'generationConfig': {'maxOutputTokens': 600, 'temperature': 0.1},
+            'generationConfig': {'maxOutputTokens': 2048, 'temperature': 0.1},
         }).encode()
         req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
         with urllib.request.urlopen(req, timeout=30) as resp:
