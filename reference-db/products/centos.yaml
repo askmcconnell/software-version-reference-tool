@@ -1,0 +1,43 @@
+software_name: CentOS
+vendor: CentOS Project / Red Hat
+platform: linux
+versions:
+  - major: "6"
+    eol_status: eol
+    eol_date: "2020-11-30"
+    source_url: https://wiki.centos.org/About/Product
+    notes: EOL November 2020; no further updates or patches
+  - major: "7"
+    eol_status: eol
+    eol_date: "2024-06-30"
+    latest_version: "7.9.2009"
+    source_url: https://wiki.centos.org/About/Product
+    notes: EOL June 2024; migrate to RHEL, AlmaLinux, or Rocky Linux
+  - major: "8"
+    eol_status: eol
+    eol_date: "2021-12-31"
+    source_url: https://wiki.centos.org/About/Product
+    notes: EOL moved up to Dec 2021; replaced by CentOS Stream 8
+  - major: "stream-8"
+    eol_status: eol
+    eol_date: "2024-05-31"
+    source_url: https://wiki.centos.org/About/Product
+    notes: CentOS Stream 8; upstream preview of RHEL 8
+  - major: "stream-9"
+    eol_status: supported
+    eol_date: "2027-05-31"
+    latest_version: "stream-9"
+    source_url: https://wiki.centos.org/About/Product
+    notes: CentOS Stream 9; upstream preview of RHEL 9; rolling updates
+  - major: "stream-10"
+    eol_status: supported
+    eol_date: "2030-06-01"
+    latest_version: "stream-10"
+    source_url: https://wiki.centos.org/About/Product
+    notes: CentOS Stream 10; upstream preview of RHEL 10; current stream
+aliases:
+  - "CentOS Linux"
+  - "CentOS Stream"
+  - "centos-release"
+  - "CentOS 7"
+  - "CentOS 8"

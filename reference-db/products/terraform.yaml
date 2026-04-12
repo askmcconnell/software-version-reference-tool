@@ -1,0 +1,74 @@
+software_name: Terraform
+vendor: HashiCorp
+platform: cross-platform
+versions:
+  - major: "0.12"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "0.13"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "0.14"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "0.15"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.0"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.1"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.2"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.3"
+    eol_status: eol
+    eol_date: "2023-12-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.4"
+    eol_status: eol
+    eol_date: "2024-04-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.5"
+    eol_status: eol
+    eol_date: "2024-08-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+    notes: Last version under MPL-2.0 license before BSL-1.1 switch in 1.6
+  - major: "1.6"
+    eol_status: eol
+    eol_date: "2025-01-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+    notes: First BSL-1.1 licensed release; consider OpenTofu as OSS alternative
+  - major: "1.7"
+    eol_status: eol
+    eol_date: "2025-06-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.8"
+    eol_status: eol
+    eol_date: "2025-10-01"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.9"
+    eol_status: supported
+    eol_date: "2026-04-01"
+    latest_version: "1.9.8"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+  - major: "1.10"
+    eol_status: supported
+    eol_date: "2026-10-01"
+    latest_version: "1.10.5"
+    source_url: https://developer.hashicorp.com/terraform/plugin/sdkv2/support-roadmap
+    notes: Latest stable as of April 2026
+aliases:
+  - "terraform"
+  - "HashiCorp Terraform"
+  - "tf"
+  - "OpenTofu"

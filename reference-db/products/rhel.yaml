@@ -1,0 +1,33 @@
+software_name: Red Hat Enterprise Linux
+vendor: Red Hat
+platform: linux
+versions:
+  - major: "6"
+    eol_status: eol
+    eol_date: "2024-06-30"
+    source_url: https://access.redhat.com/support/policy/updates/errata
+    notes: Full support ended Nov 2020; maintenance ended Nov 2022; ELS ended Jun 2024
+  - major: "7"
+    eol_status: eol
+    eol_date: "2024-06-30"
+    source_url: https://access.redhat.com/support/policy/updates/errata
+    notes: Full support ended Aug 2019; maintenance ended Jun 2024; ELS available through 2026
+  - major: "8"
+    eol_status: supported
+    eol_date: "2029-05-31"
+    latest_version: "8.10"
+    source_url: https://access.redhat.com/support/policy/updates/errata
+    notes: Full support until May 2024; maintenance through May 2029
+  - major: "9"
+    eol_status: supported
+    eol_date: "2032-05-31"
+    latest_version: "9.5"
+    source_url: https://access.redhat.com/support/policy/updates/errata
+    notes: Current release; full support until May 2027; maintenance through May 2032
+aliases:
+  - "RHEL"
+  - "Red Hat Linux"
+  - "rhel"
+  - "redhat"
+  - "Red Hat Enterprise Linux Server"
+  - "Red Hat Enterprise Linux Workstation"

@@ -1,0 +1,67 @@
+software_name: OpenSSH
+vendor: OpenBSD Project
+platform: cross-platform
+versions:
+  - major: "7.4"
+    eol_status: eol
+    eol_date: "2018-07-01"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Contains multiple CVEs; upgrade strongly recommended
+  - major: "7.9"
+    eol_status: eol
+    eol_date: "2019-10-09"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "8.0"
+    eol_status: eol
+    eol_date: "2020-05-27"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "8.4"
+    eol_status: eol
+    eol_date: "2021-09-26"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "8.8"
+    eol_status: eol
+    eol_date: "2022-09-26"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Removed RSA-SHA1 support
+  - major: "9.0"
+    eol_status: eol
+    eol_date: "2023-03-15"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "9.3"
+    eol_status: eol
+    eol_date: "2024-01-19"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "9.6"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Patched regreSSHion (CVE-2024-6387)
+  - major: "9.7"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Patched regreSSHion (CVE-2024-6387)
+  - major: "9.8"
+    eol_status: supported
+    eol_date: "2025-10-01"
+    latest_version: "9.8p1"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Contains regreSSHion fix (CVE-2024-6387)
+  - major: "9.9"
+    eol_status: supported
+    eol_date: "2026-04-01"
+    latest_version: "9.9p2"
+    source_url: https://www.openssh.com/releasenotes.html
+  - major: "10.0"
+    eol_status: supported
+    eol_date: "2027-01-01"
+    latest_version: "10.0p1"
+    source_url: https://www.openssh.com/releasenotes.html
+    notes: Latest release as of April 2026
+aliases:
+  - "ssh"
+  - "sshd"
+  - "openssh-server"
+  - "openssh-client"
+  - "OpenSSH_"

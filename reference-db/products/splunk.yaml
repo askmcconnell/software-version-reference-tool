@@ -1,0 +1,52 @@
+software_name: Splunk Enterprise
+vendor: Splunk Inc / Cisco
+platform: cross-platform
+versions:
+  - major: "7.3"
+    eol_status: eol
+    eol_date: "2021-10-22"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "8.0"
+    eol_status: eol
+    eol_date: "2022-10-22"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "8.1"
+    eol_status: eol
+    eol_date: "2023-04-19"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "8.2"
+    eol_status: eol
+    eol_date: "2023-09-30"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "9.0"
+    eol_status: eol
+    eol_date: "2024-06-14"
+    latest_version: "9.0.9"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "9.1"
+    eol_status: eol
+    eol_date: "2025-02-28"
+    latest_version: "9.1.7"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "9.2"
+    eol_status: supported
+    eol_date: "2025-09-30"
+    latest_version: "9.2.5"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "9.3"
+    eol_status: supported
+    eol_date: "2026-04-30"
+    latest_version: "9.3.3"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+  - major: "9.4"
+    eol_status: supported
+    eol_date: "2027-01-31"
+    latest_version: "9.4.1"
+    source_url: https://www.splunk.com/en_us/legal/splunk-software-support-policy.html
+    notes: Latest stable as of April 2026
+aliases:
+  - "Splunk"
+  - "splunkd"
+  - "Splunk SIEM"
+  - "Splunk Cloud"
+  - "Splunk Universal Forwarder"

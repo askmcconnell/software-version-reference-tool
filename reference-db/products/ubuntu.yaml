@@ -1,0 +1,64 @@
+software_name: Ubuntu
+vendor: Canonical
+platform: linux
+versions:
+  - major: "16.04"
+    eol_status: eol
+    eol_date: "2021-04-30"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Xenial Xerus LTS; standard support ended; ESM available with Ubuntu Pro
+  - major: "18.04"
+    eol_status: eol
+    eol_date: "2023-04-30"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Bionic Beaver LTS; standard support ended; ESM available with Ubuntu Pro until 2028
+  - major: "20.04"
+    eol_status: supported
+    eol_date: "2025-04-30"
+    latest_version: "20.04.6"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Focal Fossa LTS; standard support ends April 2025; ESM with Ubuntu Pro until 2030
+  - major: "21.10"
+    eol_status: eol
+    eol_date: "2022-07-14"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Impish Indri; non-LTS; 9-month support window
+  - major: "22.04"
+    eol_status: supported
+    eol_date: "2027-04-30"
+    latest_version: "22.04.5"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Jammy Jellyfish LTS; standard support until April 2027; Ubuntu Pro until 2032
+  - major: "22.10"
+    eol_status: eol
+    eol_date: "2023-07-20"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Kinetic Kudu; non-LTS
+  - major: "23.04"
+    eol_status: eol
+    eol_date: "2024-01-25"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Lunar Lobster; non-LTS
+  - major: "23.10"
+    eol_status: eol
+    eol_date: "2024-07-11"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Mantic Minotaur; non-LTS
+  - major: "24.04"
+    eol_status: supported
+    eol_date: "2029-04-30"
+    latest_version: "24.04.2"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Noble Numbat LTS; current recommended LTS release
+  - major: "24.10"
+    eol_status: supported
+    eol_date: "2025-07-10"
+    latest_version: "24.10"
+    source_url: https://ubuntu.com/about/release-cycle
+    notes: Oracular Oriole; non-LTS; 9-month support
+aliases:
+  - "Ubuntu Linux"
+  - "ubuntu-server"
+  - "Ubuntu LTS"
+  - "Ubuntu Server"
+  - "Ubuntu Desktop"

@@ -1,0 +1,49 @@
+software_name: MongoDB
+vendor: MongoDB Inc
+platform: cross-platform
+versions:
+  - major: "3.6"
+    eol_status: eol
+    eol_date: "2021-04-30"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "4.0"
+    eol_status: eol
+    eol_date: "2022-04-30"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "4.2"
+    eol_status: eol
+    eol_date: "2023-04-30"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "4.4"
+    eol_status: eol
+    eol_date: "2024-02-29"
+    latest_version: "4.4.29"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "5.0"
+    eol_status: eol
+    eol_date: "2024-10-31"
+    latest_version: "5.0.30"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "6.0"
+    eol_status: supported
+    eol_date: "2025-07-31"
+    latest_version: "6.0.20"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+  - major: "7.0"
+    eol_status: supported
+    eol_date: "2026-08-01"
+    latest_version: "7.0.17"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+    notes: Current LTS release
+  - major: "8.0"
+    eol_status: supported
+    eol_date: "2027-10-31"
+    latest_version: "8.0.5"
+    source_url: https://www.mongodb.com/support-policy/lifecycles
+    notes: Latest stable release as of 2026
+aliases:
+  - "mongo"
+  - "mongod"
+  - "MongoDB Community"
+  - "MongoDB Community Server"
+  - "MongoDB Enterprise"

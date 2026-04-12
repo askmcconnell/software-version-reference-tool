@@ -1,0 +1,56 @@
+software_name: Microsoft Edge
+vendor: Microsoft
+platform: cross-platform
+versions:
+  - major: "18"
+    eol_status: eol
+    eol_date: "2021-03-09"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+    notes: Legacy EdgeHTML engine; replaced by Chromium-based Edge
+  - major: "79"
+    eol_status: eol
+    eol_date: "2020-03-19"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+    notes: First Chromium-based release; very short support window
+  - major: "109"
+    eol_status: eol
+    eol_date: "2023-03-13"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+    notes: Last version supporting Windows 7/8/8.1
+  - major: "120"
+    eol_status: eol
+    eol_date: "2024-02-01"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "124"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "128"
+    eol_status: eol
+    eol_date: "2024-12-01"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "131"
+    eol_status: eol
+    eol_date: "2025-02-01"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "134"
+    eol_status: eol
+    eol_date: "2025-05-01"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "135"
+    eol_status: supported
+    eol_date: "2025-06-01"
+    latest_version: "135.0.3179.54"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+  - major: "136"
+    eol_status: supported
+    eol_date: "2025-08-01"
+    latest_version: "136.0.3240.21"
+    source_url: https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle
+    notes: Latest stable as of April 2026; releases every 4 weeks
+aliases:
+  - "Edge"
+  - "msedge"
+  - "MicrosoftEdge"
+  - "Microsoft Edge Chromium"
+  - "Microsoft Edge (Chromium)"
