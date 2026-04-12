@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>SVRT Infographic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0e1a;
+    width: 1080px;
+    min-height: 1350px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card {
+    width: 1080px;
+    background: linear-gradient(160deg, #0d1225 0%, #0a0e1a 40%, #0d1225 100%);
+    padding: 64px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,156,249,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,156,249,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  /* Top accent line */
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4f9cf9, #7c4dff, #e53e3e);
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    font-weight: 500;
+    color: #4f9cf9;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #cbd5e0;
+  }
+
+  .badge-beta {
+    background: rgba(79,156,249,0.15);
+    border: 1px solid rgba(79,156,249,0.3);
+    color: #4f9cf9;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Hero stat ── */
+  .hero {
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .hero-eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e53e3e;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .hero-headline {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #f7fafc;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-headline .accent { color: #4f9cf9; }
+  .hero-headline .danger { color: #fc8181; }
+
+  .hero-sub {
+    font-size: 19px;
+    color: #718096;
+    line-height: 1.6;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  /* ── Stat strip ── */
+  .stat-strip {
+    display: flex;
+    gap: 2px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .stat-box {
+    flex: 1;
+    padding: 24px 20px;
+    text-align: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .stat-box:first-child { border-radius: 12px 0 0 12px; }
+  .stat-box:last-child { border-radius: 0 12px 12px 0; }
+
+  .stat-number {
+    font-size: 38px;
+    font-weight: 900;
+    color: #fc8181;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-number.blue { color: #4f9cf9; }
+  .stat-number.orange { color: #f6ad55; }
+
+  .stat-label {
+    font-size: 13px;
+    color: #718096;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #4f9cf9;
+    margin-bottom: 20px;
+  }
+
+  /* ── How it works ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+
+  .step-num {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(79,156,249,0.15);
+    border: 1px solid rgba(79,156,249,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 800;
+    color: #4f9cf9;
+    flex-shrink: 0;
+  }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: #718096;
+    line-height: 1.5;
+  }
+
+  .step-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: #68d391;
+    background: rgba(104,211,145,0.1);
+    border: 1px solid rgba(104,211,145,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ── Privacy grid ── */
+  .privacy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .privacy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(104,211,145,0.05);
+    border: 1px solid rgba(104,211,145,0.12);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .privacy-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .privacy-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 3px;
+  }
+
+  .privacy-text span {
+    font-size: 13px;
+    color: #718096;
+    line-height: 1.4;
+  }
+
+  /* ── Community bar ── */
+  .community {
+    background: linear-gradient(135deg, rgba(79,156,249,0.08), rgba(124,77,255,0.08));
+    border: 1px solid rgba(79,156,249,0.2);
+    border-radius: 14px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .community-icon {
+    font-size: 40px;
+    flex-shrink: 0;
+  }
+
+  .community-text strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+  }
+
+  .community-text p {
+    font-size: 14px;
+    color: #718096;
+    line-height: 1.5;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .cta-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #718096;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .cta-url {
+    font-size: 32px;
+    font-weight: 800;
+    color: #4f9cf9;
+    letter-spacing: -0.01em;
+  }
+
+  .cta-platforms {
+    display: flex;
+    gap: 12px;
+  }
+
+  .platform-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a0aec0;
+  }
+
+  .cta-footer {
+    font-size: 13px;
+    color: #4a5568;
+  }
+
+  .cta-footer a { color: #4f9cf9; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <span class="brand-sub">Ask McConnell's</span>
+      <span class="brand-name">Software Version Reference Tool</span>
+    </div>
+    <span class="badge-beta">FREE &amp; OPEN SOURCE</span>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">Security Alert</div>
+    <h1 class="hero-headline">
+      Your software has an<br>
+      <span class="danger">expiry date.</span><br>
+      Do you know what's <span class="accent">past it?</span>
+    </h1>
+    <p class="hero-sub">
+      End-of-life software receives no security patches. It's one of the most
+      consistent — and most preventable — findings in security assessments.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stat-strip">
+    <div class="stat-box">
+      <div class="stat-number">60%</div>
+      <div class="stat-label">of breaches exploit known,<br>unpatched vulnerabilities</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number orange">68</div>
+      <div class="stat-label">EOL apps found on a single<br>Mac in a recent scan</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number blue">2 min</div>
+      <div class="stat-label">to scan your machine<br>and get your report</div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div>
+    <div class="section-title">How it works</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Download the free scanner</div>
+          <div class="step-desc">One Python script. No installation, no admin rights required. Mac, Linux, or Windows.</div>
+        </div>
+        <div class="step-badge">Mac · Linux · Windows</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Run it — takes under 2 minutes</div>
+          <div class="step-desc">Scans installed applications, hashes your hostname on-device, and generates a CSV. Nothing is collected until you choose to upload.</div>
+        </div>
+        <div class="step-badge">Runs locally</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Upload and get your EOL report</div>
+          <div class="step-desc">Instant results: which apps are end-of-life, end-of-support, or no longer receiving security patches. Filterable by status.</div>
+        </div>
+        <div class="step-badge">Instant results</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy -->
+  <div>
+    <div class="section-title">Privacy by design</div>
+    <div class="privacy-grid">
+      <div class="privacy-item">
+        <div class="privacy-icon">🔒</div>
+        <div class="privacy-text">
+          <strong>Hostname never leaves your machine</strong>
+          <span>Replaced with a SHA-256 hash on-device before any data is uploaded</span>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon">🚫</div>
+        <div class="privacy-text">
+          <strong>No file contents, ever</strong>
+          <span>Only software names, versions, and vendors are collected</span>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon">👁</div>
+        <div class="privacy-text">
+          <strong>Fully open source</strong>
+          <span>Audit every line of code on GitHub — no black boxes</span>
+        </div>
+      </div>
+      <div class="privacy-item">
+        <div class="privacy-icon">🚷</div>
+        <div class="privacy-text">
+          <strong>No tracking, no ads, no paywall</strong>
+          <span>No analytics, no cookies beyond session auth, no subscription tiers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Community -->
+  <div class="community">
+    <div class="community-icon">🌐</div>
+    <div class="community-text">
+      <strong>Your scan makes it better for everyone</strong>
+      <p>
+        SVRT is powered by a shared reference database that grows smarter with every contribution.
+        When you run a scan, you're helping build a community EOL knowledge base —
+        anonymously, without exposing any identifying information.
+      </p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <div class="cta-label">Get started — free, no account required to scan</div>
+    <div class="cta-url">askmcconnell.com/svrt</div>
+    <div class="cta-platforms">
+      <span class="platform-pill">macOS Scanner</span>
+      <span class="platform-pill">Linux Scanner</span>
+      <span class="platform-pill">Windows Scanner</span>
+    </div>
+    <div class="cta-footer">
+      Open source · github.com/askmcconnell/software-version-reference-tool
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

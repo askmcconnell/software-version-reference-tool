@@ -467,6 +467,55 @@ def get_bin_vendor(binary):
     return known.get(binary.lower(), '')
 
 
+# ── Firmware ───────────────────────────────────────────────────────────────────
+
+def scan_firmware(base_row, rows):
+    """Capture Mac Boot ROM / SMC firmware versions via system_profiler."""
+    try:
+        out = subprocess.run(
+            ['system_profiler', 'SPHardwareDataType'],
+            capture_output=True, text=True, timeout=15
+        ).stdout
+    except Exception:
+        return
+
+    # Boot ROM version (e.g.  Boot ROM Version: 10151.140.21.0.0)
+    m = re.search(r'Boot ROM Version:\s+(.+)', out)
+    if m:
+        version = m.group(1).strip()
+        rows.append({**base_row,
+            'filename':        'boot_rom',
+            'filepath':        'firmware://boot_rom',
+            'software_name':   'Apple Boot ROM',
+            'vendor':          'Apple',
+            'version':         version,
+            'file_version':    version,
+            'file_size_bytes': 0,
+            'file_type':       'firmware',
+            'parent_app':      '',
+            'install_date':    '',
+            'source':          'system_profiler',
+        })
+
+    # SMC version
+    m = re.search(r'SMC Version[^:]*:\s+(.+)', out)
+    if m:
+        version = m.group(1).strip()
+        rows.append({**base_row,
+            'filename':        'smc',
+            'filepath':        'firmware://smc',
+            'software_name':   'Apple SMC',
+            'vendor':          'Apple',
+            'version':         version,
+            'file_version':    version,
+            'file_size_bytes': 0,
+            'file_type':       'firmware',
+            'parent_app':      '',
+            'install_date':    '',
+            'source':          'system_profiler',
+        })
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description='SVRT Mac File-Level Scanner')
@@ -533,6 +582,10 @@ def main():
     pre = len(rows)
     scan_node_packages(base_row, rows)
     print(f"  npm global packages found: {len(rows)-pre}", flush=True)
+
+    pre = len(rows)
+    scan_firmware(base_row, rows)
+    print(f"  Firmware entries found: {len(rows)-pre}", flush=True)
 
     print(f"\n  Total rows: {len(rows)}", flush=True)
     print(f"  Writing CSV...", flush=True)

@@ -450,6 +450,41 @@ function Scan-DotNetFrameworks {
     Write-Host "    -> $count .NET entries" -ForegroundColor Gray
 }
 
+function Scan-Firmware {
+    param([hashtable]$Base, [System.Collections.Generic.List[hashtable]]$Rows)
+    Write-Host "  Scanning BIOS/UEFI firmware..." -ForegroundColor Cyan
+    try {
+        $bios = Get-WmiObject -Class Win32_BIOS -ErrorAction Stop
+        $version = $bios.SMBIOSBIOSVersion
+        if (-not $version) { $version = $bios.BIOSVersion -join ' ' }
+        $vendor  = $bios.Manufacturer
+        $date    = ''
+        if ($bios.ReleaseDate) {
+            # WMI date format: yyyyMMddHHmmss.ffffff+offset
+            try { $date = [Management.ManagementDateTimeConverter]::ToDateTime($bios.ReleaseDate).ToString('yyyy-MM-dd') } catch {}
+        }
+        if ($version) {
+            $Rows.Add((Make-Row $Base `
+                -Filename      'bios' `
+                -Filepath      'firmware://bios' `
+                -SoftwareName  'BIOS / UEFI Firmware' `
+                -Vendor        ($vendor -or 'Unknown') `
+                -Version       $version `
+                -FileVersion   $version `
+                -FileSizeBytes 0 `
+                -FileType      'firmware' `
+                -ParentApp     '' `
+                -InstallDate   $date `
+                -Source        'wmi'
+            ))
+            Write-Host "    -> BIOS: $vendor $version" -ForegroundColor Gray
+        }
+    } catch {
+        Write-Host "    -> BIOS scan skipped: $_" -ForegroundColor DarkGray
+    }
+}
+
+
 # ==============================================================================
 # MAIN
 # ==============================================================================
@@ -488,6 +523,10 @@ $baseRow = @{
 }
 
 $rows = [System.Collections.Generic.List[hashtable]]::new()
+
+# Phase 0: Firmware
+Write-Host "Phase 0: Firmware" -ForegroundColor Yellow
+Scan-Firmware         -Base $baseRow -Rows $rows
 
 # Phase 1: Registry + Store
 Write-Host "Phase 1: Registry" -ForegroundColor Yellow

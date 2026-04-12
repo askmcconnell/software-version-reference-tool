@@ -700,6 +700,63 @@ def scan_kernel(base_row, rows):
     ))
 
 
+def scan_firmware(base_row, rows):
+    """Capture BIOS/UEFI firmware version via dmidecode or /sys/class/dmi."""
+    vendor  = ''
+    version = ''
+    date_   = ''
+
+    # Try /sys/class/dmi/id first (no sudo needed)
+    try:
+        v = Path('/sys/class/dmi/id/bios_version').read_text().strip()
+        if v:
+            version = v
+        vd = Path('/sys/class/dmi/id/bios_date').read_text().strip()
+        if vd:
+            date_ = vd
+        vv = Path('/sys/class/dmi/id/sys_vendor').read_text().strip()
+        if vv:
+            vendor = vv
+    except Exception:
+        pass
+
+    # Fall back to dmidecode if sysfs gave nothing
+    if not version:
+        try:
+            out = subprocess.run(
+                ['dmidecode', '-t', 'bios'],
+                capture_output=True, text=True, timeout=10
+            ).stdout
+            m = re.search(r'Version:\s+(.+)', out)
+            if m:
+                version = m.group(1).strip()
+            m = re.search(r'Release Date:\s+(.+)', out)
+            if m:
+                date_ = m.group(1).strip()
+            m = re.search(r'Vendor:\s+(.+)', out)
+            if m:
+                vendor = m.group(1).strip()
+        except Exception:
+            pass
+
+    if not version:
+        return
+
+    rows.append(make_row(base_row,
+        filename='bios',
+        filepath='firmware://bios',
+        software_name='BIOS / UEFI Firmware',
+        vendor=vendor or 'Unknown',
+        version=version,
+        file_version=version,
+        file_size_bytes=0,
+        file_type='firmware',
+        parent_app='',
+        install_date=date_,
+        source='dmi',
+    ))
+
+
 def scan_systemd_units(base_row, rows):
     """Capture systemd version."""
     out = run_cmd(['systemctl', '--version'], timeout=5)
@@ -789,9 +846,10 @@ def main():
 
     rows = []
 
-    # ── Kernel ────────────────────────────────────────────────────────────────
+    # ── Kernel + Firmware ────────────────────────────────────────────────────
     print("Phase 1: System", flush=True)
     scan_kernel(base_row, rows)
+    scan_firmware(base_row, rows)
     if has_cmd('systemctl') and not args.quick:
         scan_systemd_units(base_row, rows)
 

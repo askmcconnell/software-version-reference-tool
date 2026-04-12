@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useSearchParams, Link } from 'react-router-dom'
-import { getJobStatus, getJobReport, resendReport } from '../api/wordpress'
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
+import { getJobStatus, getJobReport, resendReport, deleteJob } from '../api/wordpress'
 import StatusBadge from '../components/StatusBadge'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -56,12 +56,15 @@ export default function ResultsPage() {
   const [searchParams]     = useSearchParams()
   const rtoken             = searchParams.get('rtoken') || null
 
+  const navigate = useNavigate()
+
   const [job,           setJob]           = useState(null)
   const [report,        setReport]        = useState(null)
   const [filter,        setFilter]        = useState('all')
   const [error,         setError]         = useState('')
   const [polling,       setPolling]       = useState(true)
   const [resent,        setResent]        = useState(false)
+  const [deleting,      setDeleting]      = useState(false)
   const [elapsedSecs,   setElapsedSecs]   = useState(0)
   const [activitySecs,  setActivitySecs]  = useState(null) // secs since last matched_count change
   const intervalRef    = useRef()
@@ -142,6 +145,18 @@ export default function ResultsPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm(`Delete this scan (${job.filename})? This cannot be undone.`)) return
+    setDeleting(true)
+    try {
+      await deleteJob(uuid)
+      navigate('/')
+    } catch (err) {
+      setError(err.message)
+      setDeleting(false)
+    }
+  }
+
   if (error) return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
       <div className="alert alert-error">{error}</div>
@@ -183,6 +198,15 @@ export default function ResultsPage() {
             )}
             <button className="btn btn-ghost" onClick={() => downloadCSV(report, filter)}>
               ⬇ Download CSV
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={handleDelete}
+              disabled={deleting}
+              title="Delete this scan and all its data"
+              style={{ color: 'var(--eol)' }}
+            >
+              {deleting ? 'Deleting…' : '🗑 Delete scan'}
             </button>
           </div>
         )}

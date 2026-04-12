@@ -389,6 +389,11 @@ add_action('rest_api_init', function () {
         'callback'            => 'svrt_api_resend_report',
         'permission_callback' => 'svrt_require_auth',
     ]);
+    register_rest_route($ns, '/job/(?P<uuid>[a-f0-9\-]{36})', [
+        'methods'             => 'DELETE',
+        'callback'            => 'svrt_api_delete_job',
+        'permission_callback' => 'svrt_require_auth',
+    ]);
 
     // ── Reference DB Download (authenticated) ───────────────
     register_rest_route($ns, '/reference', [
@@ -1194,6 +1199,29 @@ function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
         ],
         'items'      => $rows,
     ], 200);
+}
+
+// ── Delete job ───────────────────────────────────────────────────────────────
+
+function svrt_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
+    global $wpdb;
+    $uuid    = sanitize_text_field($req->get_param('uuid'));
+    $user_id = get_current_user_id();
+
+    $job = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE uuid = %s AND user_id = %d",
+        $uuid, $user_id
+    ), ARRAY_A);
+
+    if (!$job) {
+        return new WP_Error('not_found', 'Job not found.', ['status' => 404]);
+    }
+
+    // Delete inventory rows first (FK-safe), then the job
+    $wpdb->delete("{$wpdb->prefix}svrt_inventory_rows", ['job_id' => $job['id']], ['%d']);
+    $wpdb->delete("{$wpdb->prefix}svrt_upload_jobs",    ['id'     => $job['id']], ['%d']);
+
+    return new WP_REST_Response(['message' => 'Scan deleted.', 'uuid' => $uuid], 200);
 }
 
 // ── Resend report email ───────────────────────────────────────────────────────

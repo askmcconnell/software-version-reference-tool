@@ -105,6 +105,10 @@ export async function resendReport(uuid) {
   return request(`/job/${uuid}/resend`, { method: 'POST' })
 }
 
+export async function deleteJob(uuid) {
+  return request(`/job/${uuid}`, { method: 'DELETE' })
+}
+
 // ── Reference DB ──────────────────────────────────────────────────────────────
 
 export async function getReference({ page = 1, perPage = 100, status = '' } = {}) {
