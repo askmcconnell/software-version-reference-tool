@@ -62,6 +62,9 @@ XAI_MODEL     = 'grok-3-mini'
 GITHUB_TOKEN  = os.environ.get('GITHUB_TOKEN', '')
 GITHUB_API    = 'https://api.github.com'
 REPOLOGY_API  = 'https://repology.org/api/v1/project'
+PYPI_API      = 'https://pypi.org/pypi'
+NPM_API       = 'https://registry.npmjs.org'
+RUBYGEMS_API  = 'https://rubygems.org/api/v1/gems'
 
 GITHUB_REPO   = 'askmcconnell/software-version-reference-tool'
 GITHUB_YAML_PATH = 'reference-db/products'
@@ -74,6 +77,7 @@ XAI_INPUT_COST_PER_M     = 0.30;  XAI_OUTPUT_COST_PER_M     = 0.50
 
 # Lookup chain confidence scores
 CONF_ENDOFLIFE_DATE = 85
+CONF_PKG_MGR        = 65   # PyPI / npm / RubyGems active package signal
 CONF_GITHUB         = 72   # GitHub archived/activity signal
 CONF_REPOLOGY       = 70   # Repology cross-distro package signal
 CONF_CLAUDE         = 60
@@ -340,6 +344,182 @@ def query_endoflife_date(product_name):
     except Exception as e:
         log.warning("endoflife.date parse error for %s: %s", slug, e)
         return None
+
+
+def _pkg_age_days(date_str):
+    """Return days since a date string (YYYY-MM-DD or ISO8601). 0 if unparseable."""
+    if not date_str:
+        return 0
+    try:
+        return (datetime.utcnow() - datetime.strptime(date_str[:10], '%Y-%m-%d')).days
+    except Exception:
+        return 0
+
+
+def _pkg_result(status, latest_ver, source_url, source_name, notes, conf=None):
+    """Build a standard result dict for a package manager hit."""
+    return {
+        'eol_status':     status,
+        'eol_date':       '',
+        'latest_version': latest_ver,
+        'source_url':     source_url,
+        'confidence':     conf or (CONF_PKG_MGR if status == 'supported' else 68),
+        'source':         source_name,
+        'notes':          notes,
+    }
+
+
+def query_pypi(vendor, product, version, platform, conn=None):
+    """
+    Step 2.3a: Query PyPI for Python package status.
+    - Development Status :: 7 – Inactive classifier → no_patch (conf=72)
+    - Latest release > 2 years old                  → no_patch (conf=68)
+    - Active package                                 → supported (conf=65)
+    Tries exact slug, hyphen↔underscore swap.
+    """
+    base = re.sub(r'[\s]+', '-', product.lower().strip())
+    slugs = list(dict.fromkeys([base, base.replace('-', '_'), base.replace('_', '-')]))
+
+    for slug in slugs:
+        url = f'{PYPI_API}/{urllib.parse.quote(slug)}/json'
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                continue
+            return None
+        except Exception:
+            return None
+
+        info        = data.get('info', {})
+        latest_ver  = info.get('version', '')
+        classifiers = info.get('classifiers', [])
+        pkg_url     = f'https://pypi.org/project/{slug}/'
+
+        # Inactive classifier is a clear maintenance signal
+        if any('Development Status :: 7 - Inactive' in c for c in classifiers):
+            log.info("PyPI: %s is marked Inactive → no_patch (conf=72)", slug)
+            return _pkg_result('no_patch', latest_ver, pkg_url, 'pypi',
+                               f'PyPI: {slug} v{latest_ver} has Development Status Inactive classifier.',
+                               conf=72)
+
+        # Check age of latest release
+        releases     = data.get('releases', {})
+        latest_files = releases.get(latest_ver, [])
+        dates        = [f.get('upload_time', '') for f in latest_files if f.get('upload_time')]
+        age          = _pkg_age_days(max(dates)) if dates else 0
+
+        if age > 730:
+            log.info("PyPI: %s last released %d days ago → no_patch (conf=68)", slug, age)
+            return _pkg_result('no_patch', latest_ver, pkg_url, 'pypi',
+                               f'PyPI: {slug} v{latest_ver} — last release {age} days ago, no recent activity.')
+
+        if latest_ver:
+            log.info("PyPI: %s v%s active → supported (conf=%d)", slug, latest_ver, CONF_PKG_MGR)
+            return _pkg_result('supported', latest_ver, pkg_url, 'pypi',
+                               f'PyPI: {slug} v{latest_ver} actively maintained.')
+
+    return None
+
+
+def query_npm(vendor, product, version, platform, conn=None):
+    """
+    Step 2.3b: Query npm registry for Node.js package status.
+    Uses /latest tag endpoint (small response) for deprecated flag + version.
+    - deprecated field set → no_patch (conf=75)
+    - Active package       → supported (conf=65)
+    """
+    slug = re.sub(r'[\s_]+', '-', product.lower().strip())
+    # /latest gives only the latest version's metadata — much smaller than the full registry doc
+    url = f'{NPM_API}/{urllib.parse.quote(slug, safe="@/")}/latest'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0',
+                                                    'Accept': 'application/json'})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            data = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        return None
+    except Exception:
+        return None
+
+    latest_ver = data.get('version', '')
+    deprecated = data.get('deprecated', '')
+    pkg_url    = f'https://www.npmjs.com/package/{slug}'
+
+    if deprecated:
+        msg = str(deprecated)[:120]
+        log.info("npm: %s is deprecated → no_patch (conf=75)", slug)
+        return _pkg_result('no_patch', latest_ver, pkg_url, 'npm',
+                           f'npm: {slug} deprecated — {msg}', conf=75)
+
+    if latest_ver:
+        log.info("npm: %s v%s active → supported (conf=%d)", slug, latest_ver, CONF_PKG_MGR)
+        return _pkg_result('supported', latest_ver, pkg_url, 'npm',
+                           f'npm: {slug} v{latest_ver} actively maintained.')
+
+    return None
+
+
+def query_rubygems(vendor, product, version, platform, conn=None):
+    """
+    Step 2.3c: Query RubyGems for gem status.
+    - Latest release > 2 years old → no_patch (conf=68)
+    - Active gem                   → supported (conf=65)
+    Tries underscore and hyphen slug variants.
+    """
+    base  = re.sub(r'[\s]+', '_', product.lower().strip())
+    slugs = list(dict.fromkeys([base, base.replace('_', '-'), base.replace('-', '_')]))
+
+    for slug in slugs:
+        url = f'{RUBYGEMS_API}/{urllib.parse.quote(slug)}.json'
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                continue
+            return None
+        except Exception:
+            return None
+
+        latest_ver = data.get('version', '')
+        created_at = data.get('version_created_at', '')
+        age        = _pkg_age_days(created_at)
+        pkg_url    = f'https://rubygems.org/gems/{slug}'
+
+        if age > 730:
+            log.info("RubyGems: %s last released %d days ago → no_patch (conf=68)", slug, age)
+            return _pkg_result('no_patch', latest_ver, pkg_url, 'rubygems',
+                               f'RubyGems: {slug} v{latest_ver} — last release {age} days ago.')
+
+        if latest_ver:
+            log.info("RubyGems: %s v%s active → supported (conf=%d)", slug, latest_ver, CONF_PKG_MGR)
+            return _pkg_result('supported', latest_ver, pkg_url, 'rubygems',
+                               f'RubyGems: {slug} v{latest_ver} actively maintained.')
+
+    return None
+
+
+def query_package_managers(vendor, product, version, platform, conn=None):
+    """
+    Step 2.3: Query PyPI, npm, and RubyGems in sequence.
+    Returns the first useful result, or None if no registry has this product.
+    Sits between endoflife.date (step 2) and GitHub/Repology (step 2.5),
+    saving LLM calls for common open-source packages.
+    """
+    for fn in (query_pypi, query_npm, query_rubygems):
+        try:
+            result = fn(vendor, product, version, platform, conn=conn)
+            if result and result.get('eol_status') not in ('unknown', None):
+                return result
+        except Exception as e:
+            log.debug("pkg-mgr %s error for %s: %s", fn.__name__, product, e)
+    return None
 
 
 def _gh_headers():
@@ -1037,6 +1217,14 @@ def resolve(conn, vendor, product, version, platform='linux', force=False):
         save_result(conn, vendor, product_norm, version, platform, result)
         return result
 
+    # Step 2.3: Package manager APIs (PyPI, npm, RubyGems) — free, structured, reliable
+    result = query_package_managers(vendor, product_norm, version, platform, conn=conn)
+    if result:
+        log.info("✓ pkg-mgr (%s): %s → %s (conf=%d)", result['source'], product_norm,
+                 result['eol_status'], result.get('confidence', 0))
+        save_result(conn, vendor, product_norm, version, platform, result)
+        return result
+
     # Step 2.5: GitHub + Repology pre-check (free APIs, no LLM cost)
     result = query_precheck(vendor, product_norm, version, platform, conn=conn)
     if result:
@@ -1172,6 +1360,16 @@ def run_research(conn, max_items=200, delay_sec=0.5):
             conn.commit()
             resolved += 1
             time.sleep(0.2)  # gentle rate limit
+            continue
+
+        # Step 2.3: Package manager APIs (PyPI, npm, RubyGems)
+        result = query_package_managers(vendor, product, version, platform, conn=conn)
+        if result:
+            save_result(conn, vendor, product, version, platform, result)
+            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.commit()
+            resolved += 1
+            time.sleep(0.2)
             continue
 
         # Step 2.5: GitHub + Repology (free APIs, saves LLM calls)
