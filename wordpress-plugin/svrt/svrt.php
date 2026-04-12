@@ -294,7 +294,7 @@ function svrt_require_auth_or_rtoken(WP_REST_Request $req): bool|WP_Error {
 // ── Email helper ─────────────────────────────────────────────────────────────
 
 function svrt_send_report_email(string $to, string $uuid, string $token, array $job): void {
-    $link     = "https://askmcconnell.com/svrt/#/results/{$uuid}?rtoken={$token}";
+    $link     = "https://askmcconnell.com/svrt/results/{$uuid}?rtoken={$token}";
     $filename = $job['filename'] ?? 'your inventory';
     $rows     = number_format((int) ($job['row_count'] ?? 0));
 
@@ -1099,7 +1099,7 @@ function svrt_api_job_status(WP_REST_Request $req): WP_REST_Response|WP_Error {
         $job = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs
              WHERE uuid = %s AND report_token = %s AND report_token_expires > %s",
-            $uuid, $rtoken, current_time('mysql')
+            $uuid, $rtoken, gmdate('Y-m-d H:i:s')
         ), ARRAY_A);
     } else {
         return new WP_Error('unauthorized', 'Authentication required.', ['status' => 401]);
@@ -1141,7 +1141,7 @@ function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
         $job = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs
              WHERE uuid = %s AND report_token = %s AND report_token_expires > %s",
-            $uuid, $rtoken, current_time('mysql')
+            $uuid, $rtoken, gmdate('Y-m-d H:i:s')
         ), ARRAY_A);
     } else {
         return new WP_Error('unauthorized', 'Authentication required.', ['status' => 401]);
