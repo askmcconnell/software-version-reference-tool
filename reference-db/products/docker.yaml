@@ -1,0 +1,58 @@
+software_name: Docker Engine
+vendor: Docker Inc
+platform: cross-platform
+versions:
+  - major: "18.09"
+    eol_status: eol
+    eol_date: "2019-10-08"
+    source_url: https://docs.docker.com/engine/release-notes/
+  - major: "19.03"
+    eol_status: eol
+    eol_date: "2021-02-01"
+    source_url: https://docs.docker.com/engine/release-notes/
+  - major: "20.10"
+    eol_status: eol
+    eol_date: "2023-12-10"
+    latest_version: "20.10.27"
+    source_url: https://docs.docker.com/engine/release-notes/
+    notes: EOL; upgrade to Docker 24 or later
+  - major: "23"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    source_url: https://docs.docker.com/engine/release-notes/
+    notes: Short support window; superseded by 24.x
+  - major: "24"
+    eol_status: eol
+    eol_date: "2025-01-01"
+    latest_version: "24.0.9"
+    source_url: https://docs.docker.com/engine/release-notes/
+  - major: "25"
+    eol_status: eol
+    eol_date: "2025-06-01"
+    latest_version: "25.0.6"
+    source_url: https://docs.docker.com/engine/release-notes/
+  - major: "26"
+    eol_status: eol
+    eol_date: "2025-09-01"
+    latest_version: "26.1.5"
+    source_url: https://docs.docker.com/engine/release-notes/
+  - major: "27"
+    eol_status: supported
+    eol_date: "2026-06-01"
+    latest_version: "27.5.1"
+    source_url: https://docs.docker.com/engine/release-notes/
+    notes: Current stable release as of 2026
+  - major: "28"
+    eol_status: supported
+    eol_date: "2027-03-01"
+    latest_version: "28.0.4"
+    source_url: https://docs.docker.com/engine/release-notes/
+    notes: Latest release; released March 2025
+aliases:
+  - "Docker"
+  - "docker-ce"
+  - "docker-ee"
+  - "Docker CE"
+  - "Docker Desktop"
+  - "com.docker.docker"
+  - "Docker Community Edition"

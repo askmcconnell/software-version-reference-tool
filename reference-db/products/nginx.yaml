@@ -1,0 +1,52 @@
+software_name: nginx
+vendor: F5 / nginx Inc
+platform: cross-platform
+versions:
+  - major: "1.14"
+    eol_status: eol
+    eol_date: "2019-04-23"
+    source_url: https://nginx.org/en/download.html
+    notes: Stable branch; superseded
+  - major: "1.16"
+    eol_status: eol
+    eol_date: "2020-04-28"
+    source_url: https://nginx.org/en/download.html
+  - major: "1.18"
+    eol_status: eol
+    eol_date: "2021-04-13"
+    source_url: https://nginx.org/en/download.html
+  - major: "1.20"
+    eol_status: eol
+    eol_date: "2022-05-24"
+    source_url: https://nginx.org/en/download.html
+  - major: "1.22"
+    eol_status: eol
+    eol_date: "2023-10-24"
+    source_url: https://nginx.org/en/download.html
+  - major: "1.24"
+    eol_status: eol
+    eol_date: "2024-05-29"
+    latest_version: "1.24.0"
+    source_url: https://nginx.org/en/download.html
+    notes: Previous stable branch; EOL when 1.26 released
+  - major: "1.25"
+    eol_status: eol
+    eol_date: "2024-05-29"
+    source_url: https://nginx.org/en/download.html
+    notes: Mainline branch; superseded by 1.26
+  - major: "1.26"
+    eol_status: supported
+    eol_date: "2025-08-01"
+    latest_version: "1.26.3"
+    source_url: https://nginx.org/en/download.html
+    notes: Current stable branch as of 2026
+  - major: "1.27"
+    eol_status: supported
+    eol_date: "2026-12-31"
+    latest_version: "1.27.4"
+    source_url: https://nginx.org/en/download.html
+    notes: Current mainline development branch
+aliases:
+  - "NGINX"
+  - "nginx web server"
+  - "nginx/1"

@@ -1,0 +1,40 @@
+software_name: Microsoft IIS
+vendor: Microsoft
+platform: windows
+versions:
+  - major: "6.0"
+    eol_status: eol
+    eol_date: "2015-07-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2003
+  - major: "7.0"
+    eol_status: eol
+    eol_date: "2020-01-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2008
+  - major: "7.5"
+    eol_status: eol
+    eol_date: "2020-01-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2008 R2 / Windows 7
+  - major: "8.0"
+    eol_status: eol
+    eol_date: "2023-10-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2012
+  - major: "8.5"
+    eol_status: eol
+    eol_date: "2023-10-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2012 R2
+  - major: "10.0"
+    eol_status: supported
+    eol_date: "2031-10-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/internet-information-services-iis
+    notes: Shipped with Windows Server 2016/2019/2022/2025; lifecycle follows OS
+aliases:
+  - "IIS"
+  - "Internet Information Services"
+  - "Internet Information Server"
+  - "iis.exe"
+  - "w3svc"

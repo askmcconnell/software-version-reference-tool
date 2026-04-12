@@ -1,0 +1,48 @@
+software_name: Redis
+vendor: Redis Ltd
+platform: cross-platform
+versions:
+  - major: "3.2"
+    eol_status: eol
+    eol_date: "2019-07-01"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+  - major: "4.0"
+    eol_status: eol
+    eol_date: "2020-01-01"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+  - major: "5.0"
+    eol_status: eol
+    eol_date: "2021-10-01"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+  - major: "6.0"
+    eol_status: eol
+    eol_date: "2022-07-01"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+  - major: "6.2"
+    eol_status: eol
+    eol_date: "2024-03-31"
+    latest_version: "6.2.16"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+    notes: EOL; upgrade to Redis 7 or later
+  - major: "7.0"
+    eol_status: eol
+    eol_date: "2025-01-31"
+    latest_version: "7.0.15"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+    notes: EOL as of January 2025
+  - major: "7.2"
+    eol_status: supported
+    eol_date: "2026-07-31"
+    latest_version: "7.2.7"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+    notes: Current stable branch; note Redis 7.4+ uses SSPL license
+  - major: "7.4"
+    eol_status: supported
+    eol_date: "2027-06-30"
+    latest_version: "7.4.2"
+    source_url: https://redis.io/docs/latest/operate/rs/release-notes/
+    notes: Latest stable; SSPL + RSAL dual license
+aliases:
+  - "redis-server"
+  - "Redis OSS"
+  - "Redis Community Edition"

@@ -1,0 +1,75 @@
+software_name: Kubernetes
+vendor: Cloud Native Computing Foundation
+platform: cross-platform
+versions:
+  - major: "1.19"
+    eol_status: eol
+    eol_date: "2021-10-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.20"
+    eol_status: eol
+    eol_date: "2022-02-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.21"
+    eol_status: eol
+    eol_date: "2022-06-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.22"
+    eol_status: eol
+    eol_date: "2022-10-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.23"
+    eol_status: eol
+    eol_date: "2023-02-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.24"
+    eol_status: eol
+    eol_date: "2023-07-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.25"
+    eol_status: eol
+    eol_date: "2023-10-27"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.26"
+    eol_status: eol
+    eol_date: "2024-02-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.27"
+    eol_status: eol
+    eol_date: "2024-06-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.28"
+    eol_status: eol
+    eol_date: "2024-10-28"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.29"
+    eol_status: eol
+    eol_date: "2025-02-28"
+    latest_version: "1.29.12"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.30"
+    eol_status: eol
+    eol_date: "2025-06-28"
+    latest_version: "1.30.10"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.31"
+    eol_status: supported
+    eol_date: "2025-10-28"
+    latest_version: "1.31.6"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.32"
+    eol_status: supported
+    eol_date: "2026-02-28"
+    latest_version: "1.32.2"
+    source_url: https://kubernetes.io/releases/patch-releases/
+  - major: "1.33"
+    eol_status: supported
+    eol_date: "2026-06-28"
+    latest_version: "1.33.0"
+    source_url: https://kubernetes.io/releases/patch-releases/
+    notes: Latest stable as of April 2026; ~3 minor releases supported at any time
+aliases:
+  - "k8s"
+  - "kubectl"
+  - "kube"
+  - "K8s"

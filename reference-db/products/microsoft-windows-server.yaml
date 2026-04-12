@@ -1,0 +1,61 @@
+software_name: Microsoft Windows Server
+vendor: Microsoft
+platform: windows
+versions:
+  - major: "2003"
+    eol_status: eol
+    eol_date: "2015-07-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2003
+  - major: "2008"
+    eol_status: eol
+    eol_date: "2020-01-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2008
+    notes: Extended Security Updates available through Azure only
+  - major: "2008 R2"
+    eol_status: eol
+    eol_date: "2020-01-14"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2008-r2
+    notes: Extended Security Updates available through Azure only
+  - major: "2012"
+    eol_status: eol
+    eol_date: "2023-10-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2012
+    notes: ESU available through Oct 2026 via Microsoft or Azure
+  - major: "2012 R2"
+    eol_status: eol
+    eol_date: "2023-10-10"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2012-r2
+    notes: ESU available through Oct 2026 via Microsoft or Azure
+  - major: "2016"
+    eol_status: supported
+    eol_date: "2027-01-12"
+    latest_version: "10.0.14393"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2016
+    notes: Mainstream support ended 2022; extended support until Jan 2027
+  - major: "2019"
+    eol_status: supported
+    eol_date: "2029-01-09"
+    latest_version: "10.0.17763"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2019
+    notes: Mainstream support ended 2024; extended support until Jan 2029
+  - major: "2022"
+    eol_status: supported
+    eol_date: "2031-10-14"
+    latest_version: "10.0.20348"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2022
+    notes: Mainstream support until Oct 2026; extended until Oct 2031
+  - major: "2025"
+    eol_status: supported
+    eol_date: "2034-10-10"
+    latest_version: "10.0.26100"
+    source_url: https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2025
+    notes: Current release; mainstream support until Oct 2029
+aliases:
+  - "Windows Server"
+  - "WinServer"
+  - "Windows Server 2016"
+  - "Windows Server 2019"
+  - "Windows Server 2022"
+  - "Windows Server 2025"
+  - "Windows Server 2012"
+  - "Windows Server 2008"

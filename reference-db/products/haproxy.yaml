@@ -1,0 +1,61 @@
+software_name: HAProxy
+vendor: HAProxy Technologies
+platform: linux
+versions:
+  - major: "1.8"
+    eol_status: eol
+    eol_date: "2022-11-25"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; EOL
+  - major: "2.0"
+    eol_status: eol
+    eol_date: "2024-03-29"
+    latest_version: "2.0.35"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; EOL March 2024
+  - major: "2.2"
+    eol_status: eol
+    eol_date: "2024-09-06"
+    latest_version: "2.2.33"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; EOL September 2024
+  - major: "2.4"
+    eol_status: eol
+    eol_date: "2025-04-05"
+    latest_version: "2.4.27"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; EOL April 2025
+  - major: "2.6"
+    eol_status: supported
+    eol_date: "2026-04-04"
+    latest_version: "2.6.22"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; EOL April 2026
+  - major: "2.8"
+    eol_status: supported
+    eol_date: "2027-04-01"
+    latest_version: "2.8.12"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; supported
+  - major: "3.0"
+    eol_status: supported
+    eol_date: "2028-04-01"
+    latest_version: "3.0.8"
+    source_url: https://www.haproxy.org/download/
+    notes: LTS branch; current stable LTS
+  - major: "3.1"
+    eol_status: supported
+    eol_date: "2025-11-01"
+    latest_version: "3.1.6"
+    source_url: https://www.haproxy.org/download/
+    notes: Stable non-LTS branch
+  - major: "3.2"
+    eol_status: supported
+    eol_date: "2026-06-01"
+    latest_version: "3.2.0"
+    source_url: https://www.haproxy.org/download/
+    notes: Latest development branch
+aliases:
+  - "haproxy"
+  - "HA-Proxy"
+  - "HAProxy Load Balancer"
