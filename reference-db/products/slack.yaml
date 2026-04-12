@@ -1,0 +1,53 @@
+software_name: Slack
+vendor: Slack Technologies / Salesforce
+platform: cross-platform
+versions:
+  - major: "4.23"
+    eol_status: eol
+    eol_date: "2022-06-01"
+    source_url: https://slack.com/release-notes/windows
+    notes: Slack enforces minimum version; outdated clients auto-prompt upgrade
+  - major: "4.26"
+    eol_status: eol
+    eol_date: "2022-10-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.29"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.33"
+    eol_status: eol
+    eol_date: "2023-09-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.35"
+    eol_status: eol
+    eol_date: "2024-01-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.38"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.40"
+    eol_status: eol
+    eol_date: "2024-11-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.42"
+    eol_status: eol
+    eol_date: "2025-04-01"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.43"
+    eol_status: supported
+    eol_date: "2025-07-01"
+    latest_version: "4.43.66"
+    source_url: https://slack.com/release-notes/windows
+  - major: "4.44"
+    eol_status: supported
+    eol_date: "2026-01-01"
+    latest_version: "4.44.61"
+    source_url: https://slack.com/release-notes/windows
+    notes: Latest stable as of April 2026; Slack releases approximately monthly
+aliases:
+  - "Slack.app"
+  - "com.tinyspeck.slackmacgap"
+  - "Slack Desktop"
+  - "slack-desktop"

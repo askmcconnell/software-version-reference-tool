@@ -1,0 +1,58 @@
+software_name: Visual Studio Code
+vendor: Microsoft
+platform: cross-platform
+versions:
+  - major: "1.70"
+    eol_status: eol
+    eol_date: "2022-10-01"
+    source_url: https://code.visualstudio.com/updates
+    notes: VS Code releases monthly; only the latest stable is supported
+  - major: "1.75"
+    eol_status: eol
+    eol_date: "2023-04-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.80"
+    eol_status: eol
+    eol_date: "2023-09-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.85"
+    eol_status: eol
+    eol_date: "2024-02-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.87"
+    eol_status: eol
+    eol_date: "2024-04-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.90"
+    eol_status: eol
+    eol_date: "2024-08-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.93"
+    eol_status: eol
+    eol_date: "2024-11-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.96"
+    eol_status: eol
+    eol_date: "2025-02-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.97"
+    eol_status: eol
+    eol_date: "2025-03-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.98"
+    eol_status: eol
+    eol_date: "2025-04-01"
+    source_url: https://code.visualstudio.com/updates
+  - major: "1.99"
+    eol_status: supported
+    eol_date: "2025-05-01"
+    latest_version: "1.99.3"
+    source_url: https://code.visualstudio.com/updates
+    notes: Latest stable as of April 2026; monthly releases, only current version supported
+aliases:
+  - "VSCode"
+  - "vscode"
+  - "Code - OSS"
+  - "code"
+  - "com.microsoft.VSCode"
+  - "Microsoft Visual Studio Code"

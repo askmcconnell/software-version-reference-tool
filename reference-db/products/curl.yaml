@@ -1,0 +1,63 @@
+software_name: curl
+vendor: curl project
+platform: cross-platform
+versions:
+  - major: "7.68"
+    eol_status: eol
+    eol_date: "2021-01-01"
+    source_url: https://curl.se/docs/releases.html
+    notes: Multiple CVEs; curl does not maintain LTS branches — always upgrade to latest
+  - major: "7.74"
+    eol_status: eol
+    eol_date: "2021-06-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "7.80"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "7.85"
+    eol_status: eol
+    eol_date: "2022-10-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "7.88"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    source_url: https://curl.se/docs/releases.html
+    notes: CVE-2023-38545 (SOCKS5 heap overflow) affects 7.69–8.3
+  - major: "8.0"
+    eol_status: eol
+    eol_date: "2023-07-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "8.4"
+    eol_status: eol
+    eol_date: "2024-01-01"
+    source_url: https://curl.se/docs/releases.html
+    notes: CVE-2023-38545 patched in 8.4.0
+  - major: "8.6"
+    eol_status: eol
+    eol_date: "2024-05-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "8.9"
+    eol_status: eol
+    eol_date: "2024-11-01"
+    source_url: https://curl.se/docs/releases.html
+  - major: "8.11"
+    eol_status: eol
+    eol_date: "2025-02-05"
+    latest_version: "8.11.1"
+    source_url: https://curl.se/docs/releases.html
+  - major: "8.12"
+    eol_status: supported
+    eol_date: "2025-05-01"
+    latest_version: "8.12.1"
+    source_url: https://curl.se/docs/releases.html
+  - major: "8.13"
+    eol_status: supported
+    eol_date: "2025-08-01"
+    latest_version: "8.13.0"
+    source_url: https://curl.se/docs/releases.html
+    notes: Latest stable as of April 2026; curl releases ~every 8 weeks
+aliases:
+  - "libcurl"
+  - "curl.exe"
+  - "cURL"

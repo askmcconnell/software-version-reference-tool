@@ -1,0 +1,63 @@
+software_name: Git
+vendor: Software Freedom Conservancy
+platform: cross-platform
+versions:
+  - major: "2.30"
+    eol_status: eol
+    eol_date: "2022-02-01"
+    source_url: https://endoflife.date/git
+  - major: "2.35"
+    eol_status: eol
+    eol_date: "2022-10-01"
+    source_url: https://endoflife.date/git
+  - major: "2.39"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://endoflife.date/git
+    notes: CVE-2024-32002 affects versions before 2.45.1
+  - major: "2.42"
+    eol_status: eol
+    eol_date: "2024-04-14"
+    latest_version: "2.42.3"
+    source_url: https://endoflife.date/git
+  - major: "2.43"
+    eol_status: eol
+    eol_date: "2024-07-29"
+    latest_version: "2.43.6"
+    source_url: https://endoflife.date/git
+  - major: "2.44"
+    eol_status: eol
+    eol_date: "2024-10-14"
+    latest_version: "2.44.3"
+    source_url: https://endoflife.date/git
+  - major: "2.45"
+    eol_status: eol
+    eol_date: "2025-01-13"
+    latest_version: "2.45.3"
+    source_url: https://endoflife.date/git
+  - major: "2.46"
+    eol_status: eol
+    eol_date: "2025-04-14"
+    latest_version: "2.46.3"
+    source_url: https://endoflife.date/git
+  - major: "2.47"
+    eol_status: supported
+    eol_date: "2025-07-14"
+    latest_version: "2.47.2"
+    source_url: https://endoflife.date/git
+  - major: "2.48"
+    eol_status: supported
+    eol_date: "2025-10-14"
+    latest_version: "2.48.1"
+    source_url: https://endoflife.date/git
+  - major: "2.49"
+    eol_status: supported
+    eol_date: "2026-01-01"
+    latest_version: "2.49.0"
+    source_url: https://endoflife.date/git
+    notes: Latest stable as of April 2026
+aliases:
+  - "git-scm"
+  - "Git for Windows"
+  - "git-core"
+  - "com.git-scm.git"

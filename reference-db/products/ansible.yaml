@@ -1,0 +1,49 @@
+software_name: Ansible
+vendor: Red Hat
+platform: cross-platform
+versions:
+  - major: "2.9"
+    eol_status: eol
+    eol_date: "2023-05-20"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+    notes: Last release of classic Ansible; replaced by ansible-core
+  - major: "2.12"
+    eol_status: eol
+    eol_date: "2023-05-20"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+    notes: ansible-core 2.12; EOL
+  - major: "2.13"
+    eol_status: eol
+    eol_date: "2023-11-06"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+  - major: "2.14"
+    eol_status: eol
+    eol_date: "2024-05-20"
+    latest_version: "2.14.17"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+  - major: "2.15"
+    eol_status: eol
+    eol_date: "2024-11-04"
+    latest_version: "2.15.13"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+  - major: "2.16"
+    eol_status: supported
+    eol_date: "2025-11-01"
+    latest_version: "2.16.14"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+  - major: "2.17"
+    eol_status: supported
+    eol_date: "2026-05-01"
+    latest_version: "2.17.9"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+  - major: "2.18"
+    eol_status: supported
+    eol_date: "2026-11-01"
+    latest_version: "2.18.4"
+    source_url: https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
+    notes: Latest stable as of April 2026
+aliases:
+  - "ansible-core"
+  - "Ansible Core"
+  - "Red Hat Ansible"
+  - "ansible-community"

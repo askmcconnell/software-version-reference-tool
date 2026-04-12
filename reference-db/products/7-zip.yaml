@@ -1,0 +1,44 @@
+software_name: 7-Zip
+vendor: Igor Pavlov
+platform: windows
+versions:
+  - major: "16"
+    eol_status: eol
+    eol_date: "2019-02-21"
+    source_url: https://www.7-zip.org/history.txt
+    notes: CVE-2022-29072 affects 21.07 and earlier
+  - major: "18"
+    eol_status: eol
+    eol_date: "2019-02-21"
+    source_url: https://www.7-zip.org/history.txt
+  - major: "19"
+    eol_status: eol
+    eol_date: "2021-12-26"
+    source_url: https://www.7-zip.org/history.txt
+  - major: "21"
+    eol_status: eol
+    eol_date: "2022-07-15"
+    latest_version: "21.07"
+    source_url: https://www.7-zip.org/history.txt
+    notes: CVE-2022-29072 — heap overflow via help; upgrade strongly recommended
+  - major: "22"
+    eol_status: eol
+    eol_date: "2023-06-20"
+    latest_version: "22.01"
+    source_url: https://www.7-zip.org/history.txt
+  - major: "23"
+    eol_status: eol
+    eol_date: "2024-03-01"
+    latest_version: "23.01"
+    source_url: https://www.7-zip.org/history.txt
+  - major: "24"
+    eol_status: supported
+    eol_date: "2026-01-01"
+    latest_version: "24.09"
+    source_url: https://www.7-zip.org/history.txt
+    notes: Latest stable as of April 2026
+aliases:
+  - "7zip"
+  - "7z"
+  - "7-Zip File Manager"
+  - "7zFM"

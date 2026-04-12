@@ -1,0 +1,54 @@
+software_name: WinRAR
+vendor: win.rar GmbH
+platform: windows
+versions:
+  - major: "5.50"
+    eol_status: eol
+    eol_date: "2019-02-26"
+    source_url: https://www.rarlab.com/rarnew.htm
+    notes: CVE-2018-20250 — ACE format path traversal; massive exploit campaign
+  - major: "5.70"
+    eol_status: eol
+    eol_date: "2020-06-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "5.80"
+    eol_status: eol
+    eol_date: "2021-03-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "5.90"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "6.00"
+    eol_status: eol
+    eol_date: "2022-06-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "6.10"
+    eol_status: eol
+    eol_date: "2022-12-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "6.20"
+    eol_status: eol
+    eol_date: "2023-08-02"
+    latest_version: "6.23"
+    source_url: https://www.rarlab.com/rarnew.htm
+    notes: CVE-2023-38831 — zero-day exploited in the wild; patch to 6.23 immediately
+  - major: "6.23"
+    eol_status: eol
+    eol_date: "2024-03-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+    notes: Patches CVE-2023-38831
+  - major: "6.24"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    source_url: https://www.rarlab.com/rarnew.htm
+  - major: "7.00"
+    eol_status: supported
+    eol_date: "2026-01-01"
+    latest_version: "7.10"
+    source_url: https://www.rarlab.com/rarnew.htm
+    notes: Latest stable as of April 2026
+aliases:
+  - "WinRAR archiver"
+  - "winrar.exe"
+  - "RAR"
