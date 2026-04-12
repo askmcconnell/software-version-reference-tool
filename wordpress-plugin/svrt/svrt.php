@@ -395,6 +395,12 @@ add_action('rest_api_init', function () {
         'permission_callback' => 'svrt_require_auth',
     ]);
 
+    register_rest_route($ns, '/jobs', [
+        'methods'             => 'GET',
+        'callback'            => 'svrt_api_my_jobs',
+        'permission_callback' => 'svrt_require_auth',
+    ]);
+
     // ── Reference DB Download (authenticated) ───────────────
     register_rest_route($ns, '/reference', [
         'methods'             => 'GET',
@@ -1199,6 +1205,24 @@ function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
         ],
         'items'      => $rows,
     ], 200);
+}
+
+// ── My jobs list ─────────────────────────────────────────────────────────────
+
+function svrt_api_my_jobs(WP_REST_Request $req): WP_REST_Response {
+    global $wpdb;
+    $user_id = get_current_user_id();
+
+    $jobs = $wpdb->get_results($wpdb->prepare(
+        "SELECT uuid, status, filename, row_count, matched_count, eol_count, created_at, completed_at
+         FROM {$wpdb->prefix}svrt_upload_jobs
+         WHERE user_id = %d
+         ORDER BY created_at DESC
+         LIMIT 50",
+        $user_id
+    ), ARRAY_A) ?: [];
+
+    return new WP_REST_Response($jobs, 200);
 }
 
 // ── Delete job ───────────────────────────────────────────────────────────────

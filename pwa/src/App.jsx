@@ -11,6 +11,7 @@ import QueuePage from './pages/QueuePage'
 import DashboardPage from './pages/DashboardPage'
 import SupportPage from './pages/SupportPage'
 import PrivacyPage from './pages/PrivacyPage'
+import ScansPage from './pages/ScansPage'
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth()
@@ -31,6 +32,9 @@ export default function App() {
           } />
           <Route path="/results/:uuid" element={
             <RequireAuth><ResultsPage /></RequireAuth>
+          } />
+          <Route path="/scans" element={
+            <RequireAuth><ScansPage /></RequireAuth>
           } />
           <Route path="/reference" element={
             <RequireAuth><ReferencePage /></RequireAuth>

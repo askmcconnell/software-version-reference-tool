@@ -32,6 +32,9 @@ export default function Nav() {
             <Link to="/" style={pathname === '/' ? { color: 'var(--text)' } : {}}>
               Upload
             </Link>
+            <Link to="/scans" style={pathname === '/scans' ? { color: 'var(--text)' } : {}}>
+              My Scans
+            </Link>
             <Link to="/reference" style={pathname === '/reference' ? { color: 'var(--text)' } : {}}>
               Reference DB
             </Link>

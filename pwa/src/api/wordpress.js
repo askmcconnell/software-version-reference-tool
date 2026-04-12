@@ -109,6 +109,10 @@ export async function deleteJob(uuid) {
   return request(`/job/${uuid}`, { method: 'DELETE' })
 }
 
+export async function getMyJobs() {
+  return request('/jobs')
+}
+
 // ── Reference DB ──────────────────────────────────────────────────────────────
 
 export async function getReference({ page = 1, perPage = 100, status = '' } = {}) {
