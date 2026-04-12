@@ -1,0 +1,38 @@
+software_name: Debian
+vendor: Debian Project
+platform: linux
+versions:
+  - major: "9"
+    eol_status: eol
+    eol_date: "2022-06-30"
+    source_url: https://wiki.debian.org/LTS
+    notes: Stretch; LTS support ended June 2022
+  - major: "10"
+    eol_status: eol
+    eol_date: "2024-06-30"
+    latest_version: "10.13"
+    source_url: https://wiki.debian.org/LTS
+    notes: Buster; LTS support ended June 2024; ELTS available through 2026
+  - major: "11"
+    eol_status: supported
+    eol_date: "2026-08-15"
+    latest_version: "11.11"
+    source_url: https://wiki.debian.org/LTS
+    notes: Bullseye; security support until Aug 2024; LTS through Aug 2026
+  - major: "12"
+    eol_status: supported
+    eol_date: "2028-06-10"
+    latest_version: "12.10"
+    source_url: https://www.debian.org/releases/stable/
+    notes: Bookworm; current stable release; security support until June 2026; LTS through June 2028
+  - major: "13"
+    eol_status: supported
+    eol_date: "2031-01-01"
+    latest_version: "13.0"
+    source_url: https://www.debian.org/releases/
+    notes: Trixie; next stable release; currently in testing as of April 2026
+aliases:
+  - "Debian GNU/Linux"
+  - "debian"
+  - "Debian Linux"
+  - "Debian Stable"

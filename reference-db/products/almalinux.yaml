@@ -1,0 +1,26 @@
+software_name: AlmaLinux
+vendor: AlmaLinux OS Foundation
+platform: linux
+versions:
+  - major: "8"
+    eol_status: supported
+    eol_date: "2029-03-01"
+    latest_version: "8.10"
+    source_url: https://almalinux.org/blog/
+    notes: RHEL 8 binary compatible; full support until March 2024; security updates until March 2029
+  - major: "9"
+    eol_status: supported
+    eol_date: "2032-05-31"
+    latest_version: "9.5"
+    source_url: https://almalinux.org/blog/
+    notes: RHEL 9 binary compatible; current recommended release
+  - major: "10"
+    eol_status: supported
+    eol_date: "2035-05-31"
+    latest_version: "10.0"
+    source_url: https://almalinux.org/blog/
+    notes: RHEL 10 compatible; released May 2025
+aliases:
+  - "AlmaLinux OS"
+  - "alma"
+  - "almalinux"

@@ -1,0 +1,40 @@
+software_name: Nmap
+vendor: Nmap Project
+platform: cross-platform
+versions:
+  - major: "7.70"
+    eol_status: eol
+    eol_date: "2019-01-01"
+    source_url: https://nmap.org/changelog/
+    notes: Nmap does not maintain versioned branches; only latest is supported
+  - major: "7.80"
+    eol_status: eol
+    eol_date: "2020-01-01"
+    source_url: https://nmap.org/changelog/
+  - major: "7.90"
+    eol_status: eol
+    eol_date: "2021-01-01"
+    source_url: https://nmap.org/changelog/
+  - major: "7.92"
+    eol_status: eol
+    eol_date: "2022-01-01"
+    source_url: https://nmap.org/changelog/
+  - major: "7.93"
+    eol_status: eol
+    eol_date: "2023-01-01"
+    source_url: https://nmap.org/changelog/
+  - major: "7.94"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    latest_version: "7.94"
+    source_url: https://nmap.org/changelog/
+  - major: "7.95"
+    eol_status: supported
+    eol_date: "2027-01-01"
+    latest_version: "7.95"
+    source_url: https://nmap.org/changelog/
+    notes: Latest stable as of April 2026; only the latest release is supported
+aliases:
+  - "nmap"
+  - "Zenmap"
+  - "Network Mapper"

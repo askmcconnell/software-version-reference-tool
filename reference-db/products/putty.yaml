@@ -1,0 +1,48 @@
+software_name: PuTTY
+vendor: Simon Tatham
+platform: windows
+versions:
+  - major: "0.70"
+    eol_status: eol
+    eol_date: "2019-09-29"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+    notes: Multiple CVEs; PuTTY only supports the current release
+  - major: "0.73"
+    eol_status: eol
+    eol_date: "2020-07-19"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+  - major: "0.74"
+    eol_status: eol
+    eol_date: "2021-07-17"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+  - major: "0.76"
+    eol_status: eol
+    eol_date: "2022-09-29"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+  - major: "0.78"
+    eol_status: eol
+    eol_date: "2023-12-18"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+  - major: "0.80"
+    eol_status: eol
+    eol_date: "2024-04-15"
+    latest_version: "0.80"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+    notes: CVE-2024-31497 — biased ECDSA nonce generation; upgrade immediately
+  - major: "0.81"
+    eol_status: eol
+    eol_date: "2024-12-01"
+    latest_version: "0.81"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+    notes: Patches CVE-2024-31497
+  - major: "0.82"
+    eol_status: supported
+    eol_date: "2027-01-01"
+    latest_version: "0.82"
+    source_url: https://www.chiark.greenend.org.uk/~sgtatham/putty/changes.html
+    notes: Latest stable as of April 2026
+aliases:
+  - "putty"
+  - "PuTTY SSH"
+  - "putty.exe"
+  - "KiTTY"

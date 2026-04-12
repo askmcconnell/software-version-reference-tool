@@ -1,0 +1,45 @@
+software_name: Adobe Creative Cloud
+vendor: Adobe
+platform: cross-platform
+versions:
+  - major: "2020"
+    eol_status: eol
+    eol_date: "2022-12-31"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: Adobe drops support for CC apps 2+ versions back; 2020 apps no longer supported
+  - major: "2021"
+    eol_status: eol
+    eol_date: "2023-12-31"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: CC 2021 apps no longer receive updates or support
+  - major: "2022"
+    eol_status: eol
+    eol_date: "2024-12-31"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: CC 2022 apps EOL as Adobe typically supports only current and previous year
+  - major: "2023"
+    eol_status: eol
+    eol_date: "2025-06-01"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: CC 2023 apps being phased out; update to 2024 or 2025
+  - major: "2024"
+    eol_status: supported
+    eol_date: "2026-06-01"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: CC 2024 apps still supported; update to 2025 recommended
+  - major: "2025"
+    eol_status: supported
+    eol_date: "2027-06-01"
+    source_url: https://helpx.adobe.com/creative-cloud/system-requirements.html
+    notes: CC 2025 apps — current release as of April 2026 (Photoshop 26.x, Illustrator 29.x, etc.)
+aliases:
+  - "Adobe CC"
+  - "Creative Cloud"
+  - "Adobe Photoshop"
+  - "Adobe Illustrator"
+  - "Adobe Premiere Pro"
+  - "Adobe After Effects"
+  - "Adobe InDesign"
+  - "Adobe Acrobat DC"
+  - "Adobe XD"
+  - "com.adobe.Creative Cloud"

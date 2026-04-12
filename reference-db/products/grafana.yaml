@@ -1,0 +1,51 @@
+software_name: Grafana
+vendor: Grafana Labs
+platform: cross-platform
+versions:
+  - major: "8"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "9.0"
+    eol_status: eol
+    eol_date: "2023-11-01"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "9.5"
+    eol_status: eol
+    eol_date: "2024-06-01"
+    latest_version: "9.5.21"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "10.0"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "10.4"
+    eol_status: eol
+    eol_date: "2025-03-01"
+    latest_version: "10.4.14"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "11.0"
+    eol_status: eol
+    eol_date: "2025-03-01"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "11.5"
+    eol_status: eol
+    eol_date: "2025-09-01"
+    latest_version: "11.5.2"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "11.6"
+    eol_status: supported
+    eol_date: "2026-01-01"
+    latest_version: "11.6.1"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+  - major: "12.0"
+    eol_status: supported
+    eol_date: "2027-01-01"
+    latest_version: "12.0.0"
+    source_url: https://grafana.com/docs/grafana/latest/release-notes/
+    notes: Latest major as of April 2026
+aliases:
+  - "grafana"
+  - "Grafana OSS"
+  - "Grafana Enterprise"
+  - "grafana-server"

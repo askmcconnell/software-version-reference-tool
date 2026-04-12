@@ -1,0 +1,53 @@
+software_name: Prometheus
+vendor: Cloud Native Computing Foundation
+platform: cross-platform
+versions:
+  - major: "2.30"
+    eol_status: eol
+    eol_date: "2022-06-01"
+    source_url: https://github.com/prometheus/prometheus/releases
+    notes: Prometheus only supports the latest two minor releases
+  - major: "2.37"
+    eol_status: eol
+    eol_date: "2023-01-01"
+    latest_version: "2.37.8"
+    source_url: https://github.com/prometheus/prometheus/releases
+    notes: LTS release
+  - major: "2.40"
+    eol_status: eol
+    eol_date: "2023-06-01"
+    source_url: https://github.com/prometheus/prometheus/releases
+  - major: "2.45"
+    eol_status: eol
+    eol_date: "2024-07-01"
+    latest_version: "2.45.5"
+    source_url: https://github.com/prometheus/prometheus/releases
+    notes: LTS release
+  - major: "2.48"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    source_url: https://github.com/prometheus/prometheus/releases
+  - major: "2.51"
+    eol_status: eol
+    eol_date: "2024-12-01"
+    source_url: https://github.com/prometheus/prometheus/releases
+  - major: "2.53"
+    eol_status: eol
+    eol_date: "2025-07-01"
+    latest_version: "2.53.3"
+    source_url: https://github.com/prometheus/prometheus/releases
+    notes: LTS release
+  - major: "2.55"
+    eol_status: eol
+    eol_date: "2025-06-01"
+    source_url: https://github.com/prometheus/prometheus/releases
+  - major: "3.0"
+    eol_status: supported
+    eol_date: "2026-11-01"
+    latest_version: "3.2.1"
+    source_url: https://github.com/prometheus/prometheus/releases
+    notes: Major version with breaking changes from 2.x; latest stable as of April 2026
+aliases:
+  - "prometheus"
+  - "prometheus-server"
+  - "prom"

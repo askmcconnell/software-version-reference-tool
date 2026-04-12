@@ -1,0 +1,30 @@
+software_name: VirtualBox
+vendor: Oracle
+platform: cross-platform
+versions:
+  - major: "6.0"
+    eol_status: eol
+    eol_date: "2020-12-31"
+    source_url: https://www.virtualbox.org/wiki/Download_Old_Builds
+  - major: "6.1"
+    eol_status: eol
+    eol_date: "2023-12-31"
+    latest_version: "6.1.50"
+    source_url: https://www.virtualbox.org/wiki/Download_Old_Builds
+    notes: EOL December 2023; upgrade to 7.0 or later
+  - major: "7.0"
+    eol_status: eol
+    eol_date: "2025-07-01"
+    latest_version: "7.0.22"
+    source_url: https://www.virtualbox.org/wiki/Changelog
+  - major: "7.1"
+    eol_status: supported
+    eol_date: "2027-01-01"
+    latest_version: "7.1.6"
+    source_url: https://www.virtualbox.org/wiki/Changelog
+    notes: Latest stable as of April 2026
+aliases:
+  - "Oracle VirtualBox"
+  - "Oracle VM VirtualBox"
+  - "vboxdrv"
+  - "VirtualBox VM"

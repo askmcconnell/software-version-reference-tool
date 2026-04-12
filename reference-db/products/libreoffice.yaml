@@ -1,0 +1,55 @@
+software_name: LibreOffice
+vendor: The Document Foundation
+platform: cross-platform
+versions:
+  - major: "6.4"
+    eol_status: eol
+    eol_date: "2021-07-26"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "7.0"
+    eol_status: eol
+    eol_date: "2022-01-27"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "7.2"
+    eol_status: eol
+    eol_date: "2022-07-25"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "7.4"
+    eol_status: eol
+    eol_date: "2023-07-24"
+    latest_version: "7.4.7"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "7.5"
+    eol_status: eol
+    eol_date: "2024-01-22"
+    latest_version: "7.5.9"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "7.6"
+    eol_status: eol
+    eol_date: "2024-11-28"
+    latest_version: "7.6.7"
+    source_url: https://www.libreoffice.org/download/release-notes/
+    notes: Still-life release for conservative users
+  - major: "24.2"
+    eol_status: eol
+    eol_date: "2025-05-01"
+    latest_version: "24.2.7"
+    source_url: https://www.libreoffice.org/download/release-notes/
+    notes: LibreOffice switched to CalVer (YY.M) in 2024
+  - major: "24.8"
+    eol_status: eol
+    eol_date: "2025-11-01"
+    latest_version: "24.8.5"
+    source_url: https://www.libreoffice.org/download/release-notes/
+  - major: "25.2"
+    eol_status: supported
+    eol_date: "2026-05-01"
+    latest_version: "25.2.2"
+    source_url: https://www.libreoffice.org/download/release-notes/
+    notes: Current still-life release as of April 2026
+aliases:
+  - "LibreOffice Writer"
+  - "LibreOffice Calc"
+  - "LibreOffice Impress"
+  - "OpenOffice"
+  - "org.libreoffice.LibreOffice"

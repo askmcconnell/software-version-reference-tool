@@ -1,0 +1,34 @@
+software_name: Wireshark
+vendor: Wireshark Foundation
+platform: cross-platform
+versions:
+  - major: "3.4"
+    eol_status: eol
+    eol_date: "2022-05-26"
+    source_url: https://www.wireshark.org/download.html
+  - major: "3.6"
+    eol_status: eol
+    eol_date: "2023-05-22"
+    latest_version: "3.6.21"
+    source_url: https://www.wireshark.org/download.html
+  - major: "4.0"
+    eol_status: eol
+    eol_date: "2024-05-20"
+    latest_version: "4.0.15"
+    source_url: https://www.wireshark.org/download.html
+  - major: "4.2"
+    eol_status: eol
+    eol_date: "2025-02-26"
+    latest_version: "4.2.9"
+    source_url: https://www.wireshark.org/download.html
+  - major: "4.4"
+    eol_status: supported
+    eol_date: "2026-02-01"
+    latest_version: "4.4.5"
+    source_url: https://www.wireshark.org/download.html
+    notes: Latest stable as of April 2026; Wireshark maintains two stable branches
+aliases:
+  - "wireshark"
+  - "Wireshark Network Analyzer"
+  - "tshark"
+  - "org.wireshark.Wireshark"

@@ -1,0 +1,76 @@
+software_name: Jenkins
+vendor: Jenkins Project
+platform: cross-platform
+versions:
+  - major: "2.303"
+    eol_status: eol
+    eol_date: "2022-01-01"
+    source_url: https://www.jenkins.io/changelog/
+    notes: Jenkins weekly releases are unsupported after ~1 month; LTS releases supported for ~12 weeks
+  - major: "2.332"
+    eol_status: eol
+    eol_date: "2022-09-28"
+    source_url: https://www.jenkins.io/changelog-stable/
+    notes: LTS release
+  - major: "2.346"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    latest_version: "2.346.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+    notes: LTS; last to support Java 8
+  - major: "2.361"
+    eol_status: eol
+    eol_date: "2023-06-14"
+    latest_version: "2.361.4"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.375"
+    eol_status: eol
+    eol_date: "2023-09-20"
+    latest_version: "2.375.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.387"
+    eol_status: eol
+    eol_date: "2024-01-24"
+    latest_version: "2.387.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.401"
+    eol_status: eol
+    eol_date: "2024-05-01"
+    latest_version: "2.401.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.414"
+    eol_status: eol
+    eol_date: "2024-09-11"
+    latest_version: "2.414.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.426"
+    eol_status: eol
+    eol_date: "2025-02-05"
+    latest_version: "2.426.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.440"
+    eol_status: eol
+    eol_date: "2025-05-28"
+    latest_version: "2.440.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.452"
+    eol_status: eol
+    eol_date: "2025-09-03"
+    latest_version: "2.452.4"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.462"
+    eol_status: eol
+    eol_date: "2026-01-14"
+    latest_version: "2.462.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+  - major: "2.479"
+    eol_status: supported
+    eol_date: "2026-07-01"
+    latest_version: "2.479.3"
+    source_url: https://www.jenkins.io/changelog-stable/
+    notes: Current LTS as of April 2026
+aliases:
+  - "jenkins"
+  - "Jenkins CI"
+  - "Jenkins LTS"
+  - "Hudson"

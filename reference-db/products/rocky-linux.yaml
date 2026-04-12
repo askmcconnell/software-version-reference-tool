@@ -1,0 +1,20 @@
+software_name: Rocky Linux
+vendor: Rocky Enterprise Software Foundation
+platform: linux
+versions:
+  - major: "8"
+    eol_status: supported
+    eol_date: "2029-05-31"
+    latest_version: "8.10"
+    source_url: https://wiki.rockylinux.org/rocky/version/
+    notes: RHEL 8 binary compatible; full support until May 2024; maintenance until May 2029
+  - major: "9"
+    eol_status: supported
+    eol_date: "2032-05-31"
+    latest_version: "9.5"
+    source_url: https://wiki.rockylinux.org/rocky/version/
+    notes: RHEL 9 binary compatible; current recommended release; full support until May 2027
+aliases:
+  - "Rocky"
+  - "rocky"
+  - "Rocky Linux OS"
