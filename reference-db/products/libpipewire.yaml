@@ -1,0 +1,23 @@
+software_name: PipeWire
+vendor: Red Hat
+platform: linux
+versions:
+  - major: "0.3"
+    eol_status: supported
+    latest_version: "1.2.7"
+    source_url: https://pipewire.org/
+    notes: PipeWire 0.3/1.x series — actively maintained, versioning moved to 1.x; packages still labeled 0.3 on Debian
+  - major: "1"
+    eol_status: supported
+    latest_version: "1.2.7"
+    source_url: https://pipewire.org/
+    notes: PipeWire 1.x — current stable release as of 2026
+aliases:
+  - "PipeWire"
+  - "pipewire"
+  - "libpipewire"
+  - "libpipewire-0.3"
+  - "libpipewire-0.3-0"
+  - "libpipewire-0.3-modules"
+  - "pipewire-alsa"
+  - "pipewire-pulse"

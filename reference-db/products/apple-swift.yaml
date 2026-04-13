@@ -1,0 +1,23 @@
+software_name: Apple Swift
+vendor: Apple Inc.
+platform: macos
+versions:
+  - major: "4"
+    eol_status: eol
+    eol_date: "2020-03-31"
+    source_url: https://www.swift.org/download/
+    notes: Swift 4.x — EOL, use Swift 5 or later
+  - major: "5"
+    eol_status: supported
+    latest_version: "5.10"
+    source_url: https://www.swift.org/download/
+    notes: Swift 5.x — still supported; Swift 6 is current
+  - major: "6"
+    eol_status: supported
+    latest_version: "6.1"
+    source_url: https://www.swift.org/download/
+    notes: Swift 6 — current release as of 2026; includes strict concurrency
+aliases:
+  - "Swift"
+  - "swiftc"
+  - "swift-stdlib"

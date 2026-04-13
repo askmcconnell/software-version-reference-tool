@@ -1,0 +1,58 @@
+software_name: GLib
+vendor: GNOME Foundation
+platform: cross-platform
+versions:
+  - major: "2.56"
+    eol_status: eol
+    eol_date: "2021-09-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL — part of GNOME 3.28 cycle
+  - major: "2.66"
+    eol_status: eol
+    eol_date: "2022-09-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL — part of GNOME 3.38 cycle
+  - major: "2.72"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL — part of GNOME 42 cycle
+  - major: "2.74"
+    eol_status: eol
+    eol_date: "2023-09-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL
+  - major: "2.76"
+    eol_status: eol
+    eol_date: "2024-03-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL
+  - major: "2.78"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL
+  - major: "2.80"
+    eol_status: supported
+    latest_version: "2.80.5"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: Stable LTS-style — included in Debian 13 / Ubuntu 24.04
+  - major: "2.82"
+    eol_status: eol
+    eol_date: "2025-03-01"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: EOL
+  - major: "2.84"
+    eol_status: supported
+    latest_version: "2.84.1"
+    source_url: https://wiki.gnome.org/Projects/GLib
+    notes: Current stable release as of April 2026
+aliases:
+  - "libglib"
+  - "libglib-2.0"
+  - "libglib2.0-0"
+  - "libglib-2.0-0"
+  - "libglibmm"
+  - "libglibmm-2.4"
+  - "libglibmm-2.4-1v5"
+  - "libglibmm-2.68"

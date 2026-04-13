@@ -1,0 +1,50 @@
+software_name: Microsoft .NET
+vendor: Microsoft Corporation
+platform: cross-platform
+versions:
+  - major: "3.1"
+    eol_status: eol
+    eol_date: "2022-12-13"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET Core 3.1 LTS — EOL December 2022
+  - major: "5"
+    eol_status: eol
+    eol_date: "2022-05-10"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 5 — EOL May 2022 (STS)
+  - major: "6"
+    eol_status: eol
+    eol_date: "2024-11-12"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 6 LTS — EOL November 2024
+  - major: "7"
+    eol_status: eol
+    eol_date: "2024-05-14"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 7 STS — EOL May 2024
+  - major: "8"
+    eol_status: lts
+    eol_date: "2026-11-10"
+    latest_version: "8.0.15"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 8 LTS — supported until November 2026
+  - major: "9"
+    eol_status: supported
+    eol_date: "2026-05-12"
+    latest_version: "9.0.4"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 9 STS — supported until May 2026
+  - major: "10"
+    eol_status: supported
+    latest_version: "10.0.0-preview"
+    source_url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
+    notes: .NET 10 LTS — preview as of April 2026, GA expected November 2026
+aliases:
+  - ".NET"
+  - "dotnet"
+  - ".NET Core"
+  - "dotnet-runtime"
+  - "dotnet-sdk"
+  - "aspnetcore"
+  - "Microsoft .NET Runtime"
+  - "Microsoft .NET SDK"

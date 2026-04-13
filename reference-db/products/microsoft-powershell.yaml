@@ -1,0 +1,32 @@
+software_name: Microsoft PowerShell
+vendor: Microsoft Corporation
+platform: cross-platform
+versions:
+  - major: "5.1"
+    eol_status: lts
+    eol_date: "2026-10-14"
+    source_url: https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle
+    notes: Windows PowerShell 5.1 — ships with Windows, EOL with Windows 10 lifecycle
+  - major: "7.2"
+    eol_status: eol
+    eol_date: "2024-11-08"
+    source_url: https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle
+    notes: PowerShell 7.2 LTS — EOL November 2024
+  - major: "7.4"
+    eol_status: lts
+    eol_date: "2026-11-10"
+    latest_version: "7.4.7"
+    source_url: https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle
+    notes: PowerShell 7.4 LTS — supported until November 2026
+  - major: "7.5"
+    eol_status: supported
+    eol_date: "2026-05-12"
+    latest_version: "7.5.1"
+    source_url: https://learn.microsoft.com/en-us/powershell/scripting/install/powershell-support-lifecycle
+    notes: PowerShell 7.5 STS — supported until May 2026
+aliases:
+  - "PowerShell"
+  - "pwsh"
+  - "Windows PowerShell"
+  - "powershell.exe"
+  - "pwsh.exe"

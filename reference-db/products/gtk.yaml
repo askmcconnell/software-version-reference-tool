@@ -1,0 +1,28 @@
+software_name: GTK
+vendor: GNOME Foundation
+platform: linux
+versions:
+  - major: "2"
+    eol_status: eol
+    eol_date: "2020-12-31"
+    source_url: https://wiki.gnome.org/Projects/GTK/Plan
+    notes: GTK 2 — no longer maintained; GTK 3 migration recommended
+  - major: "3"
+    eol_status: supported
+    latest_version: "3.24.43"
+    source_url: https://wiki.gnome.org/Projects/GTK/Plan
+    notes: GTK 3 — still maintained for compatibility; no new features
+  - major: "4"
+    eol_status: supported
+    latest_version: "4.18.0"
+    source_url: https://wiki.gnome.org/Projects/GTK/Plan
+    notes: GTK 4 — current stable release as of 2026
+aliases:
+  - "gtk3"
+  - "gtk4"
+  - "libgtk-3"
+  - "libgtk-4"
+  - "libgtk3"
+  - "libgtk-3-0"
+  - "libgtk-4-1"
+  - "gtk-nop"

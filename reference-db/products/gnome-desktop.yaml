@@ -1,0 +1,66 @@
+software_name: GNOME Desktop
+vendor: GNOME Foundation
+platform: linux
+versions:
+  - major: "3.36"
+    eol_status: eol
+    eol_date: "2021-09-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL — superseded by GNOME 40
+  - major: "3.38"
+    eol_status: eol
+    eol_date: "2021-09-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL — last of the GNOME 3.x series
+  - major: "40"
+    eol_status: eol
+    eol_date: "2022-03-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL — superseded by GNOME 41
+  - major: "41"
+    eol_status: eol
+    eol_date: "2022-09-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "42"
+    eol_status: eol
+    eol_date: "2023-03-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "43"
+    eol_status: eol
+    eol_date: "2023-09-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "44"
+    eol_status: eol
+    eol_date: "2024-03-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "45"
+    eol_status: eol
+    eol_date: "2024-09-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "46"
+    eol_status: supported
+    latest_version: "46.8"
+    source_url: https://endoflife.date/gnome
+    notes: LTS-style release — supported by Debian 13, Ubuntu 24.04
+  - major: "47"
+    eol_status: eol
+    eol_date: "2025-03-01"
+    source_url: https://endoflife.date/gnome
+    notes: EOL
+  - major: "48"
+    eol_status: supported
+    latest_version: "48.1"
+    source_url: https://endoflife.date/gnome
+    notes: Current stable release as of April 2026
+aliases:
+  - "GNOME"
+  - "gnome-shell"
+  - "gnome-desktop"
+  - "libgnome-desktop"
+  - "libgnome-desktop-3"
+  - "libgnome-desktop-4"

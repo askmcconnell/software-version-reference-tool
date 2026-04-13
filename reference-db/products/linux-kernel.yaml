@@ -1,0 +1,69 @@
+software_name: Linux Kernel
+vendor: Linus Torvalds
+platform: linux
+versions:
+  - major: "4.4"
+    eol_status: eol
+    eol_date: "2022-02-03"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL February 2022
+  - major: "4.9"
+    eol_status: eol
+    eol_date: "2023-01-07"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL January 2023
+  - major: "4.14"
+    eol_status: eol
+    eol_date: "2024-01-10"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL January 2024
+  - major: "4.19"
+    eol_status: eol
+    eol_date: "2024-12-31"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2024
+  - major: "5.4"
+    eol_status: eol
+    eol_date: "2025-12-31"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2025
+  - major: "5.10"
+    eol_status: lts
+    eol_date: "2026-12-31"
+    latest_version: "5.10.235"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2026
+  - major: "5.15"
+    eol_status: lts
+    eol_date: "2026-12-31"
+    latest_version: "5.15.179"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2026
+  - major: "6.1"
+    eol_status: lts
+    eol_date: "2028-12-31"
+    latest_version: "6.1.134"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2028
+  - major: "6.6"
+    eol_status: lts
+    eol_date: "2026-12-31"
+    latest_version: "6.6.87"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2026
+  - major: "6.12"
+    eol_status: lts
+    eol_date: "2026-12-31"
+    latest_version: "6.12.23"
+    source_url: https://endoflife.date/linux
+    notes: Long-term support branch, EOL December 2026
+  - major: "6.14"
+    eol_status: supported
+    latest_version: "6.14.1"
+    source_url: https://endoflife.date/linux
+    notes: Mainline stable release as of April 2026
+aliases:
+  - "Linux"
+  - "linux-image"
+  - "linux-headers"
+  - "kernel"

@@ -1,0 +1,33 @@
+software_name: Apple Xcode
+vendor: Apple Inc.
+platform: macos
+versions:
+  - major: "12"
+    eol_status: eol
+    eol_date: "2022-04-25"
+    source_url: https://developer.apple.com/support/xcode/
+    notes: Xcode 12 — EOL; App Store submissions no longer accepted
+  - major: "13"
+    eol_status: eol
+    eol_date: "2023-04-25"
+    source_url: https://developer.apple.com/support/xcode/
+    notes: Xcode 13 — EOL
+  - major: "14"
+    eol_status: eol
+    eol_date: "2024-04-29"
+    source_url: https://developer.apple.com/support/xcode/
+    notes: Xcode 14 — EOL; App Store submissions no longer accepted
+  - major: "15"
+    eol_status: eol
+    eol_date: "2025-04-28"
+    source_url: https://developer.apple.com/support/xcode/
+    notes: Xcode 15 — EOL as of Spring 2025
+  - major: "16"
+    eol_status: supported
+    latest_version: "16.3"
+    source_url: https://developer.apple.com/support/xcode/
+    notes: Xcode 16 — current release as of 2026; required for iOS 18+ submissions
+aliases:
+  - "Xcode"
+  - "xcode-select"
+  - "com.apple.dt.Xcode"

@@ -1,0 +1,32 @@
+software_name: Apple Safari
+vendor: Apple Inc.
+platform: macos
+versions:
+  - major: "14"
+    eol_status: eol
+    eol_date: "2022-10-24"
+    source_url: https://support.apple.com/en-us/111900
+    notes: Safari 14 — shipped with macOS Big Sur/Catalina, both EOL
+  - major: "15"
+    eol_status: eol
+    eol_date: "2023-09-26"
+    source_url: https://support.apple.com/en-us/111900
+    notes: Safari 15 — shipped with macOS Monterey, EOL September 2023
+  - major: "16"
+    eol_status: eol
+    eol_date: "2024-09-16"
+    source_url: https://support.apple.com/en-us/111900
+    notes: Safari 16 — shipped with macOS Ventura, EOL September 2024
+  - major: "17"
+    eol_status: supported
+    latest_version: "17.6"
+    source_url: https://support.apple.com/en-us/111900
+    notes: Safari 17 — ships with macOS Sonoma, still receiving updates
+  - major: "18"
+    eol_status: supported
+    latest_version: "18.4"
+    source_url: https://developer.apple.com/tutorials/data/documentation/safari-release-notes.json
+    notes: Safari 18 — current, ships with macOS Sequoia and iOS 18
+aliases:
+  - "Safari"
+  - "com.apple.Safari"
