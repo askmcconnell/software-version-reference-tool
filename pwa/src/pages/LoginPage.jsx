@@ -27,7 +27,7 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: 420, margin: '60px auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: 8 }}>Sign in to SVRT</h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: 8 }}>Sign in to S3C-Tool</h1>
         <p className="text-muted">Software Security Supply Chain Tool</p>
       </div>
 

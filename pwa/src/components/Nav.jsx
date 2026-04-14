@@ -19,9 +19,9 @@ export default function Nav() {
           <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
           <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
         </svg>
-        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-          <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)', letterSpacing: '0.03em' }}>Ask McConnell's</span>
-          <span style={{ fontWeight: 700, letterSpacing: '0.02em' }}>S3C-Tool</span>
+        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
+          <span style={{ fontWeight: 700, letterSpacing: '0.02em', fontSize: '1rem' }}>S3C-Tool</span>
+          <span style={{ fontSize: '0.6rem', fontWeight: 400, color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Software Security Supply Chain</span>
         </span>
         <span className="badge">BETA</span>
       </Link>

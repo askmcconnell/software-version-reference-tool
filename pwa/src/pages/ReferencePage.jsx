@@ -46,7 +46,7 @@ export default function ReferencePage() {
         <div>
           <h1 style={{ fontSize: '1.5rem' }}>Reference Database</h1>
           <p className="text-muted" style={{ fontSize: '0.875rem' }}>
-            {total.toLocaleString()} entries · updated nightly by the SVRT research agent
+            {total.toLocaleString()} entries · updated nightly by the S3C research agent
           </p>
         </div>
       </div>

@@ -106,7 +106,7 @@ export default function UploadPage() {
       <div className="mb-24">
         <h1 style={{ fontSize: '1.75rem', marginBottom: 8 }}>Upload Inventory</h1>
         <p className="text-muted">
-          Upload a SVRT-format CSV from your Mac, Linux, or Windows scanner.
+          Upload an S3C-Tool CSV from your Mac, Linux, or Windows scanner.
           We'll match it against the reference database and email you the results.
         </p>
       </div>
@@ -181,7 +181,7 @@ export default function UploadPage() {
         {/* Support callout */}
         <div className="mt-16" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
           S3C-Tool is free and open-source.{' '}
-          <a href="/svrt/support" style={{ color: 'var(--accent)' }}>
+          <a href="/support" style={{ color: 'var(--accent)' }}>
             Support the project
           </a>{' '}
           if it's useful to you.
@@ -196,8 +196,8 @@ export default function UploadPage() {
           <div>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>📄 S3C-Tool CSV — machine inventory scanner</div>
             <ol style={{ paddingLeft: 20, lineHeight: 2, color: 'var(--text-muted)', margin: 0 }}>
-              <li>Download the scanner from the <a href="/svrt/docs">Docs page</a></li>
-              <li>Run: <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-input)', padding: '1px 6px', borderRadius: 4 }}>python3 svrt_scan_mac.py --quick</code></li>
+              <li>Download the scanner from the <a href="/docs">Docs page</a></li>
+              <li>Run: <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-input)', padding: '1px 6px', borderRadius: 4 }}>python3 s3c_scan_mac.py --quick</code></li>
               <li>Upload the generated <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-input)', padding: '1px 6px', borderRadius: 4 }}>.csv</code> above</li>
             </ol>
           </div>

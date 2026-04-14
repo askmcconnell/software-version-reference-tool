@@ -1,4 +1,4 @@
-// SVRT WordPress REST API client
+// S3C-Tool WordPress REST API client
 // Namespace: /wp-json/s3c/v1/
 
 const BASE = 'https://askmcconnell.com/wp-json/s3c/v1'

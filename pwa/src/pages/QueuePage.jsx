@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { getAdminQueue } from '../api/wordpress'
 import StatusBadge from '../components/StatusBadge'
 
-const SECRET_KEY = 'svrt_queue_secret'
+const SECRET_KEY = 's3c_queue_secret'
 const POLL_MS    = 4000
 
 function formatElapsed(secs) {
@@ -53,7 +53,7 @@ export default function QueuePage() {
       setError('')
     } catch (err) {
       if (err.status === 403) {
-        setError('Invalid secret — check the queue secret in WP Admin → SVRT.')
+        setError('Invalid secret — check the queue secret in WP Admin → S3C-Tool.')
       } else {
         setError(err.message || 'Fetch failed')
       }
@@ -98,7 +98,7 @@ export default function QueuePage() {
         <div style={{ fontSize: '2rem', marginBottom: 16 }}>🔐</div>
         <h1 style={{ fontSize: '1.4rem', marginBottom: 8 }}>Queue Dashboard</h1>
         <p className="text-muted mb-24" style={{ fontSize: '0.9rem' }}>
-          Enter the SVRT queue secret (WP Admin → SVRT → Settings).
+          Enter the S3C-Tool queue secret (WP Admin → S3C-Tool → Settings).
         </p>
         <form onSubmit={handleSecretSubmit} style={{ display: 'flex', gap: 8 }}>
           <input
