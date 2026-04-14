@@ -13,7 +13,7 @@
 #   WP_PROCESS_SECRET   — queue secret for /admin/unknown-software endpoint
 #
 # Optional:
-#   WP_BASE         — WordPress API base (default: https://askmcconnell.com/wp-json/svrt/v1)
+#   WP_BASE         — WordPress API base (default: https://askmcconnell.com/wp-json/s3c/v1)
 #   SLACK_WEBHOOK   — Slack webhook URL for notifications
 
 set -euo pipefail
@@ -174,7 +174,7 @@ fi
 
 # ── Push resolved entries to WordPress REST API ────────────────────────────────
 
-WP_API="${WP_API:-https://askmcconnell.com/wp-json/svrt/v1/admin/reference/import}"
+WP_API="${WP_API:-https://askmcconnell.com/wp-json/s3c/v1/admin/reference/import}"
 WP_ADMIN_TOKEN="${WP_ADMIN_TOKEN:-}"
 
 if [ -n "$WP_ADMIN_TOKEN" ]; then
@@ -252,7 +252,7 @@ fi
 # We fetch those as a CSV so the Pi knows what to research next (two-way sync).
 
 WP_PROCESS_SECRET="${WP_PROCESS_SECRET:-}"
-WP_BASE="${WP_BASE:-https://askmcconnell.com/wp-json/svrt/v1}"
+WP_BASE="${WP_BASE:-https://askmcconnell.com/wp-json/s3c/v1}"
 UNKNOWN_CSV="$BASE_DIR/db/exports/ionos_unknown_software.csv"
 
 if [ -n "$WP_PROCESS_SECRET" ] && [ -f "$AGENT_SCRIPT" ]; then
