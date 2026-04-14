@@ -68,7 +68,7 @@ PYPI_API      = 'https://pypi.org/pypi'
 NPM_API       = 'https://registry.npmjs.org'
 RUBYGEMS_API  = 'https://rubygems.org/api/v1/gems'
 
-GITHUB_REPO   = 'askmcconnell/software-version-reference-tool'
+GITHUB_REPO   = 'askmcconnell/s3c-tool'
 GITHUB_YAML_PATH = 'reference-db/products'
 
 # Pricing per million tokens (input / output)
