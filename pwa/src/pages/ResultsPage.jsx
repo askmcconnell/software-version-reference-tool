@@ -3,6 +3,36 @@ import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { getJobStatus, getJobReport, resendReport, deleteJob } from '../api/wordpress'
 import StatusBadge from '../components/StatusBadge'
 
+// ── CVE Badge ─────────────────────────────────────────────────────────────────
+
+function CveBadge({ count, critical, high }) {
+  if (count === null || count === undefined) {
+    return <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>—</span>
+  }
+  if (count === 0) {
+    return <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>0</span>
+  }
+  const bg = critical > 0 ? '#dc2626'   // red — has critical CVEs
+           : high > 0     ? '#ea580c'   // orange — has high CVEs
+           : '#6b7280'                  // grey — medium/low only
+  const title = `${count} CVE${count !== 1 ? 's' : ''}${critical ? ` (${critical} critical)` : ''}${high ? ` (${high} high)` : ''}`
+  return (
+    <span title={title} style={{
+      display: 'inline-block',
+      background: bg,
+      color: '#fff',
+      borderRadius: '4px',
+      padding: '1px 6px',
+      fontSize: '0.72rem',
+      fontWeight: 600,
+      letterSpacing: '0.02em',
+      cursor: 'default',
+    }}>
+      {count}
+    </span>
+  )
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatElapsed(secs) {
@@ -46,7 +76,7 @@ function downloadCSV(report, filter) {
   const url  = URL.createObjectURL(blob)
   const a    = document.createElement('a')
   a.href     = url
-  a.download = `svrt_report_${filter}_${new Date().toISOString().slice(0,10)}.csv`
+  a.download = `s3c_report_${filter}_${new Date().toISOString().slice(0,10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -340,6 +370,7 @@ export default function ResultsPage() {
                 <th>Status</th>
                 <th>EOL date</th>
                 <th>Latest</th>
+                <th>CVEs</th>
                 <th>Source</th>
               </tr>
             </thead>
@@ -364,6 +395,9 @@ export default function ResultsPage() {
                         ? <a href={row.latest_source_url} target="_blank" rel="noreferrer">{row.latest_version}</a>
                         : row.latest_version
                     ) : '—'}
+                  </td>
+                  <td>
+                    <CveBadge count={row.cve_count} critical={row.cve_critical} high={row.cve_high} />
                   </td>
                   <td className="muted" style={{ fontSize: '0.75rem' }}>
                     {row.ref_source || '—'}

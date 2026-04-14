@@ -3,9 +3,9 @@ export default function SupportPage() {
     <div style={{ maxWidth: 580, margin: '64px auto', textAlign: 'center', padding: '0 16px' }}>
 
       <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>♥</div>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: 12 }}>Support SVRT</h1>
+      <h1 style={{ fontSize: '1.75rem', marginBottom: 12 }}>Support S3C-Tool</h1>
       <p className="text-muted" style={{ fontSize: '1rem', lineHeight: 1.7, marginBottom: 32 }}>
-        SVRT is free, open-source, and has no paywalls or upload limits.
+        S3C-Tool is free, open-source, and has no paywalls or upload limits.
         If it's saved you time tracking down EOL software, a voluntary
         contribution helps keep the lights on — Raspberry Pi electricity,
         Claude API costs, and the occasional coffee.
@@ -31,7 +31,7 @@ export default function SupportPage() {
             ['Claude API', 'AI-powered EOL research for software the public databases don\'t cover'],
             ['Raspberry Pi', '24/7 research agent running nightly to expand the reference database'],
             ['Hosting', 'IONOS shared hosting for the WordPress backend and file storage'],
-            ['Open source', 'Keeping SVRT free, with no upload quotas or subscription tiers'],
+            ['Open source', 'Keeping S3C-Tool free, with no upload quotas or subscription tiers'],
           ].map(([title, desc]) => (
             <div key={title} style={{ display: 'flex', gap: 12 }}>
               <div style={{ color: 'var(--accent)', flexShrink: 0, fontSize: '1rem' }}>→</div>
@@ -44,12 +44,12 @@ export default function SupportPage() {
       <div className="mt-24" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
         Want to contribute code or EOL data instead?{' '}
         <a
-          href="https://github.com/askmcconnell/software-version-reference-tool"
+          href="https://github.com/askmcconnell/s3c-tool"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)' }}
         >
-          SVRT is on GitHub
+          S3C-Tool is on GitHub
         </a>
         {' '}— pull requests welcome.
       </div>

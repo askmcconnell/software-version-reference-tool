@@ -21,7 +21,7 @@ export default function UploadPage() {
     if (!f) return
     const isCsv  = f.name.endsWith('.csv')
     const isJson = f.name.endsWith('.json')
-    if (!isCsv && !isJson) { setError('Accepted formats: SVRT CSV (.csv), CycloneDX JSON (.json), SPDX JSON (.json)'); return }
+    if (!isCsv && !isJson) { setError('Accepted formats: S3C-Tool CSV (.csv), CycloneDX JSON (.json), SPDX JSON (.json)'); return }
     if (f.size > 2 * 1024 * 1024) { setError('File exceeds 2 MB limit.'); return }
     setError('')
     setFile(f)
@@ -30,7 +30,7 @@ export default function UploadPage() {
   function fileFormatLabel(f) {
     if (!f) return ''
     if (f.name.endsWith('.json')) return 'SBOM (JSON)'
-    return 'SVRT CSV'
+    return 'S3C-Tool CSV'
   }
 
   function onDrop(e) {
@@ -159,7 +159,7 @@ export default function UploadPage() {
             <>
               <div className="drop-zone-icon">⬆️</div>
               <div className="drop-zone-title">Drop your inventory file here</div>
-              <div className="drop-zone-sub">SVRT CSV · CycloneDX JSON · SPDX JSON — max 5,000 rows / 2 MB</div>
+              <div className="drop-zone-sub">S3C-Tool CSV · CycloneDX JSON · SPDX JSON — max 5,000 rows / 2 MB</div>
             </>
           )}
         </div>
@@ -180,7 +180,7 @@ export default function UploadPage() {
 
         {/* Support callout */}
         <div className="mt-16" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-          SVRT is free and open-source.{' '}
+          S3C-Tool is free and open-source.{' '}
           <a href="/svrt/support" style={{ color: 'var(--accent)' }}>
             Support the project
           </a>{' '}
@@ -194,7 +194,7 @@ export default function UploadPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, fontSize: '0.875rem' }}>
 
           <div>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>📄 SVRT CSV — machine inventory scanner</div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>📄 S3C-Tool CSV — machine inventory scanner</div>
             <ol style={{ paddingLeft: 20, lineHeight: 2, color: 'var(--text-muted)', margin: 0 }}>
               <li>Download the scanner from the <a href="/svrt/docs">Docs page</a></li>
               <li>Run: <code style={{ fontFamily: 'var(--font-mono)', background: 'var(--bg-input)', padding: '1px 6px', borderRadius: 4 }}>python3 svrt_scan_mac.py --quick</code></li>

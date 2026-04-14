@@ -1,10 +1,10 @@
 // SVRT WordPress REST API client
-// Namespace: /wp-json/svrt/v1/
+// Namespace: /wp-json/s3c/v1/
 
-const BASE = 'https://askmcconnell.com/wp-json/svrt/v1'
+const BASE = 'https://askmcconnell.com/wp-json/s3c/v1'
 
 function getToken() {
-  return localStorage.getItem('svrt_token')
+  return localStorage.getItem('s3c_token')
 }
 
 async function request(path, options = {}) {

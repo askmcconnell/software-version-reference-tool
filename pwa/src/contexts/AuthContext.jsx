@@ -9,31 +9,31 @@ export function AuthProvider({ children }) {
 
   // Restore session on mount
   useEffect(() => {
-    const token = localStorage.getItem('svrt_token')
+    const token = localStorage.getItem('s3c_token')
     if (!token) { setLoading(false); return }
     getMe()
       .then(data => setUser(data))
-      .catch(() => localStorage.removeItem('svrt_token'))
+      .catch(() => localStorage.removeItem('s3c_token'))
       .finally(() => setLoading(false))
   }, [])
 
   const login = useCallback(async (email, password) => {
     const data = await apiLogin(email, password)
-    localStorage.setItem('svrt_token', data.token)
+    localStorage.setItem('s3c_token', data.token)
     setUser(data)
     return data
   }, [])
 
   const register = useCallback(async (fields) => {
     const data = await apiRegister(fields)
-    localStorage.setItem('svrt_token', data.token)
+    localStorage.setItem('s3c_token', data.token)
     setUser(data)
     return data
   }, [])
 
   const logout = useCallback(async () => {
     await apiLogout()
-    localStorage.removeItem('svrt_token')
+    localStorage.removeItem('s3c_token')
     setUser(null)
   }, [])
 

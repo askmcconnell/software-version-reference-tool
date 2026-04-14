@@ -8,16 +8,16 @@ export default function DocsPage() {
   return (
     <div style={{ maxWidth: 760, margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.75rem', marginBottom: 8 }}>Documentation</h1>
-      <p className="text-muted mb-24">How to generate an inventory file and upload it to the Software Version Reference Tool.</p>
+      <p className="text-muted mb-24">How to generate an inventory file and upload it to S3C-Tool.</p>
 
       {/* Downloads */}
       <div className="card mb-24">
         <div className="card-title">📦 Download Scanners</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           {[
-            { name: 'macOS Scanner',   file: 'svrt_scan_mac.py',      icon: '🍎', cmd: 'python3 svrt_scan_mac.py --quick' },
-            { name: 'Linux Scanner',   file: 'svrt_scan_linux.py',    icon: '🐧', cmd: 'python3 svrt_scan_linux.py --quick' },
-            { name: 'Windows Scanner', file: 'svrt_scan_windows.ps1', icon: '🪟', cmd: '.\\svrt_scan_windows.ps1 -Quick' },
+            { name: 'macOS Scanner',   file: 's3c_scan_mac.py',      icon: '🍎', cmd: 'python3 s3c_scan_mac.py --quick' },
+            { name: 'Linux Scanner',   file: 's3c_scan_linux.py',    icon: '🐧', cmd: 'python3 s3c_scan_linux.py --quick' },
+            { name: 'Windows Scanner', file: 's3c_scan_windows.ps1', icon: '🪟', cmd: '.\\s3c_scan_windows.ps1 -Quick' },
           ].map(({ name, file, icon, cmd }) => (
             <div key={file} style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 16 }}>
               <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{icon}</div>
@@ -26,7 +26,7 @@ export default function DocsPage() {
                 {code(file)}
               </div>
               <a
-                href={`https://askmcconnell.com/svrt/scanners/${file}`}
+                href={`https://askmcconnell.com/s3c/scanners/${file}`}
                 className="btn btn-ghost btn-sm"
                 download
               >
@@ -44,12 +44,12 @@ export default function DocsPage() {
           <li>Download the scanner for your platform above</li>
           <li>Requires Python 3.8+ (pre-installed on macOS and most Linux distros)</li>
           <li>
-            Run: {code('python3 svrt_scan_mac.py --quick')}
+            Run: {code('python3 s3c_scan_mac.py --quick')}
             <span style={{ display: 'block', fontSize: '0.8rem', marginTop: 2 }}>
-              Output: {code('~/Desktop/svrt_inventory_mac_YYYY-MM-DD.csv')}
+              Output: {code('~/Desktop/s3c_inventory_mac_YYYY-MM-DD.csv')}
             </span>
           </li>
-          <li>Log in and upload the CSV on the <a href="/svrt/">Upload page</a></li>
+          <li>Log in and upload the CSV on the <a href="/s3c/">Upload page</a></li>
           <li>Your EOL/EOS report is ready in seconds</li>
         </ol>
         <div className="alert alert-info mt-16" style={{ marginBottom: 0 }}>
@@ -62,7 +62,7 @@ export default function DocsPage() {
       <div className="card mb-24">
         <div className="card-title">📋 CSV Format v1.0</div>
         <p className="text-muted mb-16" style={{ fontSize: '0.875rem' }}>
-          SVRT expects these 17 columns. The scanners produce this format automatically.
+          S3C-Tool expects these 17 columns. The scanners produce this format automatically.
           Only {code('software_name')} is required — all other columns are optional.
         </p>
         <div className="table-wrap">
@@ -72,7 +72,7 @@ export default function DocsPage() {
             </thead>
             <tbody>
               {[
-                ['svrt_format_version', '—', '1.0',         'Always "1.0"'],
+                ['s3c_format_version', '—', '1.0',         'Always "1.0"'],
                 ['scan_date',           '—', '2026-04-05',  'ISO 8601 date'],
                 ['hostname_hash',       '—', 'a3f9b2c1…',  'SHA-256 prefix (privacy)'],
                 ['platform',            '—', 'mac',         'mac | linux | windows'],

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# SVRT — Deploy Script
+# S3C-Tool — Deploy Script
 # Builds the React PWA and deploys all assets to IONOS.
 #
 # Usage:
@@ -32,9 +32,9 @@ fi
 : "${FTP_PASS:?FTP_PASS is required}"
 
 # Remote paths (relative to SFTP root = web root)
-SVRT_REMOTE_DIR="${SVRT_REMOTE_DIR:-/svrt}"
+S3C_REMOTE_DIR="${SVRT_REMOTE_DIR:-/s3c}"
 PLUGIN_REMOTE_PATH="${PLUGIN_REMOTE_PATH:-/wp-content/plugins/svrt/svrt.php}"
-SCANNERS_REMOTE_DIR="${SCANNERS_REMOTE_DIR:-/svrt/scanners}"
+SCANNERS_REMOTE_DIR="${SCANNERS_REMOTE_DIR:-/s3c/scanners}"
 
 # ── Parse flags ────────────────────────────────────────────
 DEPLOY_PLUGIN=false
@@ -53,7 +53,7 @@ export NVM_DIR="$HOME/.nvm"
 
 # ── Build PWA ──────────────────────────────────────────────
 echo ""
-echo "==> Building SVRT React PWA..."
+echo "==> Building S3C-Tool React PWA..."
 cd "$SCRIPT_DIR/pwa"
 npm run build
 cd "$SCRIPT_DIR"
@@ -68,12 +68,12 @@ echo "==> Deploying to ${FTP_HOST}..."
 
 python3 - \
     "$FTP_HOST" "$FTP_USER" "$FTP_PASS" \
-    "$DIST" "$SVRT_REMOTE_DIR" \
+    "$DIST" "$S3C_REMOTE_DIR" \
     "$DEPLOY_PLUGIN" "$SCRIPT_DIR/wordpress-plugin/svrt/svrt.php" "$PLUGIN_REMOTE_PATH" \
     "$DEPLOY_SCANNERS" \
-    "$SCRIPT_DIR/scripts/mac/svrt_scan_mac.py" \
-    "$SCRIPT_DIR/scripts/linux/svrt_scan_linux.py" \
-    "$SCRIPT_DIR/scripts/windows/svrt_scan_windows.ps1" \
+    "$SCRIPT_DIR/scripts/mac/s3c_scan_mac.py" \
+    "$SCRIPT_DIR/scripts/linux/s3c_scan_linux.py" \
+    "$SCRIPT_DIR/scripts/windows/s3c_scan_windows.ps1" \
     "$SCANNERS_REMOTE_DIR" \
 << 'PYEOF'
 import sys, os
@@ -91,7 +91,7 @@ for site_path in [
 import paramiko
 
 (host, user, password,
- dist, svrt_remote,
+ dist, s3c_remote,
  deploy_plugin, plugin_local, plugin_remote,
  deploy_scanners,
  mac_scanner, linux_scanner, windows_scanner,
@@ -133,23 +133,23 @@ ssh.connect(host, username=user, password=password, timeout=30)
 sftp = ssh.open_sftp()
 
 # ── PWA dist ──────────────────────────────────────────────────────────────────
-print(f'\n  Uploading PWA → {svrt_remote}/')
-total = upload_dir(sftp, dist, svrt_remote)
+print(f'\n  Uploading PWA → {s3c_remote}/')
+total = upload_dir(sftp, dist, s3c_remote)
 print(f'  → {total} files uploaded')
 
 # Ensure .htaccess for React Router SPA is in place
 htaccess = (
     "Options -MultiViews\n"
     "RewriteEngine On\n"
-    "RewriteBase /svrt/\n"
+    "RewriteBase /s3c/\n"
     "RewriteRule ^index\\.html$ - [L]\n"
     "RewriteCond %{REQUEST_FILENAME} !-f\n"
     "RewriteCond %{REQUEST_FILENAME} !-d\n"
-    "RewriteRule . /svrt/index.html [L]\n"
+    "RewriteRule . /s3c/index.html [L]\n"
 )
 import io
-sftp.putfo(io.BytesIO(htaccess.encode()), svrt_remote.rstrip('/') + '/.htaccess')
-print(f'  ✓  {svrt_remote}/.htaccess (SPA routing)')
+sftp.putfo(io.BytesIO(htaccess.encode()), s3c_remote.rstrip('/') + '/.htaccess')
+print(f'  ✓  {s3c_remote}/.htaccess (SPA routing)')
 
 # ── WordPress plugin ──────────────────────────────────────────────────────────
 if deploy_plugin:
@@ -189,11 +189,11 @@ PYEOF
 # ── Summary ────────────────────────────────────────────────
 echo ""
 echo "==> Deploy complete!"
-echo "    PWA live at:   https://askmcconnell.com/svrt/"
+echo "    PWA live at:   https://askmcconnell.com/s3c/"
 if [ "$DEPLOY_PLUGIN" = "true" ]; then
     echo "    Plugin:        deployed (activate in WP Admin if needed)"
 fi
 if [ "$DEPLOY_SCANNERS" = "true" ]; then
-    echo "    Scanners:      https://askmcconnell.com/svrt/scanners/"
+    echo "    Scanners:      https://askmcconnell.com/s3c/scanners/"
 fi
 echo ""

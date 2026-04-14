@@ -185,7 +185,7 @@ export default function DashboardPage() {
           The Software EOL Landscape
         </h1>
         <p style={{ color: 'var(--text-muted)', maxWidth: 580, lineHeight: 1.6 }}>
-          Aggregate end-of-life trends from software inventories submitted to SVRT.
+          Aggregate end-of-life trends from software inventories submitted to S3C-Tool.
           No identifying information — organisations, hostnames, and users are never shown.
         </p>
       </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
           { num: fmt(summary.eol),                label: 'EOL instances found',       color: 'var(--eol)',        title: 'Software instances confirmed end-of-life' },
           { num: fmt(summary.outdated ?? 0),      label: 'Outdated instances',        color: 'var(--outdated)',   title: 'Supported software running an older version than the current release' },
           { num: `${summary.eol_pct ?? 0}%`,     label: 'EOL rate',                  color: 'var(--eol)',        title: 'Percentage of all instances that are end-of-life' },
-          { num: fmt(reference.total),            label: 'Products researched',       color: 'var(--text-muted)', title: 'Software products in the SVRT reference database' },
+          { num: fmt(reference.total),            label: 'Products researched',       color: 'var(--text-muted)', title: 'Software products in the S3C-Tool reference database' },
         ].map(({ num, label, color, title }) => (
           <div className="stat-card" key={label} title={title} style={{ cursor: 'default' }}>
             <div className="stat-num" style={{ color }}>{num}</div>
@@ -432,7 +432,7 @@ export default function DashboardPage() {
           Is your software stack up to date?
         </div>
         <p className="text-muted mb-16" style={{ fontSize: '0.9rem' }}>
-          Upload a SVRT CSV or SBOM file to get a personalised EOL report for your environment.
+          Upload an S3C-Tool CSV or SBOM file to get a personalised EOL report for your environment.
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link to="/register" className="btn btn-primary">Get started free</Link>

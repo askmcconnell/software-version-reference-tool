@@ -1,24 +1,24 @@
 <?php
 /**
- * Plugin Name: SVRT — Software Version Reference Tool
- * Description: Backend for askmcconnell.com/svrt — open-source EOL detection tool. Contributor auth, inventory upload, EOL report generation, and reference DB management.
+ * Plugin Name: S3C-Tool — Software Security Supply Chain Tool
+ * Description: Backend for askmcconnell.com/s3c — S3C-Tool (Software Security Supply Chain Tool). Contributor auth, inventory upload, EOL report generation, and reference DB management.
  * Version: 1.0.0
  * Author: Ask McConnell
  */
 defined('ABSPATH') || exit;
 
-define('SVRT_VERSION',      '1.0.0');
-define('SVRT_TOKEN_EXPIRY', 30 * DAY_IN_SECONDS);
-define('SVRT_TOKEN_PREFIX', 'svrt_auth_');
-define('SVRT_UPLOAD_LIMIT', 5000);   // max rows per upload
-define('SVRT_UPLOAD_MB',    2);      // max file size in MB
+define('S3C_VERSION',      '1.0.0');
+define('S3C_TOKEN_EXPIRY', 30 * DAY_IN_SECONDS);
+define('S3C_TOKEN_PREFIX', 's3c_auth_');
+define('S3C_UPLOAD_LIMIT', 5000);   // max rows per upload
+define('S3C_UPLOAD_MB',    2);      // max file size in MB
 
 // ============================================================
 // ACTIVATION / DEACTIVATION
 // ============================================================
 
 register_activation_hook(__FILE__, function () {
-    svrt_create_tables();
+    s3c_create_tables();
     flush_rewrite_rules();
 });
 
@@ -27,13 +27,13 @@ register_deactivation_hook(__FILE__, function () {
 });
 
 // Run table creation on every load (safe — uses IF NOT EXISTS).
-add_action('init', 'svrt_create_tables');
+add_action('init', 's3c_create_tables');
 
 // ============================================================
 // DATABASE TABLES
 // ============================================================
 
-function svrt_create_tables(): void {
+function s3c_create_tables(): void {
     global $wpdb;
     $c = $wpdb->get_charset_collate();
 
@@ -75,14 +75,37 @@ function svrt_create_tables(): void {
     ) $c;");
 
     // Add report token columns to existing installs (dbDelta doesn't reliably add columns)
-    svrt_maybe_add_column(
+    s3c_maybe_add_column(
         "{$wpdb->prefix}svrt_upload_jobs", 'report_token',
         "ALTER TABLE {$wpdb->prefix}svrt_upload_jobs ADD COLUMN report_token VARCHAR(64) DEFAULT NULL"
     );
-    svrt_maybe_add_column(
+    s3c_maybe_add_column(
         "{$wpdb->prefix}svrt_upload_jobs", 'report_token_expires',
         "ALTER TABLE {$wpdb->prefix}svrt_upload_jobs ADD COLUMN report_token_expires DATETIME DEFAULT NULL"
     );
+
+    // CVE columns — inventory_rows (existing installs migration)
+    foreach (['cve_count INT DEFAULT NULL', 'cve_critical SMALLINT DEFAULT NULL',
+              'cve_high SMALLINT DEFAULT NULL', 'cve_medium SMALLINT DEFAULT NULL',
+              'cve_low SMALLINT DEFAULT NULL'] as $col_def) {
+        $col = explode(' ', $col_def)[0];
+        s3c_maybe_add_column(
+            "{$wpdb->prefix}svrt_inventory_rows", $col,
+            "ALTER TABLE {$wpdb->prefix}svrt_inventory_rows ADD COLUMN $col_def"
+        );
+    }
+
+    // CVE columns — reference table (existing installs migration)
+    foreach (['cve_count INT DEFAULT NULL', 'cve_critical SMALLINT DEFAULT NULL',
+              'cve_high SMALLINT DEFAULT NULL', 'cve_medium SMALLINT DEFAULT NULL',
+              'cve_low SMALLINT DEFAULT NULL',
+              'cve_checked_at DATETIME DEFAULT NULL'] as $col_def) {
+        $col = explode(' ', $col_def)[0];
+        s3c_maybe_add_column(
+            "{$wpdb->prefix}svrt_reference", $col,
+            "ALTER TABLE {$wpdb->prefix}svrt_reference ADD COLUMN $col_def"
+        );
+    }
 
     // Uploaded inventory rows — individual software items per job
     dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}svrt_inventory_rows (
@@ -106,6 +129,11 @@ function svrt_create_tables(): void {
         confidence    TINYINT      DEFAULT 0,
         ref_source    VARCHAR(50)  DEFAULT '',
         ref_notes     TEXT         DEFAULT NULL,
+        cve_count     INT          DEFAULT NULL,
+        cve_critical  SMALLINT     DEFAULT NULL,
+        cve_high      SMALLINT     DEFAULT NULL,
+        cve_medium    SMALLINT     DEFAULT NULL,
+        cve_low       SMALLINT     DEFAULT NULL,
         PRIMARY KEY (id),
         KEY job_id (job_id),
         KEY user_id (user_id),
@@ -130,6 +158,12 @@ function svrt_create_tables(): void {
         hit_count         INT          NOT NULL DEFAULT 0,
         checked_at        DATETIME     DEFAULT NULL,
         expires_at        DATETIME     DEFAULT NULL,
+        cve_count         INT          DEFAULT NULL,
+        cve_critical      SMALLINT     DEFAULT NULL,
+        cve_high          SMALLINT     DEFAULT NULL,
+        cve_medium        SMALLINT     DEFAULT NULL,
+        cve_low           SMALLINT     DEFAULT NULL,
+        cve_checked_at    DATETIME     DEFAULT NULL,
         PRIMARY KEY (id),
         UNIQUE KEY lookup_key (lookup_key),
         KEY eol_status (eol_status),
@@ -137,7 +171,7 @@ function svrt_create_tables(): void {
     ) $c;");
 }
 
-function svrt_maybe_add_column(string $table, string $col, string $sql): void {
+function s3c_maybe_add_column(string $table, string $col, string $sql): void {
     global $wpdb;
     $cols = $wpdb->get_col("DESCRIBE $table", 0);
     if (!in_array($col, $cols, true)) {
@@ -149,8 +183,8 @@ function svrt_maybe_add_column(string $table, string $col, string $sql): void {
 // Rows inserted before this fix had eol_status='unknown' as their initial state,
 // making them indistinguishable from "looked up but no match". This resets any
 // row that was never actually looked up (ref_source is empty) on incomplete jobs.
-function svrt_migrate_stuck_rows(): void {
-    if (get_option('svrt_migrated_eol_sentinel_v1')) return;
+function s3c_migrate_stuck_rows(): void {
+    if (get_option('s3c_migrated_eol_sentinel_v1')) return;
     global $wpdb;
 
     // Reset rows on pending/processing jobs that were never actually looked up.
@@ -174,15 +208,15 @@ function svrt_migrate_stuck_rows(): void {
          WHERE status IN ('pending', 'processing')"
     );
 
-    update_option('svrt_migrated_eol_sentinel_v1', true);
+    update_option('s3c_migrated_eol_sentinel_v1', true);
 }
-add_action('init', 'svrt_migrate_stuck_rows', 20);
+add_action('init', 's3c_migrate_stuck_rows', 20);
 
 // ============================================================
 // CORS HEADERS
 // ============================================================
 
-function svrt_send_cors_headers(): void {
+function s3c_send_cors_headers(): void {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $allowed = [
         'https://askmcconnell.com',
@@ -201,14 +235,14 @@ function svrt_send_cors_headers(): void {
 
 add_action('init', function () {
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
-        svrt_send_cors_headers();
+        s3c_send_cors_headers();
         status_header(200);
         exit;
     }
 });
 
 add_filter('rest_pre_serve_request', function ($served, $result, $request) {
-    svrt_send_cors_headers();
+    s3c_send_cors_headers();
     return $served;
 }, 10, 3);
 
@@ -217,9 +251,9 @@ add_filter('rest_pre_serve_request', function ($served, $result, $request) {
 // ============================================================
 
 add_filter('determine_current_user', function ($user_id) {
-    $token = svrt_get_bearer_token();
+    $token = s3c_get_bearer_token();
     if ($token) {
-        $stored = get_transient(SVRT_TOKEN_PREFIX . hash('sha256', $token));
+        $stored = get_transient(S3C_TOKEN_PREFIX . hash('sha256', $token));
         if ($stored) {
             return (int) $stored;
         }
@@ -228,15 +262,15 @@ add_filter('determine_current_user', function ($user_id) {
 }, 20);
 
 add_filter('rest_authentication_errors', function ($result) {
-    $token = svrt_get_bearer_token();
+    $token = s3c_get_bearer_token();
     if (!$token) return $result;
-    $stored = get_transient(SVRT_TOKEN_PREFIX . hash('sha256', $token));
+    $stored = get_transient(S3C_TOKEN_PREFIX . hash('sha256', $token));
     if (!$stored) return $result;
     wp_set_current_user((int) $stored);
     return is_wp_error($result) ? null : $result;
 }, 200);
 
-function svrt_get_bearer_token(): ?string {
+function s3c_get_bearer_token(): ?string {
     if (!empty($_GET['_token'])) {
         return sanitize_text_field(wp_unslash($_GET['_token']));
     }
@@ -252,29 +286,29 @@ function svrt_get_bearer_token(): ?string {
     return trim(substr($header, 7));
 }
 
-function svrt_generate_token(int $user_id): string {
+function s3c_generate_token(int $user_id): string {
     $token = wp_generate_password(64, false, false);
-    set_transient(SVRT_TOKEN_PREFIX . hash('sha256', $token), $user_id, SVRT_TOKEN_EXPIRY);
-    update_user_meta($user_id, '_svrt_last_login', current_time('mysql'));
+    set_transient(S3C_TOKEN_PREFIX . hash('sha256', $token), $user_id, S3C_TOKEN_EXPIRY);
+    update_user_meta($user_id, '_s3c_last_login', current_time('mysql'));
     return $token;
 }
 
-function svrt_invalidate_token(string $token): void {
-    delete_transient(SVRT_TOKEN_PREFIX . hash('sha256', $token));
+function s3c_invalidate_token(string $token): void {
+    delete_transient(S3C_TOKEN_PREFIX . hash('sha256', $token));
 }
 
 // ============================================================
 // PERMISSION CALLBACKS
 // ============================================================
 
-function svrt_require_auth(): bool|WP_Error {
+function s3c_require_auth(): bool|WP_Error {
     if (!is_user_logged_in()) {
         return new WP_Error('unauthorized', 'Authentication required.', ['status' => 401]);
     }
     return true;
 }
 
-function svrt_require_admin(): bool|WP_Error {
+function s3c_require_admin(): bool|WP_Error {
     if (!is_user_logged_in()) {
         return new WP_Error('unauthorized', 'Authentication required.', ['status' => 401]);
     }
@@ -285,7 +319,7 @@ function svrt_require_admin(): bool|WP_Error {
 }
 
 // Allows Bearer-authenticated users OR a valid short-lived report token
-function svrt_require_auth_or_rtoken(WP_REST_Request $req): bool|WP_Error {
+function s3c_require_auth_or_rtoken(WP_REST_Request $req): bool|WP_Error {
     if (is_user_logged_in()) return true;
     if (!empty($req->get_param('rtoken'))) return true; // token validity checked inside handler
     return new WP_Error('unauthorized', 'Authentication required.', ['status' => 401]);
@@ -293,28 +327,28 @@ function svrt_require_auth_or_rtoken(WP_REST_Request $req): bool|WP_Error {
 
 // ── Email helper ─────────────────────────────────────────────────────────────
 
-function svrt_send_report_email(string $to, string $uuid, string $token, array $job): void {
-    $link     = "https://askmcconnell.com/svrt/results/{$uuid}?rtoken={$token}";
+function s3c_send_report_email(string $to, string $uuid, string $token, array $job): void {
+    $link     = "https://askmcconnell.com/s3c/results/{$uuid}?rtoken={$token}";
     $filename = $job['filename'] ?? 'your inventory';
     $rows     = number_format((int) ($job['row_count'] ?? 0));
 
-    $subject  = 'Your SVRT report is ready — ' . $filename;
+    $subject  = 'Your S3C-Tool report is ready — ' . $filename;
 
     $message  = "Hi,\n\n";
-    $message .= "Your Software Version Reference Tool report has finished processing.\n\n";
+    $message .= "Your Software Security Supply Chain Tool report has finished processing.\n\n";
     $message .= "  File:          {$filename}\n";
     $message .= "  Items scanned: {$rows}\n\n";
     $message .= "View your report (link valid for 24 hours):\n";
     $message .= "{$link}\n\n";
-    $message .= "Once the link expires, log in at https://askmcconnell.com/svrt/ to access\n";
+    $message .= "Once the link expires, log in at https://askmcconnell.com/s3c/ to access\n";
     $message .= "your report history at any time.\n\n";
     $message .= "---\n";
-    $message .= "Software Version Reference Tool\n";
-    $message .= "https://askmcconnell.com/svrt/\n";
+    $message .= "Software Security Supply Chain Tool\n";
+    $message .= "https://askmcconnell.com/s3c/\n";
 
     $headers = [
         'Content-Type: text/plain; charset=UTF-8',
-        'From: SVRT <noreply@askmcconnell.com>',
+        'From: S3C-Tool <noreply@askmcconnell.com>',
     ];
 
     $sent = wp_mail($to, $subject, $message, $headers);
@@ -328,7 +362,7 @@ function svrt_send_report_email(string $to, string $uuid, string $token, array $
     }
 }
 
-function svrt_get_subscriber(int $user_id): ?array {
+function s3c_get_subscriber(int $user_id): ?array {
     global $wpdb;
     $row = $wpdb->get_row($wpdb->prepare(
         "SELECT * FROM {$wpdb->prefix}svrt_subscribers WHERE user_id = %d",
@@ -342,132 +376,132 @@ function svrt_get_subscriber(int $user_id): ?array {
 // ============================================================
 
 add_action('rest_api_init', function () {
-    $ns = 'svrt/v1';
+    $ns = 's3c/v1';
 
     // ── Auth ────────────────────────────────────────────────
     register_rest_route($ns, '/auth/register', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_register',
+        'callback'            => 's3c_api_register',
         'permission_callback' => '__return_true',
     ]);
     register_rest_route($ns, '/auth/login', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_login',
+        'callback'            => 's3c_api_login',
         'permission_callback' => '__return_true',
     ]);
     register_rest_route($ns, '/auth/logout', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_logout',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_logout',
+        'permission_callback' => 's3c_require_auth',
     ]);
     register_rest_route($ns, '/auth/me', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_me',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_me',
+        'permission_callback' => 's3c_require_auth',
     ]);
 
     // ── Inventory Upload ────────────────────────────────────
     register_rest_route($ns, '/upload', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_upload',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_upload',
+        'permission_callback' => 's3c_require_auth',
     ]);
 
     // ── Job Status + Report ─────────────────────────────────
     register_rest_route($ns, '/job/(?P<uuid>[a-f0-9\-]{36})', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_job_status',
-        'permission_callback' => 'svrt_require_auth_or_rtoken',
+        'callback'            => 's3c_api_job_status',
+        'permission_callback' => 's3c_require_auth_or_rtoken',
     ]);
     register_rest_route($ns, '/job/(?P<uuid>[a-f0-9\-]{36})/report', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_job_report',
-        'permission_callback' => 'svrt_require_auth_or_rtoken',
+        'callback'            => 's3c_api_job_report',
+        'permission_callback' => 's3c_require_auth_or_rtoken',
     ]);
     register_rest_route($ns, '/job/(?P<uuid>[a-f0-9\-]{36})/resend', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_resend_report',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_resend_report',
+        'permission_callback' => 's3c_require_auth',
     ]);
     register_rest_route($ns, '/job/(?P<uuid>[a-f0-9\-]{36})', [
         'methods'             => 'DELETE',
-        'callback'            => 'svrt_api_delete_job',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_delete_job',
+        'permission_callback' => 's3c_require_auth',
     ]);
 
     register_rest_route($ns, '/jobs', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_my_jobs',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_my_jobs',
+        'permission_callback' => 's3c_require_auth',
     ]);
 
     // ── Reference DB Download (authenticated) ───────────────
     register_rest_route($ns, '/reference', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_reference_db',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_reference_db',
+        'permission_callback' => 's3c_require_auth',
     ]);
     register_rest_route($ns, '/reference/search', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_reference_search',
-        'permission_callback' => 'svrt_require_auth',
+        'callback'            => 's3c_api_reference_search',
+        'permission_callback' => 's3c_require_auth',
     ]);
 
     // ── Stats (public — for landing page) ───────────────────
     register_rest_route($ns, '/stats', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_stats',
+        'callback'            => 's3c_api_stats',
         'permission_callback' => '__return_true',
     ]);
 
     // ── Admin ────────────────────────────────────────────────
     register_rest_route($ns, '/admin/reference/import', [
         'methods'             => 'POST',
-        'callback'            => 'svrt_api_admin_import_reference',
-        'permission_callback' => 'svrt_require_admin',
+        'callback'            => 's3c_api_admin_import_reference',
+        'permission_callback' => 's3c_require_admin',
     ]);
     register_rest_route($ns, '/admin/jobs', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_admin_jobs',
-        'permission_callback' => 'svrt_require_admin',
+        'callback'            => 's3c_api_admin_jobs',
+        'permission_callback' => 's3c_require_admin',
     ]);
     register_rest_route($ns, '/admin/subscribers', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_admin_subscribers',
-        'permission_callback' => 'svrt_require_admin',
+        'callback'            => 's3c_api_admin_subscribers',
+        'permission_callback' => 's3c_require_admin',
     ]);
     // Queue dashboard — secret-based auth (no WP session needed)
     register_rest_route($ns, '/admin/queue', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_admin_queue',
+        'callback'            => 's3c_api_admin_queue',
         'permission_callback' => '__return_true',   // secret checked inside
     ]);
 
     // ── Public industry dashboard ────────────────────────────
     register_rest_route($ns, '/dashboard', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_dashboard',
+        'callback'            => 's3c_api_dashboard',
         'permission_callback' => '__return_true',
     ]);
 
     // ── Export unknown software for Pi research queue ─────────
     register_rest_route($ns, '/admin/unknown-software', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_unknown_software',
+        'callback'            => 's3c_api_unknown_software',
         'permission_callback' => '__return_true',   // secret checked inside
     ]);
 
     // ── Re-enrich unknown rows against updated reference DB ───
     register_rest_route($ns, '/reenrich', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_reenrich',
+        'callback'            => 's3c_api_reenrich',
         'permission_callback' => '__return_true',   // secured by secret key check inside
     ]);
 
     // ── Process upload queue (triggered by cron/ping) ────────
     register_rest_route($ns, '/process', [
         'methods'             => 'GET',
-        'callback'            => 'svrt_api_process_queue',
+        'callback'            => 's3c_api_process_queue',
         'permission_callback' => '__return_true',   // secured by secret key check inside
     ]);
 });
@@ -476,7 +510,7 @@ add_action('rest_api_init', function () {
 // AUTH ENDPOINTS
 // ============================================================
 
-function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $email    = sanitize_email($req->get_param('email') ?? '');
     $password = $req->get_param('password') ?? '';
     $first    = sanitize_text_field($req->get_param('first_name') ?? '');
@@ -503,7 +537,7 @@ function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
     }
 
     wp_update_user(['ID' => $user_id, 'first_name' => $first, 'last_name' => $last]);
-    update_user_meta($user_id, '_svrt_company', $company);
+    update_user_meta($user_id, '_s3c_company', $company);
 
     // Create contributor record
     global $wpdb;
@@ -515,7 +549,7 @@ function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
         'company'      => $company,
     ]);
 
-    $token = svrt_generate_token($user_id);
+    $token = s3c_generate_token($user_id);
     return new WP_REST_Response([
         'token'   => $token,
         'user_id' => $user_id,
@@ -525,7 +559,7 @@ function svrt_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
     ], 201);
 }
 
-function svrt_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $email    = sanitize_email($req->get_param('email') ?? '');
     $password = $req->get_param('password') ?? '';
 
@@ -538,8 +572,8 @@ function svrt_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
         return new WP_Error('invalid_credentials', 'Invalid email or password.', ['status' => 401]);
     }
 
-    $sub = svrt_get_subscriber($user->ID);
-    $token = svrt_generate_token($user->ID);
+    $sub = s3c_get_subscriber($user->ID);
+    $token = s3c_generate_token($user->ID);
 
     return new WP_REST_Response([
         'token'   => $token,
@@ -550,20 +584,20 @@ function svrt_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
     ], 200);
 }
 
-function svrt_api_logout(WP_REST_Request $req): WP_REST_Response {
-    $token = svrt_get_bearer_token();
-    if ($token) svrt_invalidate_token($token);
+function s3c_api_logout(WP_REST_Request $req): WP_REST_Response {
+    $token = s3c_get_bearer_token();
+    if ($token) s3c_invalidate_token($token);
     return new WP_REST_Response(['message' => 'Logged out.'], 200);
 }
 
-function svrt_api_me(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_me(WP_REST_Request $req): WP_REST_Response {
     $user = wp_get_current_user();
-    $sub  = svrt_get_subscriber($user->ID);
+    $sub  = s3c_get_subscriber($user->ID);
     return new WP_REST_Response([
         'user_id'      => $user->ID,
         'email'        => $user->user_email,
         'name'         => trim($user->first_name . ' ' . $user->last_name),
-        'company'      => get_user_meta($user->ID, '_svrt_company', true),
+        'company'      => get_user_meta($user->ID, '_s3c_company', true),
         'plan'         => $sub['plan'] ?? 'contributor',
         'uploads_used' => (int) ($sub['uploads_used'] ?? 0),
     ], 200);
@@ -573,9 +607,9 @@ function svrt_api_me(WP_REST_Request $req): WP_REST_Response {
 // UPLOAD ENDPOINT
 // ============================================================
 
-function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $user    = wp_get_current_user();
-    $sub     = svrt_get_subscriber($user->ID);
+    $sub     = s3c_get_subscriber($user->ID);
     global $wpdb;
 
     if (!$sub) {
@@ -593,9 +627,9 @@ function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
         return new WP_Error('upload_error', 'File upload failed (PHP error ' . $file['error'] . ').', ['status' => 400]);
     }
 
-    $max_bytes = SVRT_UPLOAD_MB * 1024 * 1024;
+    $max_bytes = S3C_UPLOAD_MB * 1024 * 1024;
     if ($file['size'] > $max_bytes) {
-        return new WP_Error('file_too_large', 'File exceeds ' . SVRT_UPLOAD_MB . ' MB limit.', ['status' => 413]);
+        return new WP_Error('file_too_large', 'File exceeds ' . S3C_UPLOAD_MB . ' MB limit.', ['status' => 413]);
     }
 
     $mime      = mime_content_type($file['tmp_name']);
@@ -620,7 +654,7 @@ function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
             return new WP_Error('invalid_json', 'File is not valid JSON.', ['status' => 422]);
         }
 
-        $parse_result = svrt_parse_sbom($doc);
+        $parse_result = s3c_parse_sbom($doc);
         if (is_wp_error($parse_result)) return $parse_result;
         $rows = $parse_result;
 
@@ -658,7 +692,7 @@ function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
                 'parent_app'    => substr(sanitize_text_field($data[$col['parent_app']]    ?? ''), 0, 255),
                 'scan_date'     => sanitize_text_field($data[$col['scan_date']] ?? ''),
             ];
-            if (count($rows) >= SVRT_UPLOAD_LIMIT) break;
+            if (count($rows) >= S3C_UPLOAD_LIMIT) break;
         }
         fclose($handle);
     }
@@ -715,13 +749,13 @@ function svrt_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
 //   dependencies, vulnerabilities, properties, evidence.
 // ============================================================
 
-function svrt_parse_sbom(array $doc): array|WP_Error {
+function s3c_parse_sbom(array $doc): array|WP_Error {
     // Detect format by signature fields
     if (isset($doc['bomFormat']) && $doc['bomFormat'] === 'CycloneDX') {
-        return svrt_parse_cyclonedx($doc);
+        return s3c_parse_cyclonedx($doc);
     }
     if (isset($doc['spdxVersion'])) {
-        return svrt_parse_spdx($doc);
+        return s3c_parse_spdx($doc);
     }
     return new WP_Error('unknown_sbom',
         'Unrecognised SBOM format. Supported: CycloneDX JSON (bomFormat=CycloneDX), SPDX JSON (spdxVersion present).',
@@ -731,7 +765,7 @@ function svrt_parse_sbom(array $doc): array|WP_Error {
 
 // ── CycloneDX JSON parser ─────────────────────────────────────────────────────
 
-function svrt_parse_cyclonedx(array $doc): array|WP_Error {
+function s3c_parse_cyclonedx(array $doc): array|WP_Error {
     $components = $doc['components'] ?? [];
     if (empty($components) || !is_array($components)) {
         return new WP_Error('no_components', 'CycloneDX SBOM contains no components.', ['status' => 422]);
@@ -796,7 +830,7 @@ function svrt_parse_cyclonedx(array $doc): array|WP_Error {
             'filepath'      => substr($purl, 0, 1024),
         ];
 
-        if (count($rows) >= SVRT_UPLOAD_LIMIT) break;
+        if (count($rows) >= S3C_UPLOAD_LIMIT) break;
     }
 
     return $rows;
@@ -804,7 +838,7 @@ function svrt_parse_cyclonedx(array $doc): array|WP_Error {
 
 // ── SPDX JSON parser ──────────────────────────────────────────────────────────
 
-function svrt_parse_spdx(array $doc): array|WP_Error {
+function s3c_parse_spdx(array $doc): array|WP_Error {
     $packages = $doc['packages'] ?? [];
     if (empty($packages) || !is_array($packages)) {
         return new WP_Error('no_packages', 'SPDX document contains no packages.', ['status' => 422]);
@@ -886,7 +920,7 @@ function svrt_parse_spdx(array $doc): array|WP_Error {
             'filepath'      => substr($purl, 0, 1024),
         ];
 
-        if (count($rows) >= SVRT_UPLOAD_LIMIT) break;
+        if (count($rows) >= S3C_UPLOAD_LIMIT) break;
     }
 
     return $rows;
@@ -896,9 +930,9 @@ function svrt_parse_spdx(array $doc): array|WP_Error {
 // JOB PROCESSING  (WordPress cron action)
 // ============================================================
 
-add_action('svrt_process_job', 'svrt_process_job');
+add_action('s3c_process_job', 's3c_process_job');
 
-function svrt_process_job(int $job_id, int $time_limit = 20): void {
+function s3c_process_job(int $job_id, int $time_limit = 20): void {
     global $wpdb;
     $start = microtime(true);
 
@@ -939,7 +973,7 @@ function svrt_process_job(int $job_id, int $time_limit = 20): void {
             break;
         }
 
-        $result = svrt_lookup_reference($row['software_name'], $row['vendor'], $row['version']);
+        $result = s3c_lookup_reference($row['software_name'], $row['vendor'], $row['version']);
 
         $update = [
             'eol_status'        => 'unknown',
@@ -1001,7 +1035,7 @@ function svrt_process_job(int $job_id, int $time_limit = 20): void {
                 'matched_count' => $matched,
                 'eol_count'     => $eol,
             ]);
-            svrt_send_report_email($owner->user_email, $job['uuid'], $report_token, $updated_job);
+            s3c_send_report_email($owner->user_email, $job['uuid'], $report_token, $updated_job);
         }
     } else {
         // Save progress so far; UptimeRobot will continue it on next ping
@@ -1024,7 +1058,7 @@ function svrt_process_job(int $job_id, int $time_limit = 20): void {
  * and ignores build metadata / pre-release suffixes.
  * e.g. "v10.0.19041.1234-beta" → "10.0.19041.1234"
  */
-function svrt_normalize_version(string $v): string {
+function s3c_normalize_version(string $v): string {
     $v = ltrim(trim($v), 'vV');
     // Extract leading numeric dotted portion only
     if (preg_match('/^[\d]+(?:\.[\d]+)*/', $v, $m)) {
@@ -1033,7 +1067,7 @@ function svrt_normalize_version(string $v): string {
     return $v;
 }
 
-function svrt_lookup_reference(string $name, string $vendor, string $version): ?array {
+function s3c_lookup_reference(string $name, string $vendor, string $version): ?array {
     global $wpdb;
 
     // Build lookup key (same algorithm as Pi agent — vendor:product:major)
@@ -1072,8 +1106,8 @@ function svrt_lookup_reference(string $name, string $vendor, string $version): ?
         !empty($ref['latest_version']) &&
         $version !== ''
     ) {
-        $inv_ver = svrt_normalize_version($version);
-        $lat_ver = svrt_normalize_version($ref['latest_version']);
+        $inv_ver = s3c_normalize_version($version);
+        $lat_ver = s3c_normalize_version($ref['latest_version']);
         if ($inv_ver !== '' && $lat_ver !== '' && version_compare($inv_ver, $lat_ver, '<')) {
             $eol_status = 'outdated';
         }
@@ -1087,6 +1121,11 @@ function svrt_lookup_reference(string $name, string $vendor, string $version): ?
         'confidence'        => (int) $ref['confidence'],
         'ref_source'        => $ref['ref_source'],
         'ref_notes'         => $ref['notes'],
+        'cve_count'         => isset($ref['cve_count'])    ? (int) $ref['cve_count']    : null,
+        'cve_critical'      => isset($ref['cve_critical']) ? (int) $ref['cve_critical'] : null,
+        'cve_high'          => isset($ref['cve_high'])     ? (int) $ref['cve_high']     : null,
+        'cve_medium'        => isset($ref['cve_medium'])   ? (int) $ref['cve_medium']   : null,
+        'cve_low'           => isset($ref['cve_low'])      ? (int) $ref['cve_low']      : null,
     ];
 }
 
@@ -1094,7 +1133,7 @@ function svrt_lookup_reference(string $name, string $vendor, string $version): ?
 // JOB STATUS + REPORT ENDPOINTS
 // ============================================================
 
-function svrt_api_job_status(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_job_status(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
     $uuid   = sanitize_text_field($req->get_param('uuid'));
     $rtoken = sanitize_text_field($req->get_param('rtoken') ?? '');
@@ -1138,7 +1177,7 @@ function svrt_api_job_status(WP_REST_Request $req): WP_REST_Response|WP_Error {
     ], 200);
 }
 
-function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
     $uuid   = sanitize_text_field($req->get_param('uuid'));
     $rtoken = sanitize_text_field($req->get_param('rtoken') ?? '');
@@ -1175,7 +1214,8 @@ function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $rows = $wpdb->get_results(
         "SELECT software_name, vendor, version, platform, file_type, parent_app,
                 eol_status, eol_date, latest_version, latest_source_url,
-                confidence, ref_source, ref_notes, hostname_hash, scan_date
+                confidence, ref_source, ref_notes, hostname_hash, scan_date,
+                cve_count, cve_critical, cve_high, cve_medium, cve_low
          FROM {$wpdb->prefix}svrt_inventory_rows
          $where
          ORDER BY eol_status ASC, software_name ASC",
@@ -1209,7 +1249,7 @@ function svrt_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
 // ── My jobs list ─────────────────────────────────────────────────────────────
 
-function svrt_api_my_jobs(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_my_jobs(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
     $user_id = get_current_user_id();
 
@@ -1227,7 +1267,7 @@ function svrt_api_my_jobs(WP_REST_Request $req): WP_REST_Response {
 
 // ── Delete job ───────────────────────────────────────────────────────────────
 
-function svrt_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
     $uuid    = sanitize_text_field($req->get_param('uuid'));
     $user_id = get_current_user_id();
@@ -1250,7 +1290,7 @@ function svrt_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
 // ── Resend report email ───────────────────────────────────────────────────────
 
-function svrt_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
     $uuid = sanitize_text_field($req->get_param('uuid'));
 
@@ -1277,7 +1317,7 @@ function svrt_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error
     );
 
     $user = wp_get_current_user();
-    svrt_send_report_email($user->user_email, $uuid, $report_token, $job);
+    s3c_send_report_email($user->user_email, $uuid, $report_token, $job);
 
     return new WP_REST_Response(['message' => 'Report link re-sent to ' . $user->user_email], 200);
 }
@@ -1286,7 +1326,7 @@ function svrt_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error
 // REFERENCE DB ENDPOINTS
 // ============================================================
 
-function svrt_api_reference_db(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_reference_db(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
 
     $page     = max(1, (int) ($req->get_param('page') ?? 1));
@@ -1322,7 +1362,7 @@ function svrt_api_reference_db(WP_REST_Request $req): WP_REST_Response {
     ], 200);
 }
 
-function svrt_api_reference_search(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_reference_search(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
 
     $q = sanitize_text_field($req->get_param('q') ?? '');
@@ -1348,7 +1388,7 @@ function svrt_api_reference_search(WP_REST_Request $req): WP_REST_Response|WP_Er
 // STATS ENDPOINT (public)
 // ============================================================
 
-function svrt_api_stats(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_stats(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
 
     $ref_total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference");
@@ -1364,7 +1404,7 @@ function svrt_api_stats(WP_REST_Request $req): WP_REST_Response {
         'contributors'        => $subs,
         'scans_completed'     => $jobs,
         'format_version'      => '1.0',
-        'last_updated'        => get_option('svrt_last_reference_import', ''),
+        'last_updated'        => get_option('s3c_last_reference_import', ''),
     ], 200);
 }
 
@@ -1372,7 +1412,7 @@ function svrt_api_stats(WP_REST_Request $req): WP_REST_Response {
 // ADMIN: IMPORT REFERENCE DB FROM PI SYNC
 // ============================================================
 
-function svrt_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response|WP_Error {
     global $wpdb;
 
     // Expects JSON body: array of reference objects from the Pi's CSV/DB export
@@ -1389,22 +1429,20 @@ function svrt_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response
             $skipped++;
             continue;
         }
-        $result = $wpdb->query($wpdb->prepare(
-            "INSERT INTO {$wpdb->prefix}svrt_reference
-                (lookup_key, software_name, vendor, version, platform,
-                 eol_status, eol_date, latest_version, latest_source_url,
-                 confidence, ref_source, notes, hit_count, checked_at, expires_at)
-             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,0,%s,%s)
-             ON DUPLICATE KEY UPDATE
-                eol_status=VALUES(eol_status),
-                eol_date=VALUES(eol_date),
-                latest_version=VALUES(latest_version),
-                latest_source_url=VALUES(latest_source_url),
-                confidence=VALUES(confidence),
-                ref_source=VALUES(ref_source),
-                notes=VALUES(notes),
-                checked_at=VALUES(checked_at),
-                expires_at=VALUES(expires_at)",
+        $has_cve = isset($entry['cve_count']);
+        $cve_sql = $has_cve
+            ? ', cve_count, cve_critical, cve_high, cve_medium, cve_low, cve_checked_at'
+            : '';
+        $cve_vals = $has_cve
+            ? ', %d, %d, %d, %d, %d, %s'
+            : '';
+        $cve_update = $has_cve
+            ? ', cve_count=VALUES(cve_count), cve_critical=VALUES(cve_critical),
+               cve_high=VALUES(cve_high), cve_medium=VALUES(cve_medium),
+               cve_low=VALUES(cve_low), cve_checked_at=VALUES(cve_checked_at)'
+            : '';
+
+        $base_args = [
             $entry['lookup_key'],
             $entry['software_name'],
             $entry['vendor']            ?? '',
@@ -1417,14 +1455,43 @@ function svrt_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response
             (int) ($entry['confidence'] ?? 0),
             $entry['ref_source']        ?? '',
             $entry['notes']             ?? '',
-            $entry['checked_at']        ?? current_time('mysql'),
+            $entry['checked_at']        ?? gmdate('Y-m-d H:i:s'),
             $entry['expires_at']        ?? null,
+        ];
+        if ($has_cve) {
+            $base_args = array_merge($base_args, [
+                (int) ($entry['cve_count']    ?? 0),
+                (int) ($entry['cve_critical'] ?? 0),
+                (int) ($entry['cve_high']     ?? 0),
+                (int) ($entry['cve_medium']   ?? 0),
+                (int) ($entry['cve_low']      ?? 0),
+                $entry['cve_checked_at']      ?? gmdate('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $result = $wpdb->query($wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}svrt_reference
+                (lookup_key, software_name, vendor, version, platform,
+                 eol_status, eol_date, latest_version, latest_source_url,
+                 confidence, ref_source, notes, hit_count, checked_at, expires_at{$cve_sql})
+             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%d,%s,%s,0,%s,%s{$cve_vals})
+             ON DUPLICATE KEY UPDATE
+                eol_status=VALUES(eol_status),
+                eol_date=VALUES(eol_date),
+                latest_version=VALUES(latest_version),
+                latest_source_url=VALUES(latest_source_url),
+                confidence=VALUES(confidence),
+                ref_source=VALUES(ref_source),
+                notes=VALUES(notes),
+                checked_at=VALUES(checked_at),
+                expires_at=VALUES(expires_at){$cve_update}",
+            ...$base_args
         ));
         if ($result !== false) $imported++;
         else $skipped++;
     }
 
-    update_option('svrt_last_reference_import', current_time('mysql'));
+    update_option('s3c_last_reference_import', current_time('mysql'));
 
     return new WP_REST_Response([
         'imported' => $imported,
@@ -1437,7 +1504,7 @@ function svrt_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response
 // ADMIN: JOBS + SUBSCRIBERS LIST
 // ============================================================
 
-function svrt_api_admin_jobs(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_admin_jobs(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
     $limit = min(100, max(10, (int) ($req->get_param('limit') ?? 50)));
 
@@ -1452,7 +1519,7 @@ function svrt_api_admin_jobs(WP_REST_Request $req): WP_REST_Response {
     return new WP_REST_Response(['jobs' => $jobs, 'count' => count($jobs)], 200);
 }
 
-function svrt_api_admin_subscribers(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_admin_subscribers(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
 
     $subs = $wpdb->get_results(
@@ -1469,19 +1536,19 @@ function svrt_api_admin_subscribers(WP_REST_Request $req): WP_REST_Response {
 // PUBLIC INDUSTRY DASHBOARD
 // ============================================================
 
-function svrt_api_dashboard(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_dashboard(WP_REST_Request $req): WP_REST_Response {
     // Cache for 60 minutes — aggregate queries are expensive.
     // Pass ?refresh=1&secret=<queue_secret> to flush and rebuild immediately.
     $wants_refresh = (bool) $req->get_param('refresh');
     if ($wants_refresh) {
         $secret = sanitize_text_field($req->get_param('secret') ?? '');
-        $stored = get_option('svrt_process_secret', '');
+        $stored = get_option('s3c_process_secret', '');
         if ($stored && $secret === $stored) {
-            delete_transient('svrt_dashboard_cache');
+            delete_transient('s3c_dashboard_cache');
         }
     }
 
-    $cached = get_transient('svrt_dashboard_cache');
+    $cached = get_transient('s3c_dashboard_cache');
     if ($cached !== false) {
         return new WP_REST_Response(array_merge($cached, ['cached' => true]), 200);
     }
@@ -1663,7 +1730,7 @@ function svrt_api_dashboard(WP_REST_Request $req): WP_REST_Response {
             'updated_24h'   => (int) ($ref_row['updated_24h']   ?? 0),
             'updated_7d'    => (int) ($ref_row['updated_7d']    ?? 0),
             'expiring_soon' => (int) ($ref_row['expiring_soon'] ?? 0),
-            'last_sync'     => get_option('svrt_last_reference_import', null),
+            'last_sync'     => get_option('s3c_last_reference_import', null),
             'last_checked_at' => $ref_row['last_checked_at'] ?? null,
             'coverage_pct'  => $coverage_pct,
         ],
@@ -1671,14 +1738,14 @@ function svrt_api_dashboard(WP_REST_Request $req): WP_REST_Response {
         'generated_at'  => gmdate('Y-m-d H:i:s'),
     ];
 
-    set_transient('svrt_dashboard_cache', $payload, HOUR_IN_SECONDS);
+    set_transient('s3c_dashboard_cache', $payload, HOUR_IN_SECONDS);
 
     return new WP_REST_Response($payload, 200);
 }
 
-function svrt_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
+function s3c_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $secret = sanitize_text_field($req->get_param('secret') ?? '');
-    $stored = get_option('svrt_process_secret', '');
+    $stored = get_option('s3c_process_secret', '');
     if ($stored && $secret !== $stored) {
         return new WP_Error('forbidden', 'Invalid queue secret.', ['status' => 403]);
     }
@@ -1783,7 +1850,7 @@ function svrt_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $coverage_pct = $unique_in_scans > 0 ? round($researched / $unique_in_scans * 100) : 0;
 
     $pi_stats = [
-        'last_sync'       => get_option('svrt_last_reference_import', null),
+        'last_sync'       => get_option('s3c_last_reference_import', null),
         'last_checked_at' => $ref_stats['last_checked_at'] ?? null,
         'ref_total'       => $ref_total,
         'eol_count'       => (int) ($ref_stats['eol_count']     ?? 0),
@@ -1814,12 +1881,12 @@ function svrt_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
 // ============================================================
 // EXPORT UNKNOWN SOFTWARE FOR PI RESEARCH QUEUE
 // Returns a CSV of unique software names the Pi hasn't researched yet.
-// Pi imports this with: python3 agent/svrt_agent.py --import-csv <file>
+// Pi imports this with: python3 agent/s3c_agent.py --import-csv <file>
 // ============================================================
 
-function svrt_api_unknown_software(WP_REST_Request $req): void {
+function s3c_api_unknown_software(WP_REST_Request $req): void {
     $secret = sanitize_text_field($req->get_param('secret') ?? '');
-    $stored = get_option('svrt_process_secret', '');
+    $stored = get_option('s3c_process_secret', '');
     if ($stored && $secret !== $stored) {
         status_header(403);
         echo json_encode(['error' => 'Forbidden']);
@@ -1854,7 +1921,7 @@ function svrt_api_unknown_software(WP_REST_Request $req): void {
 
     // Stream as CSV — same column format the Pi's import_csv() expects
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="svrt_unknown_software.csv"');
+    header('Content-Disposition: attachment; filename="s3c_unknown_software.csv"');
 
     $out = fopen('php://output', 'w');
     fputcsv($out, ['software_name', 'vendor', 'version', 'platform', 'hostname_hash', 'scan_date']);
@@ -1879,9 +1946,9 @@ function svrt_api_unknown_software(WP_REST_Request $req): void {
 // run repeatedly — only touches rows still marked 'unknown'.
 // ============================================================
 
-function svrt_api_reenrich(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_reenrich(WP_REST_Request $req): WP_REST_Response {
     $secret = sanitize_text_field($req->get_param('secret') ?? '');
-    $stored = get_option('svrt_process_secret', '');
+    $stored = get_option('s3c_process_secret', '');
     if ($stored && $secret !== $stored) {
         return new WP_REST_Response(['error' => 'Forbidden'], 403);
     }
@@ -1912,7 +1979,7 @@ function svrt_api_reenrich(WP_REST_Request $req): WP_REST_Response {
     foreach ($rows as $row) {
         if ((microtime(true) - $start) > ($time_limit - 2)) break;
 
-        $result = svrt_lookup_reference($row['software_name'], $row['vendor'], $row['version']);
+        $result = s3c_lookup_reference($row['software_name'], $row['vendor'], $row['version']);
         $updated++;
 
         if ($result && $result['eol_status'] !== 'unknown') {
@@ -1939,7 +2006,7 @@ function svrt_api_reenrich(WP_REST_Request $req): WP_REST_Response {
 
     // Flush dashboard cache so charts reflect new statuses immediately
     if ($resolved > 0) {
-        delete_transient('svrt_dashboard_cache');
+        delete_transient('s3c_dashboard_cache');
     }
 
     return new WP_REST_Response([
@@ -1954,10 +2021,10 @@ function svrt_api_reenrich(WP_REST_Request $req): WP_REST_Response {
 // PROCESS QUEUE ENDPOINT (cron trigger / UptimeRobot ping)
 // ============================================================
 
-function svrt_api_process_queue(WP_REST_Request $req): WP_REST_Response {
+function s3c_api_process_queue(WP_REST_Request $req): WP_REST_Response {
     // Simple secret key check to prevent public abuse
     $secret = sanitize_text_field($req->get_param('secret') ?? '');
-    $stored = get_option('svrt_process_secret', '');
+    $stored = get_option('s3c_process_secret', '');
     if ($stored && $secret !== $stored) {
         return new WP_REST_Response(['error' => 'Forbidden'], 403);
     }
@@ -1973,7 +2040,7 @@ function svrt_api_process_queue(WP_REST_Request $req): WP_REST_Response {
 
     $processed = 0;
     foreach ($pending as $job) {
-        svrt_process_job((int) $job['id'], 20);
+        s3c_process_job((int) $job['id'], 20);
         $processed++;
     }
 
@@ -1989,34 +2056,34 @@ function svrt_api_process_queue(WP_REST_Request $req): WP_REST_Response {
 
 add_action('admin_menu', function () {
     add_menu_page(
-        'SVRT',
-        'SVRT',
+        'S3C-Tool',
+        'S3C-Tool',
         'manage_options',
         'svrt-admin',
-        'svrt_admin_page',
+        's3c_admin_page',
         'dashicons-database',
         30
     );
 });
 
-function svrt_admin_page(): void {
+function s3c_admin_page(): void {
     global $wpdb;
     $ref_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference");
     $sub_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_subscribers");
     $job_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_upload_jobs");
     $eol_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference WHERE eol_status='eol'");
-    $last_import = get_option('svrt_last_reference_import', 'Never');
+    $last_import = get_option('s3c_last_reference_import', 'Never');
 
     // Handle secret key save
-    if (isset($_POST['svrt_save_secret']) && check_admin_referer('svrt_settings')) {
-        $secret = sanitize_text_field($_POST['svrt_process_secret'] ?? '');
-        update_option('svrt_process_secret', $secret);
+    if (isset($_POST['s3c_save_secret']) && check_admin_referer('s3c_settings')) {
+        $secret = sanitize_text_field($_POST['s3c_process_secret'] ?? '');
+        update_option('s3c_process_secret', $secret);
         echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
     }
-    $current_secret = get_option('svrt_process_secret', '');
+    $current_secret = get_option('s3c_process_secret', '');
     ?>
     <div class="wrap">
-        <h1>SVRT — Software Version Reference Tool</h1>
+        <h1>SVRT — Software Security Supply Chain Tool</h1>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0">
             <?php foreach ([
                 ['Reference Entries', $ref_count, '#2271b1'],
@@ -2036,12 +2103,12 @@ function svrt_admin_page(): void {
 
         <h2>Settings</h2>
         <form method="post">
-            <?php wp_nonce_field('svrt_settings') ?>
+            <?php wp_nonce_field('s3c_settings') ?>
             <table class="form-table">
                 <tr>
                     <th>Process Queue Secret</th>
                     <td>
-                        <input type="text" name="svrt_process_secret"
+                        <input type="text" name="s3c_process_secret"
                                value="<?php echo esc_attr($current_secret) ?>" class="regular-text">
                         <p class="description">
                             Used to authenticate the <code>/wp-json/svrt/v1/process?secret=KEY</code> endpoint
@@ -2050,7 +2117,7 @@ function svrt_admin_page(): void {
                     </td>
                 </tr>
             </table>
-            <p><input type="submit" name="svrt_save_secret" class="button-primary" value="Save Settings"></p>
+            <p><input type="submit" name="s3c_save_secret" class="button-primary" value="Save Settings"></p>
         </form>
 
         <h2>Quick Links</h2>

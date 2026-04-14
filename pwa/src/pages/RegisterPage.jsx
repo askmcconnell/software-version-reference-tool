@@ -30,7 +30,7 @@ export default function RegisterPage() {
     <div style={{ maxWidth: 480, margin: '48px auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 style={{ fontSize: '1.5rem', marginBottom: 8 }}>Create your account</h1>
-        <p className="text-muted">Ask McConnell's Software Version Reference Tool</p>
+        <p className="text-muted">Ask McConnell's Software Security Supply Chain Tool</p>
         <p className="text-muted" style={{ fontSize: '0.8rem' }}>Free and open-source — unlimited uploads</p>
       </div>
 

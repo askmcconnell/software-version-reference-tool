@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-SVRT Research Agent — Raspberry Pi
-Ask McConnell's Software Version Reference Tool
+S3C-Tool Research Agent — Raspberry Pi
+S3C-Tool — Software Security Supply Chain Tool
 
 Runs locally on the Pi. Queries endoflife.date, then uses a multi-LLM
 consensus engine (Claude Haiku + GPT-4o-mini + Gemini Flash in parallel,
@@ -51,6 +51,8 @@ GOOGLE_KEY   = os.environ.get('GOOGLE_API_KEY', '')
 XAI_KEY      = os.environ.get('XAI_API_KEY', '')        # Grok — tiebreaker, optional
 
 EOL_DATE_API  = 'https://endoflife.date/api'
+NVD_API       = 'https://services.nvd.nist.gov/rest/json/cves/2.0'
+NVD_KEY       = os.environ.get('NVD_API_KEY', '')   # optional — raises rate limit 5→50/30s
 CLAUDE_API    = 'https://api.anthropic.com/v1/messages'
 OPENAI_API    = 'https://api.openai.com/v1/chat/completions'
 GEMINI_API    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
@@ -100,7 +102,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout),
     ]
 )
-log = logging.getLogger('svrt-agent')
+log = logging.getLogger('s3c-agent')
 
 # ── Database ──────────────────────────────────────────────────────────────────
 
@@ -133,7 +135,13 @@ def init_db(conn):
         created_at        TEXT,
         checked_at        TEXT,
         expires_at        TEXT,
-        conflicting_data  TEXT     -- JSON array of conflicting facts
+        conflicting_data  TEXT,    -- JSON array of conflicting facts
+        cve_count         INTEGER DEFAULT NULL,
+        cve_critical      INTEGER DEFAULT NULL,
+        cve_high          INTEGER DEFAULT NULL,
+        cve_medium        INTEGER DEFAULT NULL,
+        cve_low           INTEGER DEFAULT NULL,
+        cve_checked_at    TEXT     DEFAULT NULL
     );
 
     CREATE TABLE IF NOT EXISTS svrt_research_queue (
@@ -189,6 +197,22 @@ def init_db(conn):
     CREATE INDEX IF NOT EXISTS idx_cost_date ON svrt_api_cost_log(call_date);
     """)
     conn.commit()
+
+    # Migrations for existing installs — add CVE columns if missing
+    existing_cols = {r[1] for r in conn.execute("PRAGMA table_info(svrt_reference)").fetchall()}
+    for col, defn in [
+        ('cve_count',      'INTEGER DEFAULT NULL'),
+        ('cve_critical',   'INTEGER DEFAULT NULL'),
+        ('cve_high',       'INTEGER DEFAULT NULL'),
+        ('cve_medium',     'INTEGER DEFAULT NULL'),
+        ('cve_low',        'INTEGER DEFAULT NULL'),
+        ('cve_checked_at', 'TEXT DEFAULT NULL'),
+    ]:
+        if col not in existing_cols:
+            conn.execute(f"ALTER TABLE svrt_reference ADD COLUMN {col} {defn}")
+            log.info("Migrated DB: added column svrt_reference.%s", col)
+    conn.commit()
+
     log.info("Database initialized at %s", DB_PATH)
 
 
@@ -294,7 +318,7 @@ def query_endoflife_date(product_name):
 
     url = f"{EOL_DATE_API}/{slug}.json"
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0'})
         with urllib.request.urlopen(req, timeout=8) as resp:
             data = json.loads(resp.read())
     except urllib.error.HTTPError as e:
@@ -383,7 +407,7 @@ def query_pypi(vendor, product, version, platform, conn=None):
     for slug in slugs:
         url = f'{PYPI_API}/{urllib.parse.quote(slug)}/json'
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0'})
             with urllib.request.urlopen(req, timeout=8) as resp:
                 data = json.loads(resp.read())
         except urllib.error.HTTPError as e:
@@ -435,7 +459,7 @@ def query_npm(vendor, product, version, platform, conn=None):
     # /latest gives only the latest version's metadata — much smaller than the full registry doc
     url = f'{NPM_API}/{urllib.parse.quote(slug, safe="@/")}/latest'
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0',
+        req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0',
                                                     'Accept': 'application/json'})
         with urllib.request.urlopen(req, timeout=8) as resp:
             data = json.loads(resp.read())
@@ -477,7 +501,7 @@ def query_rubygems(vendor, product, version, platform, conn=None):
     for slug in slugs:
         url = f'{RUBYGEMS_API}/{urllib.parse.quote(slug)}.json'
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0'})
             with urllib.request.urlopen(req, timeout=8) as resp:
                 data = json.loads(resp.read())
         except urllib.error.HTTPError as e:
@@ -524,7 +548,7 @@ def query_package_managers(vendor, product, version, platform, conn=None):
 
 def _gh_headers():
     """Build GitHub API request headers, with auth token if available."""
-    h = {'User-Agent': 'SVRT-Agent/1.0', 'Accept': 'application/vnd.github+json'}
+    h = {'User-Agent': 'S3C-Agent/1.0', 'Accept': 'application/vnd.github+json'}
     if GITHUB_TOKEN:
         h['Authorization'] = f'Bearer {GITHUB_TOKEN}'
     return h
@@ -743,7 +767,7 @@ def query_repology(vendor, product, version, platform, conn=None):
     for slug in slugs_to_try:
         url = f'{REPOLOGY_API}/{urllib.parse.quote(slug)}'
         try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0 (https://askmcconnell.com/svrt/)'})
+            req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0 (https://askmcconnell.com/svrt/)'})
             with urllib.request.urlopen(req, timeout=10) as resp:
                 packages = json.loads(resp.read())
             if packages:
@@ -1026,42 +1050,54 @@ def query_openai(vendor, product, version, platform, conn=None):
 
 
 def query_gemini(vendor, product, version, platform, conn=None):
-    """Query Gemini Flash for EOL status."""
+    """Query Gemini Flash for EOL status. Retries up to 2x on 429 with backoff."""
     if not GOOGLE_KEY:
         return None
-    prompt = _build_eol_prompt(vendor, product, version, platform)
-    url = f"{GEMINI_API}?key={GOOGLE_KEY}"
-    try:
-        payload = json.dumps({
-            'contents': [{'parts': [{'text': prompt}]}],
-            'generationConfig': {'maxOutputTokens': 2048, 'temperature': 0.1},
-        }).encode()
-        req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read())
+    prompt  = _build_eol_prompt(vendor, product, version, platform)
+    url     = f"{GEMINI_API}?key={GOOGLE_KEY}"
+    payload = json.dumps({
+        'contents': [{'parts': [{'text': prompt}]}],
+        'generationConfig': {'maxOutputTokens': 2048, 'temperature': 0.1},
+    }).encode()
 
-        usage   = data.get('usageMetadata', {})
-        in_tok  = usage.get('promptTokenCount', 0)
-        out_tok = usage.get('candidatesTokenCount', 0)
-        cost    = in_tok / 1_000_000 * GEMINI_INPUT_COST_PER_M + out_tok / 1_000_000 * GEMINI_OUTPUT_COST_PER_M
-        text    = data['candidates'][0]['content']['parts'][0]['text'].strip()
-        result  = _parse_llm_json(text)
-        if not result:
+    for attempt in range(3):  # up to 3 attempts (initial + 2 retries)
+        try:
+            req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read())
+
+            usage   = data.get('usageMetadata', {})
+            in_tok  = usage.get('promptTokenCount', 0)
+            out_tok = usage.get('candidatesTokenCount', 0)
+            cost    = in_tok / 1_000_000 * GEMINI_INPUT_COST_PER_M + out_tok / 1_000_000 * GEMINI_OUTPUT_COST_PER_M
+            text    = data['candidates'][0]['content']['parts'][0]['text'].strip()
+            result  = _parse_llm_json(text)
+            if not result:
+                return None
+            status = result.get('eol_status', 'unknown')
+            _log_api_cost(conn, GEMINI_MODEL, in_tok, out_tok, cost, product, status)
+            return {
+                'eol_status':     status,
+                'eol_date':       result.get('eol_date', ''),
+                'latest_version': result.get('latest_stable_version', ''),
+                'source_url':     result.get('source_url', ''),
+                'confidence':     min(80, max(30, int(result.get('confidence', 50)))),
+                'source':         'gemini',
+                'notes':          result.get('notes', ''),
+            }
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = 30 * (2 ** attempt)  # 30s, 60s, 120s
+                log.warning("Gemini 429 for %s — backoff %ds (attempt %d/3)", product, wait, attempt + 1)
+                if attempt < 2:
+                    time.sleep(wait)
+                    continue
+            log.warning("Gemini error for %s: %s", product, e)
             return None
-        status = result.get('eol_status', 'unknown')
-        _log_api_cost(conn, GEMINI_MODEL, in_tok, out_tok, cost, product, status)
-        return {
-            'eol_status':     status,
-            'eol_date':       result.get('eol_date', ''),
-            'latest_version': result.get('latest_stable_version', ''),
-            'source_url':     result.get('source_url', ''),
-            'confidence':     min(80, max(30, int(result.get('confidence', 50)))),
-            'source':         'gemini',
-            'notes':          result.get('notes', ''),
-        }
-    except Exception as e:
-        log.warning("Gemini error for %s: %s", product, e)
-        return None
+        except Exception as e:
+            log.warning("Gemini error for %s: %s", product, e)
+            return None
+    return None
 
 
 def query_xai(vendor, product, version, platform, conn=None):
@@ -1431,6 +1467,116 @@ def push_to_ionos():
         return False
 
 
+# ── NVD CVE Enrichment ────────────────────────────────────────────────────────
+
+def lookup_nvd(software_name: str, vendor: str = '', version: str = '') -> dict:
+    """
+    Query NVD 2.0 API for CVEs matching a product.
+    Returns dict: { cve_count, cve_critical, cve_high, cve_medium, cve_low }
+    Rate limit: 5 req/30s (no key) or 50/30s (with NVD_API_KEY in .env).
+    """
+    # Build keyword: prefer "vendor product" for specificity
+    kw_parts = [p for p in [vendor, software_name] if p]
+    keyword  = ' '.join(kw_parts[:2])  # max 2 terms to avoid over-filtering
+
+    params = urllib.parse.urlencode({
+        'keywordSearch':      keyword,
+        'keywordExactMatch':  '',        # exact phrase match
+        'resultsPerPage':     '100',
+    })
+    url = f"{NVD_API}?{params}"
+
+    headers = {'User-Agent': 'S3C-Agent/1.0 (https://askmcconnell.com/s3c)'}
+    if NVD_KEY:
+        headers['apiKey'] = NVD_KEY
+
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=20) as r:
+            data = json.loads(r.read())
+    except Exception as e:
+        log.warning("NVD API error for '%s': %s", keyword, e)
+        return {'cve_count': None, 'cve_critical': None, 'cve_high': None,
+                'cve_medium': None, 'cve_low': None}
+
+    vulns = data.get('vulnerabilities', [])
+    counts = {'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+
+    for v in vulns:
+        cve = v.get('cve', {})
+        metrics = cve.get('metrics', {})
+        # Prefer CVSSv3.1, fall back to v3.0, then v2
+        for metric_key in ('cvssMetricV31', 'cvssMetricV30', 'cvssMetricV2'):
+            m_list = metrics.get(metric_key, [])
+            if m_list:
+                severity = m_list[0].get('cvssData', {}).get('baseSeverity', '').upper()
+                if severity in counts:
+                    counts[severity] += 1
+                break
+
+    total = data.get('totalResults', len(vulns))
+    log.debug("NVD '%s': %d total CVEs (C:%d H:%d M:%d L:%d)",
+              keyword, total, counts['CRITICAL'], counts['HIGH'],
+              counts['MEDIUM'], counts['LOW'])
+
+    return {
+        'cve_count':    total,
+        'cve_critical': counts['CRITICAL'],
+        'cve_high':     counts['HIGH'],
+        'cve_medium':   counts['MEDIUM'],
+        'cve_low':      counts['LOW'],
+    }
+
+
+def enrich_with_nvd(conn, max_items: int = 100):
+    """
+    Batch NVD CVE enrichment pass.
+    Processes rows where cve_checked_at IS NULL, oldest checked_at first.
+    Respects NVD rate limit: 6s between calls (no key) or 0.7s (with key).
+    """
+    rows = conn.execute("""
+        SELECT id, software_name, vendor, version
+        FROM svrt_reference
+        WHERE cve_checked_at IS NULL
+          AND eol_status != 'unknown'
+        ORDER BY hit_count DESC, checked_at ASC
+        LIMIT ?
+    """, (max_items,)).fetchall()
+
+    if not rows:
+        log.info("NVD enrich: no eligible rows (all checked or all unknown)")
+        return 0
+
+    # With API key: 50 req/30s → 0.7s sleep. Without: 5 req/30s → 6.5s sleep.
+    sleep_sec = 0.7 if NVD_KEY else 6.5
+    now       = datetime.utcnow().isoformat()
+    updated   = 0
+
+    log.info("NVD enrich: %d rows to process (%.1fs delay between calls)", len(rows), sleep_sec)
+
+    for i, row in enumerate(rows):
+        result = lookup_nvd(row['software_name'], row['vendor'] or '', row['version'] or '')
+        conn.execute("""
+            UPDATE svrt_reference
+            SET cve_count=?, cve_critical=?, cve_high=?, cve_medium=?, cve_low=?, cve_checked_at=?
+            WHERE id=?
+        """, (
+            result['cve_count'], result['cve_critical'], result['cve_high'],
+            result['cve_medium'], result['cve_low'], now, row['id']
+        ))
+        conn.commit()
+        updated += 1
+
+        if (i + 1) % 10 == 0:
+            log.info("NVD enrich: %d/%d done", i + 1, len(rows))
+
+        if i < len(rows) - 1:
+            time.sleep(sleep_sec)
+
+    log.info("NVD enrich complete: %d rows enriched", updated)
+    return updated
+
+
 # ── Status ────────────────────────────────────────────────────────────────────
 
 def print_status(conn):
@@ -1460,14 +1606,22 @@ def print_status(conn):
     """).fetchall()
 
     print(f"\n{'═'*55}")
-    print(f"  SVRT Reference Database Status")
+    print(f"  S3C-Tool Reference Database Status")
     print(f"{'═'*55}")
     print(f"  DB path        : {DB_PATH}")
     print(f"  DB size        : {DB_PATH.stat().st_size / 1024:.1f} KB" if DB_PATH.exists() else "  DB: not found")
+    nvd_checked = conn.execute(
+        "SELECT COUNT(*) FROM svrt_reference WHERE cve_checked_at IS NOT NULL"
+    ).fetchone()[0]
+    nvd_with_cves = conn.execute(
+        "SELECT COUNT(*) FROM svrt_reference WHERE cve_count > 0"
+    ).fetchone()[0]
+
     print(f"\n  Reference rows : {ref_count:,}")
     print(f"  Field subs     : {submissions:,}")
     print(f"  Queue pending  : {queue_pending:,}")
     print(f"  Queue done     : {queue_done:,}")
+    print(f"  NVD checked    : {nvd_checked:,} ({nvd_with_cves:,} have CVEs)")
 
     print(f"\n  EOL Status Breakdown:")
     for r in status_counts:
@@ -1546,7 +1700,7 @@ def print_status(conn):
 # ── GitHub YAML Reference DB Sync ────────────────────────────────────────────
 
 def fetch_json(url):
-    req = urllib.request.Request(url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+    req = urllib.request.Request(url, headers={'User-Agent': 'S3C-Agent/1.0'})
     with urllib.request.urlopen(req, timeout=15) as r:
         return json.loads(r.read())
 
@@ -1585,7 +1739,7 @@ def sync_github_yaml(conn):
         fname   = file_meta['name']
 
         try:
-            req = urllib.request.Request(raw_url, headers={'User-Agent': 'SVRT-Agent/1.0'})
+            req = urllib.request.Request(raw_url, headers={'User-Agent': 'S3C-Agent/1.0'})
             with urllib.request.urlopen(req, timeout=15) as r:
                 raw_text = r.read().decode('utf-8')
             data = _yaml.safe_load(raw_text)
@@ -1664,13 +1818,14 @@ def sync_github_yaml(conn):
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description='SVRT Research Agent v1.0')
+    parser = argparse.ArgumentParser(description='S3C-Tool Research Agent v1.0')
     parser.add_argument('--status',      action='store_true', help='Print DB stats and exit')
     parser.add_argument('--lookup',      metavar='PRODUCT',   help='Look up a single product')
     parser.add_argument('--import-csv',  metavar='FILE',      help='Import inventory CSV into queue')
     parser.add_argument('--sync',        action='store_true', help='Push DB to IONOS now')
     parser.add_argument('--sync-yaml',   action='store_true', help='Pull community YAML files from GitHub into reference DB')
-    parser.add_argument('--max',         type=int, default=200, help='Max items per research run')
+    parser.add_argument('--nvd-enrich',  action='store_true', help='Enrich reference DB with NVD CVE counts')
+    parser.add_argument('--max',         type=int, default=200, help='Max items per research run (also applies to --nvd-enrich)')
     parser.add_argument('--delay',       type=float, default=0.5, help='Seconds between Claude calls')
     parser.add_argument('--force',       action='store_true', help='Bypass cache (re-research all)')
     args = parser.parse_args()
@@ -1698,6 +1853,11 @@ def main():
     if args.sync_yaml:
         n = sync_github_yaml(conn)
         log.info("GitHub YAML sync complete: %d entries updated", n)
+        return
+
+    if args.nvd_enrich:
+        n = enrich_with_nvd(conn, max_items=args.max)
+        log.info("NVD enrichment complete: %d rows updated", n)
         return
 
     # Default: full research run

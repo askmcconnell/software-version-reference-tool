@@ -21,7 +21,7 @@ export default function Nav() {
         </svg>
         <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
           <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)', letterSpacing: '0.03em' }}>Ask McConnell's</span>
-          <span>Software Version Reference Tool</span>
+          <span style={{ fontWeight: 700, letterSpacing: '0.02em' }}>S3C-Tool</span>
         </span>
         <span className="badge">BETA</span>
       </Link>
