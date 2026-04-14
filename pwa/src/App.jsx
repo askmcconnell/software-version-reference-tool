@@ -11,6 +11,7 @@ import QueuePage from './pages/QueuePage'
 import DashboardPage from './pages/DashboardPage'
 import SupportPage from './pages/SupportPage'
 import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import ScansPage from './pages/ScansPage'
 
 function RequireAuth({ children }) {
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/queue"     element={<QueuePage />} />
           <Route path="/support"   element={<SupportPage />} />
           <Route path="/privacy"   element={<PrivacyPage />} />
+          <Route path="/terms"     element={<TermsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

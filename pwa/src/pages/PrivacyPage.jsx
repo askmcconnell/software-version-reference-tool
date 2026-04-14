@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function PrivacyPage() {
   return (
     <div style={{ maxWidth: 680, margin: '48px auto', padding: '0 16px 64px' }}>
@@ -132,6 +134,14 @@ export default function PrivacyPage() {
           Because S3C-Tool is open source, you can also review exactly what the code does at any time.
         </p>
       </Section>
+
+      <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: 32, textAlign: 'center' }}>
+        <Link to="/terms" style={{ color: 'var(--accent)' }}>Terms of Service</Link>
+        {' · '}
+        <a href="https://github.com/askmcconnell/s3c-tool" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)' }}>
+          Open source on GitHub
+        </a>
+      </p>
 
     </div>
   )

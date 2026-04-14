@@ -45,6 +45,7 @@ export default function Nav() {
               Docs
             </Link>
             <Link to="/privacy" style={{ fontSize: '0.85rem' }}>Privacy</Link>
+            <Link to="/terms" style={{ fontSize: '0.85rem' }}>Terms</Link>
             <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
             </Link>
@@ -60,6 +61,7 @@ export default function Nav() {
             </Link>
             <Link to="/docs">Docs</Link>
             <Link to="/privacy" style={{ fontSize: '0.85rem' }}>Privacy</Link>
+            <Link to="/terms" style={{ fontSize: '0.85rem' }}>Terms</Link>
             <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
               Support ♥
             </Link>
