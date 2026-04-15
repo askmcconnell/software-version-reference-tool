@@ -9,6 +9,7 @@ import ReferencePage from './pages/ReferencePage'
 import DocsPage from './pages/DocsPage'
 import QueuePage from './pages/QueuePage'
 import DashboardPage from './pages/DashboardPage'
+import AboutPage from './pages/AboutPage'
 import SupportPage from './pages/SupportPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/reference" element={
             <RequireAuth><ReferencePage /></RequireAuth>
           } />
+          <Route path="/about"     element={<AboutPage />} />
           <Route path="/docs"      element={<DocsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/queue"     element={<QueuePage />} />

@@ -44,6 +44,9 @@ export default function Nav() {
             <Link to="/docs" style={pathname === '/docs' ? { color: 'var(--text)' } : {}}>
               Docs
             </Link>
+            <Link to="/about" style={pathname === '/about' ? { color: 'var(--text)' } : {}}>
+              About
+            </Link>
             <Link to="/privacy" style={{ fontSize: '0.85rem' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.85rem' }}>Terms</Link>
             <Link to="/support" style={{ color: 'var(--accent)', fontSize: '0.85rem' }}>
@@ -56,6 +59,9 @@ export default function Nav() {
           </>
         ) : (
           <>
+            <Link to="/about" style={pathname === '/about' ? { color: 'var(--text)' } : {}}>
+              About
+            </Link>
             <Link to="/dashboard" style={pathname === '/dashboard' ? { color: 'var(--text)' } : {}}>
               Dashboard
             </Link>
