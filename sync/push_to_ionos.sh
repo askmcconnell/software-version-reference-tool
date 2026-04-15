@@ -20,7 +20,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(dirname "$SCRIPT_DIR")"
-DB_PATH="$BASE_DIR/db/svrt_reference.db"
+DB_PATH="$BASE_DIR/db/s3c_reference.db"
 EXPORT_DIR="$BASE_DIR/db/exports"
 LOG_FILE="$BASE_DIR/logs/sync.log"
 AGENT_SCRIPT="$BASE_DIR/agent/svrt_agent.py"
@@ -69,7 +69,7 @@ mkdir -p "$EXPORT_DIR"
 # ── Export CSV snapshot ────────────────────────────────────────────────────────
 
 DATE=$(date '+%Y-%m-%d')
-CSV_EXPORT="$EXPORT_DIR/svrt_reference_$DATE.csv"
+CSV_EXPORT="$EXPORT_DIR/s3c_reference_$DATE.csv"
 JSON_EXPORT="$EXPORT_DIR/svrt_stats.json"
 
 log "Exporting reference DB to CSV + JSON (via Python)..."
@@ -85,26 +85,26 @@ conn.row_factory = sqlite3.Row
 rows = conn.execute("""
     SELECT software_name, vendor, version, platform, eol_status, eol_date,
            latest_version, latest_source_url, confidence, source, checked_at
-    FROM svrt_reference
+    FROM s3c_reference
     WHERE eol_status != 'unknown'
     ORDER BY hit_count DESC
 """).fetchall()
 with open(csv_path, 'w', newline='') as f:
     w = csv.writer(f)
-    w.writerow([d[0] for d in conn.execute("SELECT software_name, vendor, version, platform, eol_status, eol_date, latest_version, latest_source_url, confidence, source, checked_at FROM svrt_reference LIMIT 0").description])
+    w.writerow([d[0] for d in conn.execute("SELECT software_name, vendor, version, platform, eol_status, eol_date, latest_version, latest_source_url, confidence, source, checked_at FROM s3c_reference LIMIT 0").description])
     w.writerows(rows)
 print(f"CSV: {len(rows)} rows")
 
 # JSON stats
 def count(q): return conn.execute(q).fetchone()[0]
 stats = {
-    "total_entries":    count("SELECT COUNT(*) FROM svrt_reference"),
-    "eol_count":        count("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='eol'"),
-    "supported_count":  count("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='supported'"),
-    "lts_count":        count("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='lts'"),
-    "unknown_count":    count("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='unknown'"),
-    "total_submissions":count("SELECT COUNT(*) FROM svrt_field_submissions"),
-    "unique_hosts":     count("SELECT COUNT(DISTINCT hostname_hash) FROM svrt_field_submissions"),
+    "total_entries":    count("SELECT COUNT(*) FROM s3c_reference"),
+    "eol_count":        count("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='eol'"),
+    "supported_count":  count("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='supported'"),
+    "lts_count":        count("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='lts'"),
+    "unknown_count":    count("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='unknown'"),
+    "total_submissions":count("SELECT COUNT(*) FROM s3c_field_submissions"),
+    "unique_hosts":     count("SELECT COUNT(DISTINCT hostname_hash) FROM s3c_field_submissions"),
     "last_sync":        datetime.utcnow().isoformat(),
 }
 with open(json_path, 'w') as f:
@@ -119,7 +119,7 @@ with open('$CSV_EXPORT') as f:
     print(sum(1 for _ in csv.reader(f)) - 1)
 " 2>/dev/null || echo 0)
 log "CSV exported: $CSV_ROWS rows → $CSV_EXPORT"
-cp "$CSV_EXPORT" "$EXPORT_DIR/svrt_reference_latest.csv"
+cp "$CSV_EXPORT" "$EXPORT_DIR/s3c_reference_latest.csv"
 log "Stats JSON written: $JSON_EXPORT"
 
 # ── Push to IONOS via Python/paramiko SFTP ────────────────────────────────────
@@ -191,7 +191,7 @@ rows = conn.execute("""
     SELECT lookup_key, software_name, vendor, version, platform,
            eol_status, eol_date, latest_version, latest_source_url,
            confidence, source as ref_source, notes, checked_at, expires_at
-    FROM svrt_reference
+    FROM s3c_reference
     WHERE eol_status != 'unknown'
       AND checked_at >= datetime('now', '-2 days')
     ORDER BY hit_count DESC
@@ -297,7 +297,7 @@ fi
 
 # ── Cleanup old exports (keep 7 days) ─────────────────────────────────────────
 
-find "$EXPORT_DIR" -name "svrt_reference_2*.csv" -mtime +7 -delete
+find "$EXPORT_DIR" -name "s3c_reference_2*.csv" -mtime +7 -delete
 log "Cleaned up old exports."
 
 log "Sync complete."

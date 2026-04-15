@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SVRT Pi Dashboard — terminal status view
+S3C-Tool Pi Dashboard — terminal status view
 Run from Pi: python3 ~/svrt/pi-dashboard/status.py
 Or via cron for email/log output: python3 ~/svrt/pi-dashboard/status.py --plain
 """
@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
-DB_PATH  = BASE_DIR / 'db' / 'svrt_reference.db'
+DB_PATH  = BASE_DIR / 'db' / 's3c_reference.db'
 LOG_PATH = BASE_DIR / 'logs' / 'agent.log'
 
 def color(text, code):
@@ -31,7 +31,7 @@ def bar(n, total, width=30):
 
 def main():
     print(f"\n{bold('═' * 60)}")
-    print(f"  {bold('SVRT Agent Dashboard')}  —  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print(f"  {bold('S3C-Tool Pi Dashboard')}  —  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print(f"{bold('═' * 60)}")
 
     if not DB_PATH.exists():
@@ -44,24 +44,24 @@ def main():
     conn.row_factory = sqlite3.Row
 
     # Reference counts
-    total = conn.execute("SELECT COUNT(*) FROM svrt_reference").fetchone()[0]
-    eol   = conn.execute("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='eol'").fetchone()[0]
-    supp  = conn.execute("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='supported'").fetchone()[0]
-    lts   = conn.execute("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='lts'").fetchone()[0]
-    unk   = conn.execute("SELECT COUNT(*) FROM svrt_reference WHERE eol_status='unknown'").fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM s3c_reference").fetchone()[0]
+    eol   = conn.execute("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='eol'").fetchone()[0]
+    supp  = conn.execute("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='supported'").fetchone()[0]
+    lts   = conn.execute("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='lts'").fetchone()[0]
+    unk   = conn.execute("SELECT COUNT(*) FROM s3c_reference WHERE eol_status='unknown'").fetchone()[0]
 
     # Queue counts
     q_pending = conn.execute(
-        "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
+        "SELECT COUNT(*) FROM s3c_research_queue WHERE status='pending'"
     ).fetchone()[0]
     q_done = conn.execute(
-        "SELECT COUNT(*) FROM svrt_research_queue WHERE status='done'"
+        "SELECT COUNT(*) FROM s3c_research_queue WHERE status='done'"
     ).fetchone()[0]
 
     # Submissions
-    subs = conn.execute("SELECT COUNT(*) FROM svrt_field_submissions").fetchone()[0]
+    subs = conn.execute("SELECT COUNT(*) FROM s3c_field_submissions").fetchone()[0]
     hosts = conn.execute(
-        "SELECT COUNT(DISTINCT hostname_hash) FROM svrt_field_submissions"
+        "SELECT COUNT(DISTINCT hostname_hash) FROM s3c_field_submissions"
     ).fetchone()[0]
 
     print(f"\n  {bold('Reference Database')}")
@@ -82,7 +82,7 @@ def main():
 
     # Source breakdown
     sources = conn.execute("""
-        SELECT source, COUNT(*) as n FROM svrt_reference
+        SELECT source, COUNT(*) as n FROM s3c_reference
         GROUP BY source ORDER BY n DESC
     """).fetchall()
     print(f"\n  {bold('By Source')}")
@@ -93,7 +93,7 @@ def main():
     # Top EOL items
     top_eol = conn.execute("""
         SELECT software_name, version, eol_date, hit_count
-        FROM svrt_reference WHERE eol_status='eol'
+        FROM s3c_reference WHERE eol_status='eol'
         ORDER BY hit_count DESC LIMIT 8
     """).fetchall()
     if top_eol:
@@ -107,18 +107,18 @@ def main():
     try:
         cost_today = conn.execute("""
             SELECT COUNT(*) as calls, SUM(cost_usd) as cost
-            FROM svrt_api_cost_log WHERE call_date=date('now')
+            FROM s3c_api_cost_log WHERE call_date=date('now')
         """).fetchone()
         cost_month = conn.execute("""
             SELECT COUNT(*) as calls, SUM(cost_usd) as cost
-            FROM svrt_api_cost_log WHERE call_date >= date('now','start of month')
+            FROM s3c_api_cost_log WHERE call_date >= date('now','start of month')
         """).fetchone()
         cost_all = conn.execute("""
             SELECT COUNT(*) as calls, SUM(cost_usd) as cost
-            FROM svrt_api_cost_log
+            FROM s3c_api_cost_log
         """).fetchone()
         q_remaining = conn.execute(
-            "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
+            "SELECT COUNT(*) FROM s3c_research_queue WHERE status='pending'"
         ).fetchone()[0]
 
         if cost_all and cost_all['calls']:
@@ -138,7 +138,7 @@ def main():
 
     # Last agent runs
     runs = conn.execute("""
-        SELECT * FROM svrt_agent_log ORDER BY id DESC LIMIT 5
+        SELECT * FROM s3c_agent_log ORDER BY id DESC LIMIT 5
     """).fetchall()
     if runs:
         print(f"\n  {bold('Recent Agent Runs')}")

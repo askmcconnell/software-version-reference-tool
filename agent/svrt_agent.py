@@ -42,7 +42,7 @@ if _ENV_FILE.exists():
 
 # ── Config ────────────────────────────────────────────────────────────────────
 BASE_DIR     = Path(__file__).parent.parent        # ~/svrt/
-DB_PATH      = BASE_DIR / 'db' / 'svrt_reference.db'
+DB_PATH      = BASE_DIR / 'db' / 's3c_reference.db'
 LOG_PATH     = BASE_DIR / 'logs' / 'agent.log'
 SYNC_SCRIPT  = BASE_DIR / 'sync' / 'push_to_ionos.sh'
 CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
@@ -117,7 +117,7 @@ def get_db():
 
 def init_db(conn):
     conn.executescript("""
-    CREATE TABLE IF NOT EXISTS svrt_reference (
+    CREATE TABLE IF NOT EXISTS s3c_reference (
         id                INTEGER PRIMARY KEY AUTOINCREMENT,
         lookup_key        TEXT NOT NULL UNIQUE,   -- lower(vendor:product:version)
         software_name     TEXT,
@@ -144,7 +144,7 @@ def init_db(conn):
         cve_checked_at    TEXT     DEFAULT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS svrt_research_queue (
+    CREATE TABLE IF NOT EXISTS s3c_research_queue (
         id            INTEGER PRIMARY KEY AUTOINCREMENT,
         lookup_key    TEXT NOT NULL UNIQUE,
         software_name TEXT,
@@ -157,7 +157,7 @@ def init_db(conn):
         status        TEXT DEFAULT 'pending'  -- pending | in_progress | done | failed
     );
 
-    CREATE TABLE IF NOT EXISTS svrt_field_submissions (
+    CREATE TABLE IF NOT EXISTS s3c_field_submissions (
         id            INTEGER PRIMARY KEY AUTOINCREMENT,
         lookup_key    TEXT,
         software_name TEXT,
@@ -169,7 +169,7 @@ def init_db(conn):
         submitted_at  TEXT DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS svrt_agent_log (
+    CREATE TABLE IF NOT EXISTS s3c_agent_log (
         id         INTEGER PRIMARY KEY AUTOINCREMENT,
         run_date   TEXT,
         phase      TEXT,
@@ -179,7 +179,7 @@ def init_db(conn):
         notes      TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS svrt_api_cost_log (
+    CREATE TABLE IF NOT EXISTS s3c_api_cost_log (
         id             INTEGER PRIMARY KEY AUTOINCREMENT,
         call_date      TEXT DEFAULT (date('now')),
         call_ts        TEXT DEFAULT (datetime('now')),
@@ -191,15 +191,15 @@ def init_db(conn):
         result_status  TEXT
     );
 
-    CREATE INDEX IF NOT EXISTS idx_ref_lookup ON svrt_reference(lookup_key);
-    CREATE INDEX IF NOT EXISTS idx_ref_status ON svrt_reference(eol_status);
-    CREATE INDEX IF NOT EXISTS idx_queue_status ON svrt_research_queue(status, priority);
-    CREATE INDEX IF NOT EXISTS idx_cost_date ON svrt_api_cost_log(call_date);
+    CREATE INDEX IF NOT EXISTS idx_ref_lookup ON s3c_reference(lookup_key);
+    CREATE INDEX IF NOT EXISTS idx_ref_status ON s3c_reference(eol_status);
+    CREATE INDEX IF NOT EXISTS idx_queue_status ON s3c_research_queue(status, priority);
+    CREATE INDEX IF NOT EXISTS idx_cost_date ON s3c_api_cost_log(call_date);
     """)
     conn.commit()
 
     # Migrations for existing installs — add CVE columns if missing
-    existing_cols = {r[1] for r in conn.execute("PRAGMA table_info(svrt_reference)").fetchall()}
+    existing_cols = {r[1] for r in conn.execute("PRAGMA table_info(s3c_reference)").fetchall()}
     for col, defn in [
         ('cve_count',      'INTEGER DEFAULT NULL'),
         ('cve_critical',   'INTEGER DEFAULT NULL'),
@@ -209,8 +209,8 @@ def init_db(conn):
         ('cve_checked_at', 'TEXT DEFAULT NULL'),
     ]:
         if col not in existing_cols:
-            conn.execute(f"ALTER TABLE svrt_reference ADD COLUMN {col} {defn}")
-            log.info("Migrated DB: added column svrt_reference.%s", col)
+            conn.execute(f"ALTER TABLE s3c_reference ADD COLUMN {col} {defn}")
+            log.info("Migrated DB: added column s3c_reference.%s", col)
     conn.commit()
 
     log.info("Database initialized at %s", DB_PATH)
@@ -239,7 +239,7 @@ def lookup_local(conn, vendor, product, version):
     """Check local DB first. Returns row dict or None."""
     key = make_lookup_key(vendor, product, version)
     row = conn.execute(
-        "SELECT * FROM svrt_reference WHERE lookup_key=?", (key,)
+        "SELECT * FROM s3c_reference WHERE lookup_key=?", (key,)
     ).fetchone()
 
     if not row:
@@ -252,7 +252,7 @@ def lookup_local(conn, vendor, product, version):
         return None
 
     # Increment hit count
-    conn.execute("UPDATE svrt_reference SET hit_count=hit_count+1 WHERE id=?", (row['id'],))
+    conn.execute("UPDATE s3c_reference SET hit_count=hit_count+1 WHERE id=?", (row['id'],))
     conn.commit()
     return dict(row)
 
@@ -274,7 +274,7 @@ def save_result(conn, vendor, product, version, platform, result):
     expires = (datetime.utcnow() + timedelta(days=ttl)).isoformat()
 
     conn.execute("""
-        INSERT INTO svrt_reference
+        INSERT INTO s3c_reference
             (lookup_key, software_name, vendor, version, platform,
              eol_status, eol_date, latest_version, latest_source_url,
              confidence, source, notes, hit_count, created_at, checked_at, expires_at)
@@ -289,7 +289,7 @@ def save_result(conn, vendor, product, version, platform, result):
             notes=excluded.notes,
             checked_at=excluded.checked_at,
             expires_at=excluded.expires_at,
-            hit_count=svrt_reference.hit_count+1
+            hit_count=s3c_reference.hit_count+1
     """, (
         key, product, vendor, version, platform,
         status,
@@ -855,7 +855,7 @@ def query_claude(vendor, product, version, platform, conn=None):
     """
     Step 3: Ask Claude Haiku about EOL status.
     Returns dict with eol_status, eol_date, latest_version, confidence, source.
-    Logs token usage and cost to svrt_api_cost_log if conn is provided.
+    Logs token usage and cost to s3c_api_cost_log if conn is provided.
     """
     if not CLAUDE_KEY:
         log.warning("ANTHROPIC_API_KEY not set; skipping Claude lookup")
@@ -928,7 +928,7 @@ Rules:
         if conn:
             try:
                 conn.execute("""
-                    INSERT INTO svrt_api_cost_log
+                    INSERT INTO s3c_api_cost_log
                         (model, input_tokens, output_tokens, cost_usd, product_name, result_status)
                     VALUES (?,?,?,?,?,?)
                 """, (CLAUDE_MODEL, input_tokens, output_tokens, cost_usd, product, eol_status))
@@ -998,7 +998,7 @@ def _log_api_cost(conn, model, input_tokens, output_tokens, cost_usd, product, s
     try:
         with _db_write_lock:
             conn.execute("""
-                INSERT INTO svrt_api_cost_log
+                INSERT INTO s3c_api_cost_log
                     (model, input_tokens, output_tokens, cost_usd, product_name, result_status)
                 VALUES (?,?,?,?,?,?)
             """, (model, input_tokens, output_tokens, cost_usd, product, status))
@@ -1319,7 +1319,7 @@ def import_csv(conn, csv_path, batch_size=100):
 
             # Record field submission
             conn.execute("""
-                INSERT OR IGNORE INTO svrt_field_submissions
+                INSERT OR IGNORE INTO s3c_field_submissions
                     (lookup_key, software_name, vendor, version, platform, hostname_hash, scan_date)
                 VALUES (?,?,?,?,?,?,?)
             """, (key, product_norm, vendor, version, platform, hostname, scan_date))
@@ -1327,7 +1327,7 @@ def import_csv(conn, csv_path, batch_size=100):
             # Add to research queue if not already done
             try:
                 conn.execute("""
-                    INSERT OR IGNORE INTO svrt_research_queue
+                    INSERT OR IGNORE INTO s3c_research_queue
                         (lookup_key, software_name, vendor, version, platform, priority)
                     VALUES (?,?,?,?,?,5)
                 """, (key, product_norm, vendor, version, platform))
@@ -1351,7 +1351,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
     log.info("Starting research run (max=%d items)", max_items)
 
     items = conn.execute("""
-        SELECT * FROM svrt_research_queue
+        SELECT * FROM s3c_research_queue
         WHERE status='pending'
         ORDER BY priority ASC, id ASC
         LIMIT ?
@@ -1374,7 +1374,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
 
         # Mark in-progress
         conn.execute("""
-            UPDATE svrt_research_queue
+            UPDATE s3c_research_queue
             SET status='in_progress', last_attempt=datetime('now'), attempts=attempts+1
             WHERE lookup_key=?
         """, (key,))
@@ -1383,7 +1383,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
         # Check local cache first (fast path)
         cached = lookup_local(conn, vendor, product, version)
         if cached and cached.get('eol_status') != 'unknown':
-            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
             conn.commit()
             resolved += 1
             continue
@@ -1392,7 +1392,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
         result = query_endoflife_date(product)
         if result:
             save_result(conn, vendor, product, version, platform, result)
-            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
             conn.commit()
             resolved += 1
             time.sleep(0.2)  # gentle rate limit
@@ -1402,7 +1402,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
         result = query_package_managers(vendor, product, version, platform, conn=conn)
         if result:
             save_result(conn, vendor, product, version, platform, result)
-            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
             conn.commit()
             resolved += 1
             time.sleep(0.2)
@@ -1412,7 +1412,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
         result = query_precheck(vendor, product, version, platform, conn=conn)
         if result:
             save_result(conn, vendor, product, version, platform, result)
-            conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+            conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
             conn.commit()
             resolved += 1
             time.sleep(0.5)  # Repology asks for ~1 req/sec politeness
@@ -1424,7 +1424,7 @@ def run_research(conn, max_items=200, delay_sec=0.5):
             result = run_consensus(vendor, product, version, platform, conn=conn)
             if result:
                 save_result(conn, vendor, product, version, platform, result)
-                conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+                conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
                 conn.commit()
                 resolved += 1
                 time.sleep(delay_sec)
@@ -1436,13 +1436,13 @@ def run_research(conn, max_items=200, delay_sec=0.5):
             'eol_date': '', 'latest_version': '', 'source_url': '',
             'notes': 'No data found',
         })
-        conn.execute("UPDATE svrt_research_queue SET status='done' WHERE lookup_key=?", (key,))
+        conn.execute("UPDATE s3c_research_queue SET status='done' WHERE lookup_key=?", (key,))
         conn.commit()
         unknown += 1
 
     # Log run stats
     conn.execute("""
-        INSERT INTO svrt_agent_log (run_date, phase, items_in, items_out, api_calls, notes)
+        INSERT INTO s3c_agent_log (run_date, phase, items_in, items_out, api_calls, notes)
         VALUES (datetime('now'), 'research', ?, ?, ?, ?)
     """, (len(items), resolved, api_calls, f"unknown={unknown}"))
     conn.commit()
@@ -1536,7 +1536,7 @@ def enrich_with_nvd(conn, max_items: int = 100):
     """
     rows = conn.execute("""
         SELECT id, software_name, vendor, version
-        FROM svrt_reference
+        FROM s3c_reference
         WHERE cve_checked_at IS NULL
           AND eol_status != 'unknown'
         ORDER BY hit_count DESC, checked_at ASC
@@ -1557,7 +1557,7 @@ def enrich_with_nvd(conn, max_items: int = 100):
     for i, row in enumerate(rows):
         result = lookup_nvd(row['software_name'], row['vendor'] or '', row['version'] or '')
         conn.execute("""
-            UPDATE svrt_reference
+            UPDATE s3c_reference
             SET cve_count=?, cve_critical=?, cve_high=?, cve_medium=?, cve_low=?, cve_checked_at=?
             WHERE id=?
         """, (
@@ -1581,28 +1581,28 @@ def enrich_with_nvd(conn, max_items: int = 100):
 
 def print_status(conn):
     """Print DB statistics to stdout."""
-    ref_count = conn.execute("SELECT COUNT(*) FROM svrt_reference").fetchone()[0]
+    ref_count = conn.execute("SELECT COUNT(*) FROM s3c_reference").fetchone()[0]
     queue_pending = conn.execute(
-        "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
+        "SELECT COUNT(*) FROM s3c_research_queue WHERE status='pending'"
     ).fetchone()[0]
     queue_done = conn.execute(
-        "SELECT COUNT(*) FROM svrt_research_queue WHERE status='done'"
+        "SELECT COUNT(*) FROM s3c_research_queue WHERE status='done'"
     ).fetchone()[0]
-    submissions = conn.execute("SELECT COUNT(*) FROM svrt_field_submissions").fetchone()[0]
+    submissions = conn.execute("SELECT COUNT(*) FROM s3c_field_submissions").fetchone()[0]
 
     status_counts = conn.execute("""
         SELECT eol_status, COUNT(*) as cnt
-        FROM svrt_reference GROUP BY eol_status ORDER BY cnt DESC
+        FROM s3c_reference GROUP BY eol_status ORDER BY cnt DESC
     """).fetchall()
 
     source_counts = conn.execute("""
         SELECT source, COUNT(*) as cnt
-        FROM svrt_reference GROUP BY source ORDER BY cnt DESC
+        FROM s3c_reference GROUP BY source ORDER BY cnt DESC
     """).fetchall()
 
     top_hits = conn.execute("""
         SELECT software_name, version, eol_status, hit_count, source
-        FROM svrt_reference ORDER BY hit_count DESC LIMIT 10
+        FROM s3c_reference ORDER BY hit_count DESC LIMIT 10
     """).fetchall()
 
     print(f"\n{'═'*55}")
@@ -1611,10 +1611,10 @@ def print_status(conn):
     print(f"  DB path        : {DB_PATH}")
     print(f"  DB size        : {DB_PATH.stat().st_size / 1024:.1f} KB" if DB_PATH.exists() else "  DB: not found")
     nvd_checked = conn.execute(
-        "SELECT COUNT(*) FROM svrt_reference WHERE cve_checked_at IS NOT NULL"
+        "SELECT COUNT(*) FROM s3c_reference WHERE cve_checked_at IS NOT NULL"
     ).fetchone()[0]
     nvd_with_cves = conn.execute(
-        "SELECT COUNT(*) FROM svrt_reference WHERE cve_count > 0"
+        "SELECT COUNT(*) FROM s3c_reference WHERE cve_count > 0"
     ).fetchone()[0]
 
     print(f"\n  Reference rows : {ref_count:,}")
@@ -1638,7 +1638,7 @@ def print_status(conn):
             print(f"    [{r['eol_status']:<9}] {r['software_name']:<25} v{r['version']:<10} ({r['source']})")
 
     last_run = conn.execute(
-        "SELECT * FROM svrt_agent_log ORDER BY id DESC LIMIT 1"
+        "SELECT * FROM s3c_agent_log ORDER BY id DESC LIMIT 1"
     ).fetchone()
     if last_run:
         print(f"\n  Last Run: {last_run['run_date']}  →  {last_run['items_out']} resolved, "
@@ -1647,7 +1647,7 @@ def print_status(conn):
     # ── API Cost Summary (all models) ─────────────────────────────────────
     cost_alltime = conn.execute("""
         SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost
-        FROM svrt_api_cost_log
+        FROM s3c_api_cost_log
     """).fetchone()
 
     if cost_alltime and cost_alltime['calls']:
@@ -1659,7 +1659,7 @@ def print_status(conn):
             SELECT model,
                    COUNT(*) as calls,
                    SUM(cost_usd) as total_cost
-            FROM svrt_api_cost_log
+            FROM s3c_api_cost_log
             GROUP BY model ORDER BY total_cost DESC
         """).fetchall()
         for row in model_rows:
@@ -1671,11 +1671,11 @@ def print_status(conn):
         cost_today = conn.execute("""
             SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost,
                    SUM(input_tokens) as total_in, SUM(output_tokens) as total_out
-            FROM svrt_api_cost_log WHERE call_date=date('now')
+            FROM s3c_api_cost_log WHERE call_date=date('now')
         """).fetchone()
         cost_month = conn.execute("""
             SELECT COUNT(*) as calls, SUM(cost_usd) as total_cost
-            FROM svrt_api_cost_log WHERE call_date >= date('now','start of month')
+            FROM s3c_api_cost_log WHERE call_date >= date('now','start of month')
         """).fetchone()
 
         if cost_today and cost_today['calls']:
@@ -1689,7 +1689,7 @@ def print_status(conn):
               f"${cost_alltime['total_cost']:.4f}")
 
         q_remaining = conn.execute(
-            "SELECT COUNT(*) FROM svrt_research_queue WHERE status='pending'"
+            "SELECT COUNT(*) FROM s3c_research_queue WHERE status='pending'"
         ).fetchone()[0]
         avg_cost = cost_alltime['total_cost'] / cost_alltime['calls'] if cost_alltime['calls'] else 0.00056
         print(f"  Queue remaining: {q_remaining:>5} items  ~${q_remaining * avg_cost * 3:.2f} est. (3 LLMs/item, assumes no GitHub/Repology hits)")
@@ -1708,7 +1708,7 @@ def fetch_json(url):
 def sync_github_yaml(conn):
     """
     Pull community-curated YAML product files from the GitHub reference-db and
-    upsert into svrt_reference at confidence=90 ('github-yaml' source).
+    upsert into s3c_reference at confidence=90 ('github-yaml' source).
 
     Won't overwrite entries that already have a higher confidence score
     (e.g. manual=95 seeded entries).
@@ -1773,7 +1773,7 @@ def sync_github_yaml(conn):
 
             # Don't overwrite higher-confidence entries
             existing = conn.execute(
-                "SELECT confidence FROM svrt_reference WHERE lookup_key=?", (key,)
+                "SELECT confidence FROM s3c_reference WHERE lookup_key=?", (key,)
             ).fetchone()
             if existing and existing[0] > 90:
                 skipped += 1
@@ -1783,7 +1783,7 @@ def sync_github_yaml(conn):
             expires  = (datetime.utcnow() + timedelta(days=ttl_days)).isoformat()
 
             conn.execute("""
-                INSERT INTO svrt_reference
+                INSERT INTO s3c_reference
                     (lookup_key, software_name, vendor, version, platform,
                      eol_status, eol_date, latest_version, latest_source_url,
                      confidence, source, notes, hit_count, created_at, checked_at, expires_at)
@@ -1798,8 +1798,8 @@ def sync_github_yaml(conn):
                     notes=excluded.notes,
                     checked_at=excluded.checked_at,
                     expires_at=excluded.expires_at,
-                    hit_count=svrt_reference.hit_count+1
-                WHERE svrt_reference.confidence <= 90
+                    hit_count=s3c_reference.hit_count+1
+                WHERE s3c_reference.confidence <= 90
             """, (
                 key, software_name, vendor, major, platform,
                 eol_status, eol_date, latest_ver, source_url,
