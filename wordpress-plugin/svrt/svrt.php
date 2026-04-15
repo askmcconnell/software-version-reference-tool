@@ -29,6 +29,9 @@ register_deactivation_hook(__FILE__, function () {
 // Run table creation on every load (safe — uses IF NOT EXISTS).
 add_action('init', 's3c_create_tables');
 
+// Rename legacy svrt_ tables → s3c_ on first load after deploy (priority 5, before table creation at 10).
+add_action('init', 's3c_migrate_table_names', 5);
+
 // ============================================================
 // DATABASE TABLES
 // ============================================================
@@ -40,7 +43,7 @@ function s3c_create_tables(): void {
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
     // Subscribers — one row per registered user
-    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}svrt_subscribers (
+    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}s3c_subscribers (
         id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         user_id       BIGINT UNSIGNED NOT NULL,
         plan          VARCHAR(20)  NOT NULL DEFAULT 'trial',
@@ -54,7 +57,7 @@ function s3c_create_tables(): void {
     ) $c;");
 
     // Upload jobs — one row per CSV upload session
-    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}svrt_upload_jobs (
+    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}s3c_upload_jobs (
         id                   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         uuid                 VARCHAR(36)  NOT NULL,
         user_id              BIGINT UNSIGNED NOT NULL,
@@ -76,12 +79,12 @@ function s3c_create_tables(): void {
 
     // Add report token columns to existing installs (dbDelta doesn't reliably add columns)
     s3c_maybe_add_column(
-        "{$wpdb->prefix}svrt_upload_jobs", 'report_token',
-        "ALTER TABLE {$wpdb->prefix}svrt_upload_jobs ADD COLUMN report_token VARCHAR(64) DEFAULT NULL"
+        "{$wpdb->prefix}s3c_upload_jobs", 'report_token',
+        "ALTER TABLE {$wpdb->prefix}s3c_upload_jobs ADD COLUMN report_token VARCHAR(64) DEFAULT NULL"
     );
     s3c_maybe_add_column(
-        "{$wpdb->prefix}svrt_upload_jobs", 'report_token_expires',
-        "ALTER TABLE {$wpdb->prefix}svrt_upload_jobs ADD COLUMN report_token_expires DATETIME DEFAULT NULL"
+        "{$wpdb->prefix}s3c_upload_jobs", 'report_token_expires',
+        "ALTER TABLE {$wpdb->prefix}s3c_upload_jobs ADD COLUMN report_token_expires DATETIME DEFAULT NULL"
     );
 
     // CVE columns — inventory_rows (existing installs migration)
@@ -90,8 +93,8 @@ function s3c_create_tables(): void {
               'cve_low SMALLINT DEFAULT NULL'] as $col_def) {
         $col = explode(' ', $col_def)[0];
         s3c_maybe_add_column(
-            "{$wpdb->prefix}svrt_inventory_rows", $col,
-            "ALTER TABLE {$wpdb->prefix}svrt_inventory_rows ADD COLUMN $col_def"
+            "{$wpdb->prefix}s3c_inventory_rows", $col,
+            "ALTER TABLE {$wpdb->prefix}s3c_inventory_rows ADD COLUMN $col_def"
         );
     }
 
@@ -102,13 +105,13 @@ function s3c_create_tables(): void {
               'cve_checked_at DATETIME DEFAULT NULL'] as $col_def) {
         $col = explode(' ', $col_def)[0];
         s3c_maybe_add_column(
-            "{$wpdb->prefix}svrt_reference", $col,
-            "ALTER TABLE {$wpdb->prefix}svrt_reference ADD COLUMN $col_def"
+            "{$wpdb->prefix}s3c_reference", $col,
+            "ALTER TABLE {$wpdb->prefix}s3c_reference ADD COLUMN $col_def"
         );
     }
 
     // Uploaded inventory rows — individual software items per job
-    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}svrt_inventory_rows (
+    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}s3c_inventory_rows (
         id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         job_id        BIGINT UNSIGNED NOT NULL,
         user_id       BIGINT UNSIGNED NOT NULL,
@@ -141,7 +144,7 @@ function s3c_create_tables(): void {
     ) $c;");
 
     // Reference database — pushed from Pi nightly, served to subscribers
-    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}svrt_reference (
+    dbDelta("CREATE TABLE IF NOT EXISTS {$wpdb->prefix}s3c_reference (
         id                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         lookup_key        VARCHAR(100) NOT NULL,
         software_name     VARCHAR(255) NOT NULL DEFAULT '',
@@ -179,6 +182,36 @@ function s3c_maybe_add_column(string $table, string $col, string $sql): void {
     }
 }
 
+// One-time migration: rename svrt_ tables → s3c_ (rebrand 2026-04-14).
+// RENAME TABLE is atomic in MySQL — no data is copied, no gap where both names exist.
+// Runs at init priority 5, before s3c_create_tables (priority 10).
+function s3c_migrate_table_names(): void {
+    if (get_option('s3c_migrated_tables_v1')) return;
+    global $wpdb;
+
+    $renames = [
+        'svrt_subscribers'    => 's3c_subscribers',
+        'svrt_upload_jobs'    => 's3c_upload_jobs',
+        'svrt_inventory_rows' => 's3c_inventory_rows',
+        'svrt_reference'      => 's3c_reference',
+    ];
+
+    foreach ($renames as $old_suffix => $new_suffix) {
+        $old = $wpdb->prefix . $old_suffix;
+        $new = $wpdb->prefix . $new_suffix;
+
+        // Check old table exists and new table does NOT yet exist
+        $old_exists = $wpdb->get_var("SHOW TABLES LIKE '$old'") === $old;
+        $new_exists = $wpdb->get_var("SHOW TABLES LIKE '$new'") === $new;
+
+        if ($old_exists && !$new_exists) {
+            $wpdb->query("RENAME TABLE `$old` TO `$new`");
+        }
+    }
+
+    update_option('s3c_migrated_tables_v1', true);
+}
+
 // One-time migration: reset stuck inventory rows so they can be re-processed.
 // Rows inserted before this fix had eol_status='unknown' as their initial state,
 // making them indistinguishable from "looked up but no match". This resets any
@@ -193,8 +226,8 @@ function s3c_migrate_stuck_rows(): void {
     // any row with an empty ref_source (processor never wrote a result) so the
     // new sentinel query (WHERE eol_status='') will pick them up.
     $wpdb->query(
-        "UPDATE {$wpdb->prefix}svrt_inventory_rows ir
-         INNER JOIN {$wpdb->prefix}svrt_upload_jobs j ON ir.job_id = j.id
+        "UPDATE {$wpdb->prefix}s3c_inventory_rows ir
+         INNER JOIN {$wpdb->prefix}s3c_upload_jobs j ON ir.job_id = j.id
          SET ir.eol_status = ''
          WHERE (ir.eol_status = 'unknown' OR ir.eol_status IS NULL OR ir.eol_status = '')
            AND (ir.ref_source = '' OR ir.ref_source IS NULL)
@@ -203,7 +236,7 @@ function s3c_migrate_stuck_rows(): void {
 
     // Reset matched_count on incomplete jobs so progress bar restarts cleanly
     $wpdb->query(
-        "UPDATE {$wpdb->prefix}svrt_upload_jobs
+        "UPDATE {$wpdb->prefix}s3c_upload_jobs
          SET matched_count = 0
          WHERE status IN ('pending', 'processing')"
     );
@@ -365,7 +398,7 @@ function s3c_send_report_email(string $to, string $uuid, string $token, array $j
 function s3c_get_subscriber(int $user_id): ?array {
     global $wpdb;
     $row = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_subscribers WHERE user_id = %d",
+        "SELECT * FROM {$wpdb->prefix}s3c_subscribers WHERE user_id = %d",
         $user_id
     ), ARRAY_A);
     return $row ?: null;
@@ -541,7 +574,7 @@ function s3c_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
     // Create contributor record
     global $wpdb;
-    $wpdb->insert("{$wpdb->prefix}svrt_subscribers", [
+    $wpdb->insert("{$wpdb->prefix}s3c_subscribers", [
         'user_id'      => $user_id,
         'plan'         => 'contributor',
         'upload_quota' => 0,
@@ -703,7 +736,7 @@ function s3c_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
     // Create job
     $uuid = wp_generate_uuid4();
-    $wpdb->insert("{$wpdb->prefix}svrt_upload_jobs", [
+    $wpdb->insert("{$wpdb->prefix}s3c_upload_jobs", [
         'uuid'      => $uuid,
         'user_id'   => $user->ID,
         'status'    => 'pending',
@@ -716,7 +749,7 @@ function s3c_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
     // Never rely on the DB default here; an explicit '' ensures the processor
     // query (WHERE eol_status='') only picks up rows it hasn't touched yet.
     foreach ($rows as $row) {
-        $wpdb->insert("{$wpdb->prefix}svrt_inventory_rows", array_merge($row, [
+        $wpdb->insert("{$wpdb->prefix}s3c_inventory_rows", array_merge($row, [
             'job_id'     => $job_id,
             'user_id'    => $user->ID,
             'eol_status' => '',
@@ -725,7 +758,7 @@ function s3c_api_upload(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
     // Increment uploads_used
     $wpdb->query($wpdb->prepare(
-        "UPDATE {$wpdb->prefix}svrt_subscribers SET uploads_used = uploads_used + 1 WHERE user_id = %d",
+        "UPDATE {$wpdb->prefix}s3c_subscribers SET uploads_used = uploads_used + 1 WHERE user_id = %d",
         $user->ID
     ));
 
@@ -937,7 +970,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
     $start = microtime(true);
 
     $job = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE id = %d",
+        "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs WHERE id = %d",
         $job_id
     ), ARRAY_A);
 
@@ -946,7 +979,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
 
     // Mark in-progress
     $wpdb->update(
-        "{$wpdb->prefix}svrt_upload_jobs",
+        "{$wpdb->prefix}s3c_upload_jobs",
         ['status' => 'processing'],
         ['id'     => $job_id]
     );
@@ -956,7 +989,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
     // set to a non-empty value ('supported','eol','unknown', etc.), so these rows
     // are never re-processed on subsequent pings.
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_inventory_rows
+        "SELECT * FROM {$wpdb->prefix}s3c_inventory_rows
          WHERE job_id = %d AND eol_status = ''
          LIMIT 500",
         $job_id
@@ -996,7 +1029,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
         $matched++;
 
         $wpdb->update(
-            "{$wpdb->prefix}svrt_inventory_rows",
+            "{$wpdb->prefix}s3c_inventory_rows",
             $update,
             ['id' => $row['id']]
         );
@@ -1004,7 +1037,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
 
     // Check if ALL rows are now processed
     $remaining = (int) $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}svrt_inventory_rows
+        "SELECT COUNT(*) FROM {$wpdb->prefix}s3c_inventory_rows
          WHERE job_id = %d AND eol_status = ''",
         $job_id
     ));
@@ -1016,7 +1049,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
         $token_expires  = gmdate('Y-m-d H:i:s', time() + 24 * HOUR_IN_SECONDS);
 
         $wpdb->update(
-            "{$wpdb->prefix}svrt_upload_jobs",
+            "{$wpdb->prefix}s3c_upload_jobs",
             [
                 'status'               => 'complete',
                 'matched_count'        => $matched,
@@ -1040,7 +1073,7 @@ function s3c_process_job(int $job_id, int $time_limit = 20): void {
     } else {
         // Save progress so far; UptimeRobot will continue it on next ping
         $wpdb->update(
-            "{$wpdb->prefix}svrt_upload_jobs",
+            "{$wpdb->prefix}s3c_upload_jobs",
             [
                 'matched_count' => $matched,
                 'eol_count'     => $eol,
@@ -1076,14 +1109,14 @@ function s3c_lookup_reference(string $name, string $vendor, string $version): ?a
     $key   = substr(hash('sha256', $raw), 0, 16) . ':' . strtolower(substr($name, 0, 40));
 
     $ref = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_reference WHERE lookup_key = %s",
+        "SELECT * FROM {$wpdb->prefix}s3c_reference WHERE lookup_key = %s",
         $key
     ), ARRAY_A);
 
     // Fuzzy fallback: search by lowercase software_name
     if (!$ref) {
         $ref = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}svrt_reference WHERE LOWER(software_name) = %s LIMIT 1",
+            "SELECT * FROM {$wpdb->prefix}s3c_reference WHERE LOWER(software_name) = %s LIMIT 1",
             strtolower(trim($name))
         ), ARRAY_A);
     }
@@ -1092,7 +1125,7 @@ function s3c_lookup_reference(string $name, string $vendor, string $version): ?a
 
     // Increment hit count
     $wpdb->query($wpdb->prepare(
-        "UPDATE {$wpdb->prefix}svrt_reference SET hit_count = hit_count + 1 WHERE id = %d",
+        "UPDATE {$wpdb->prefix}s3c_reference SET hit_count = hit_count + 1 WHERE id = %d",
         $ref['id']
     ));
 
@@ -1141,13 +1174,13 @@ function s3c_api_job_status(WP_REST_Request $req): WP_REST_Response|WP_Error {
     if (is_user_logged_in()) {
         // Authenticated user — must own the job
         $job = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE uuid = %s AND user_id = %d",
+            "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs WHERE uuid = %s AND user_id = %d",
             $uuid, get_current_user_id()
         ), ARRAY_A);
     } elseif ($rtoken) {
         // Report-link token — validate token and expiry (no user_id check)
         $job = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs
+            "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs
              WHERE uuid = %s AND report_token = %s AND report_token_expires > %s",
             $uuid, $rtoken, gmdate('Y-m-d H:i:s')
         ), ARRAY_A);
@@ -1184,12 +1217,12 @@ function s3c_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
 
     if (is_user_logged_in()) {
         $job = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE uuid = %s AND user_id = %d",
+            "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs WHERE uuid = %s AND user_id = %d",
             $uuid, get_current_user_id()
         ), ARRAY_A);
     } elseif ($rtoken) {
         $job = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs
+            "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs
              WHERE uuid = %s AND report_token = %s AND report_token_expires > %s",
             $uuid, $rtoken, gmdate('Y-m-d H:i:s')
         ), ARRAY_A);
@@ -1216,7 +1249,7 @@ function s3c_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
                 eol_status, eol_date, latest_version, latest_source_url,
                 confidence, ref_source, ref_notes, hostname_hash, scan_date,
                 cve_count, cve_critical, cve_high, cve_medium, cve_low
-         FROM {$wpdb->prefix}svrt_inventory_rows
+         FROM {$wpdb->prefix}s3c_inventory_rows
          $where
          ORDER BY eol_status ASC, software_name ASC",
         ARRAY_A
@@ -1225,7 +1258,7 @@ function s3c_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
     // Summary stats
     $stats = $wpdb->get_results($wpdb->prepare(
         "SELECT eol_status, COUNT(*) as count
-         FROM {$wpdb->prefix}svrt_inventory_rows
+         FROM {$wpdb->prefix}s3c_inventory_rows
          WHERE job_id = %d
          GROUP BY eol_status",
         $job['id']
@@ -1255,7 +1288,7 @@ function s3c_api_my_jobs(WP_REST_Request $req): WP_REST_Response {
 
     $jobs = $wpdb->get_results($wpdb->prepare(
         "SELECT uuid, status, filename, row_count, matched_count, eol_count, created_at, completed_at
-         FROM {$wpdb->prefix}svrt_upload_jobs
+         FROM {$wpdb->prefix}s3c_upload_jobs
          WHERE user_id = %d
          ORDER BY created_at DESC
          LIMIT 50",
@@ -1273,7 +1306,7 @@ function s3c_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $user_id = get_current_user_id();
 
     $job = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE uuid = %s AND user_id = %d",
+        "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs WHERE uuid = %s AND user_id = %d",
         $uuid, $user_id
     ), ARRAY_A);
 
@@ -1282,8 +1315,8 @@ function s3c_api_delete_job(WP_REST_Request $req): WP_REST_Response|WP_Error {
     }
 
     // Delete inventory rows first (FK-safe), then the job
-    $wpdb->delete("{$wpdb->prefix}svrt_inventory_rows", ['job_id' => $job['id']], ['%d']);
-    $wpdb->delete("{$wpdb->prefix}svrt_upload_jobs",    ['id'     => $job['id']], ['%d']);
+    $wpdb->delete("{$wpdb->prefix}s3c_inventory_rows", ['job_id' => $job['id']], ['%d']);
+    $wpdb->delete("{$wpdb->prefix}s3c_upload_jobs",    ['id'     => $job['id']], ['%d']);
 
     return new WP_REST_Response(['message' => 'Scan deleted.', 'uuid' => $uuid], 200);
 }
@@ -1295,7 +1328,7 @@ function s3c_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error 
     $uuid = sanitize_text_field($req->get_param('uuid'));
 
     $job = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}svrt_upload_jobs WHERE uuid = %s AND user_id = %d",
+        "SELECT * FROM {$wpdb->prefix}s3c_upload_jobs WHERE uuid = %s AND user_id = %d",
         $uuid, get_current_user_id()
     ), ARRAY_A);
 
@@ -1311,7 +1344,7 @@ function s3c_api_resend_report(WP_REST_Request $req): WP_REST_Response|WP_Error 
     $token_expires = gmdate('Y-m-d H:i:s', time() + 24 * HOUR_IN_SECONDS);
 
     $wpdb->update(
-        "{$wpdb->prefix}svrt_upload_jobs",
+        "{$wpdb->prefix}s3c_upload_jobs",
         ['report_token' => $report_token, 'report_token_expires' => $token_expires],
         ['id' => $job['id']]
     );
@@ -1340,13 +1373,13 @@ function s3c_api_reference_db(WP_REST_Request $req): WP_REST_Response {
     }
 
     $total = (int) $wpdb->get_var(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference $where"
+        "SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference $where"
     );
 
     $rows = $wpdb->get_results(
         "SELECT software_name, vendor, version, platform, eol_status, eol_date,
                 latest_version, latest_source_url, confidence, ref_source, hit_count, checked_at
-         FROM {$wpdb->prefix}svrt_reference
+         FROM {$wpdb->prefix}s3c_reference
          $where
          ORDER BY hit_count DESC, software_name ASC
          LIMIT $per_page OFFSET $offset",
@@ -1374,7 +1407,7 @@ function s3c_api_reference_search(WP_REST_Request $req): WP_REST_Response|WP_Err
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT software_name, vendor, version, platform, eol_status, eol_date,
                 latest_version, latest_source_url, confidence, ref_source, hit_count
-         FROM {$wpdb->prefix}svrt_reference
+         FROM {$wpdb->prefix}s3c_reference
          WHERE software_name LIKE %s OR vendor LIKE %s
          ORDER BY hit_count DESC
          LIMIT 50",
@@ -1391,11 +1424,11 @@ function s3c_api_reference_search(WP_REST_Request $req): WP_REST_Response|WP_Err
 function s3c_api_stats(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
 
-    $ref_total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference");
-    $ref_eol   = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference WHERE eol_status='eol'");
-    $ref_supp  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference WHERE eol_status='supported'");
-    $subs      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_subscribers");
-    $jobs      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_upload_jobs WHERE status='complete'");
+    $ref_total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference");
+    $ref_eol   = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference WHERE eol_status='eol'");
+    $ref_supp  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference WHERE eol_status='supported'");
+    $subs      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_subscribers");
+    $jobs      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_upload_jobs WHERE status='complete'");
 
     return new WP_REST_Response([
         'reference_entries'   => $ref_total,
@@ -1470,7 +1503,7 @@ function s3c_api_admin_import_reference(WP_REST_Request $req): WP_REST_Response|
         }
 
         $result = $wpdb->query($wpdb->prepare(
-            "INSERT INTO {$wpdb->prefix}svrt_reference
+            "INSERT INTO {$wpdb->prefix}s3c_reference
                 (lookup_key, software_name, vendor, version, platform,
                  eol_status, eol_date, latest_version, latest_source_url,
                  confidence, ref_source, notes, hit_count, checked_at, expires_at{$cve_sql})
@@ -1510,7 +1543,7 @@ function s3c_api_admin_jobs(WP_REST_Request $req): WP_REST_Response {
 
     $jobs = $wpdb->get_results(
         "SELECT j.*, u.user_email
-         FROM {$wpdb->prefix}svrt_upload_jobs j
+         FROM {$wpdb->prefix}s3c_upload_jobs j
          LEFT JOIN {$wpdb->users} u ON j.user_id = u.ID
          ORDER BY j.created_at DESC
          LIMIT $limit",
@@ -1524,7 +1557,7 @@ function s3c_api_admin_subscribers(WP_REST_Request $req): WP_REST_Response {
 
     $subs = $wpdb->get_results(
         "SELECT s.*, u.user_email, u.first_name, u.last_name, u.display_name
-         FROM {$wpdb->prefix}svrt_subscribers s
+         FROM {$wpdb->prefix}s3c_subscribers s
          LEFT JOIN {$wpdb->users} u ON s.user_id = u.ID
          ORDER BY s.created_at DESC",
         ARRAY_A
@@ -1554,8 +1587,8 @@ function s3c_api_dashboard(WP_REST_Request $req): WP_REST_Response {
     }
 
     global $wpdb;
-    $ir = "{$wpdb->prefix}svrt_inventory_rows";
-    $uj = "{$wpdb->prefix}svrt_upload_jobs";
+    $ir = "{$wpdb->prefix}s3c_inventory_rows";
+    $uj = "{$wpdb->prefix}s3c_upload_jobs";
 
     // Only count rows from completed jobs (avoid partial-scan skew)
     $completed_ids_sql = "SELECT id FROM {$uj} WHERE status = 'complete'";
@@ -1695,7 +1728,7 @@ function s3c_api_dashboard(WP_REST_Request $req): WP_REST_Response {
     unset($row);
 
     // ── Reference DB + Pi research agent stats ───────────────
-    $ref_tbl = "{$wpdb->prefix}svrt_reference";
+    $ref_tbl = "{$wpdb->prefix}s3c_reference";
     $ref_row = $wpdb->get_row(
         "SELECT
             COUNT(*)                                                                    AS total,
@@ -1757,7 +1790,7 @@ function s3c_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $active = $wpdb->get_results(
         "SELECT j.uuid, j.status, j.filename, j.row_count, j.matched_count,
                 j.eol_count, j.created_at, j.error_msg, u.user_email
-         FROM {$wpdb->prefix}svrt_upload_jobs j
+         FROM {$wpdb->prefix}s3c_upload_jobs j
          LEFT JOIN {$wpdb->users} u ON j.user_id = u.ID
          WHERE j.status IN ('pending', 'processing')
          ORDER BY j.created_at ASC",
@@ -1768,7 +1801,7 @@ function s3c_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
     $recent = $wpdb->get_results(
         "SELECT j.uuid, j.status, j.filename, j.row_count, j.matched_count,
                 j.eol_count, j.created_at, j.completed_at, j.error_msg, u.user_email
-         FROM {$wpdb->prefix}svrt_upload_jobs j
+         FROM {$wpdb->prefix}s3c_upload_jobs j
          LEFT JOIN {$wpdb->users} u ON j.user_id = u.ID
          WHERE j.status IN ('complete', 'failed')
            AND j.completed_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 4 HOUR)
@@ -1807,14 +1840,14 @@ function s3c_api_admin_queue(WP_REST_Request $req): WP_REST_Response|WP_Error {
             SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) AS processing,
             SUM(CASE WHEN status = 'complete'   THEN 1 ELSE 0 END) AS complete_total,
             SUM(CASE WHEN status = 'failed'     THEN 1 ELSE 0 END) AS failed_total
-         FROM {$wpdb->prefix}svrt_upload_jobs",
+         FROM {$wpdb->prefix}s3c_upload_jobs",
         ARRAY_A
     ) ?: [];
 
     // ── Raspberry Pi research agent stats ─────────────────────
-    $ref = "{$wpdb->prefix}svrt_reference";
-    $ir  = "{$wpdb->prefix}svrt_inventory_rows";
-    $uj  = "{$wpdb->prefix}svrt_upload_jobs";
+    $ref = "{$wpdb->prefix}s3c_reference";
+    $ir  = "{$wpdb->prefix}s3c_inventory_rows";
+    $uj  = "{$wpdb->prefix}s3c_upload_jobs";
 
     $ref_stats = $wpdb->get_row(
         "SELECT
@@ -1908,8 +1941,8 @@ function s3c_api_unknown_software(WP_REST_Request $req): void {
             ir.hostname_hash,
             ir.scan_date,
             COUNT(*) AS frequency
-         FROM {$wpdb->prefix}svrt_inventory_rows ir
-         INNER JOIN {$wpdb->prefix}svrt_upload_jobs j ON ir.job_id = j.id
+         FROM {$wpdb->prefix}s3c_inventory_rows ir
+         INNER JOIN {$wpdb->prefix}s3c_upload_jobs j ON ir.job_id = j.id
          WHERE ir.eol_status = 'unknown'
            AND ir.software_name != ''
            AND j.status = 'complete'
@@ -1964,8 +1997,8 @@ function s3c_api_reenrich(WP_REST_Request $req): WP_REST_Response {
     // same leading rows that MySQL returns without an explicit order.
     $rows = $wpdb->get_results(
         "SELECT ir.id, ir.software_name, ir.vendor, ir.version
-         FROM {$wpdb->prefix}svrt_inventory_rows ir
-         INNER JOIN {$wpdb->prefix}svrt_upload_jobs j ON ir.job_id = j.id
+         FROM {$wpdb->prefix}s3c_inventory_rows ir
+         INNER JOIN {$wpdb->prefix}s3c_upload_jobs j ON ir.job_id = j.id
          WHERE ir.eol_status = 'unknown'
            AND j.status = 'complete'
          ORDER BY RAND()
@@ -1984,7 +2017,7 @@ function s3c_api_reenrich(WP_REST_Request $req): WP_REST_Response {
 
         if ($result && $result['eol_status'] !== 'unknown') {
             $wpdb->update(
-                "{$wpdb->prefix}svrt_inventory_rows",
+                "{$wpdb->prefix}s3c_inventory_rows",
                 $result,
                 ['id' => $row['id']]
             );
@@ -1998,8 +2031,8 @@ function s3c_api_reenrich(WP_REST_Request $req): WP_REST_Response {
     // Still-unknown rows remaining
     $remaining = (int) $wpdb->get_var(
         "SELECT COUNT(*)
-         FROM {$wpdb->prefix}svrt_inventory_rows ir
-         INNER JOIN {$wpdb->prefix}svrt_upload_jobs j ON ir.job_id = j.id
+         FROM {$wpdb->prefix}s3c_inventory_rows ir
+         INNER JOIN {$wpdb->prefix}s3c_upload_jobs j ON ir.job_id = j.id
          WHERE ir.eol_status = 'unknown'
            AND j.status = 'complete'"
     );
@@ -2032,7 +2065,7 @@ function s3c_api_process_queue(WP_REST_Request $req): WP_REST_Response {
     global $wpdb;
     // Pick up both pending and in-progress (chunked jobs continue across pings)
     $pending = $wpdb->get_results(
-        "SELECT id FROM {$wpdb->prefix}svrt_upload_jobs
+        "SELECT id FROM {$wpdb->prefix}s3c_upload_jobs
          WHERE status IN ('pending','processing')
          ORDER BY created_at ASC LIMIT 3",
         ARRAY_A
@@ -2068,10 +2101,10 @@ add_action('admin_menu', function () {
 
 function s3c_admin_page(): void {
     global $wpdb;
-    $ref_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference");
-    $sub_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_subscribers");
-    $job_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_upload_jobs");
-    $eol_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}svrt_reference WHERE eol_status='eol'");
+    $ref_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference");
+    $sub_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_subscribers");
+    $job_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_upload_jobs");
+    $eol_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}s3c_reference WHERE eol_status='eol'");
     $last_import = get_option('s3c_last_reference_import', 'Never');
 
     // Handle secret key save
