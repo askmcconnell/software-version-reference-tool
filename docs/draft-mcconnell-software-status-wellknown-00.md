@@ -28,7 +28,7 @@ organization = "Ask McConnell, LLC"
 
 .# Abstract
 
-This document defines a Well-Known URI {{!RFC8615}} at which software
+This document defines a Well-Known URI [@!RFC8615] at which software
 vendors and open-source maintainers may publish machine-readable lifecycle
 status information for their products. A JSON resource retrieved from
 `/.well-known/software-status.json` allows consumers — including security
@@ -37,7 +37,7 @@ and system administrators — to programmatically determine whether a specific
 version of a software product is actively supported, in long-term support
 (LTS), under security-only maintenance, or at end-of-life (EOL).
 
-This document also describes, in {{appendix-a}}, a companion convention for
+This document also describes, in [Appendix A](#appendix-a), a companion convention for
 open-source projects hosted on version-control platforms to publish equivalent
 information within the repository at `.github/software-status.json`.
 
@@ -64,7 +64,7 @@ all of which introduce latency, inaccuracy, and maintenance burden.
 This document proposes a simple, low-overhead mechanism for software vendors
 and maintainers to publish authoritative lifecycle data in a machine-readable
 format at a predictable location, using the Well-Known URI mechanism defined
-in {{!RFC8615}}.
+in [@!RFC8615].
 
 The design goals are:
 
@@ -82,7 +82,7 @@ The design goals are:
    resource is not present.
 
 *  **Composable**: the same schema is used for both the Well-Known URI
-   ({{appendix-a}} describes the version-control companion) so tools that
+   ([Appendix A](#appendix-a) describes the version-control companion) so tools that
    understand one format understand both.
 
 ## Conventions and Definitions
@@ -90,7 +90,7 @@ The design goals are:
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" in this document are to be interpreted as described in
-BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they appear in all
+BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all
 capitals, as shown here.
 
 The following terms are used in this document:
@@ -151,7 +151,7 @@ than 30 days.
 
 # The software-status.json Schema
 
-The `software-status.json` resource is a JSON object ({{!RFC8259}}) with
+The `software-status.json` resource is a JSON object ([@!RFC8259]) with
 the following structure.
 
 ## Root Object
@@ -171,7 +171,7 @@ The root object MUST contain the following fields:
   support lifecycle.
 
 `versions` (array, REQUIRED):
-: An array of version entry objects as described in {{version-entries}}.
+: An array of version entry objects as described in [Section 4.2](#version-entries).
   MUST contain at least one entry. SHOULD include all version series for
   which the vendor has a defined support position, including EOL versions.
 
@@ -185,7 +185,7 @@ The root object MAY contain the following fields:
 
 `package_identifiers` (object):
 : A map of package ecosystem names to the identifier used in that ecosystem.
-  See {{package-identifiers}}.
+  See [Section 4.4](#package-identifiers).
 
 `release_cycle_url` (string):
 : A URI for the vendor's official support lifecycle or release policy page.
@@ -208,7 +208,7 @@ contain the following fields:
 
 `status` (string, REQUIRED):
 : The current support status of this version series. MUST be one of the
-  values defined in {{status-values}}.
+  values defined in [Section 4.3](#status-values).
 
 Each version entry MAY contain the following fields:
 
@@ -372,7 +372,7 @@ intermediary (such as a shared cache or mirroring service) should be used.
 ## Well-Known URI Registration
 
 IANA is requested to register the following Well-Known URI in the
-"Well-Known URIs" registry established by {{!RFC8615}}:
+"Well-Known URIs" registry established by [@!RFC8615]:
 
 URI suffix:
 : `software-status.json`
@@ -386,7 +386,7 @@ Specification document(s):
 Related information:
 : This URI returns a JSON document describing the software lifecycle
   status for products associated with the host. The format is defined
-  in {{the-software-statusjson-schema}} of this document.
+  in [Section 4](#the-software-statusjson-schema) of this document.
 
 {backmatter}
 
@@ -503,12 +503,12 @@ https://raw.githubusercontent.com/{owner}/{repo}/HEAD/.github/software-status.js
 
 A 404 response MUST be treated as "no declaration available". A 200
 response with valid JSON MUST be processed according to the schema
-defined in {{the-software-statusjson-schema}}.
+defined in [Section 4](#the-software-statusjson-schema).
 
 ## Schema
 
 The `.github/software-status.json` resource uses the same JSON schema
-as defined in {{the-software-statusjson-schema}}, with one addition:
+as defined in [Section 4](#the-software-statusjson-schema), with one addition:
 the `source` field at the root object SHOULD be set to the canonical
 repository URI.
 
@@ -517,7 +517,7 @@ repository URI.
 When a project has both a Well-Known URI resource and a repository-hosted
 resource, consuming tools SHOULD prefer the Well-Known URI, as it is
 served from infrastructure explicitly controlled by the vendor and subject
-to the HTTPS authenticity guarantees described in {{security-considerations}}.
+to the HTTPS authenticity guarantees described in [Section 6](#security-considerations).
 
 ## Example
 
@@ -558,7 +558,7 @@ complementary: endoflife.date is a centralized catalog; `software-status.json`
 is a decentralized, vendor-authoritative mechanism. Consuming tools should
 use both.
 
-**security.txt** ({{?RFC9116}}): Defines a Well-Known URI (`/.well-known/
+**security.txt** ([@?RFC9116]): Defines a Well-Known URI (`/.well-known/
 security.txt`) at which organizations publish security contact information.
 This proposal follows the same pattern for lifecycle data.
 
