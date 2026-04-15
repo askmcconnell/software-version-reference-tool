@@ -23,7 +23,6 @@ export default function Nav() {
           <span style={{ fontWeight: 700, letterSpacing: '0.02em', fontSize: '1rem' }}>S3C-Tool</span>
           <span style={{ fontSize: '0.6rem', fontWeight: 400, color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Software Security Supply Chain</span>
         </span>
-        <span className="badge">BETA</span>
       </Link>
 
       <div className="nav-links">

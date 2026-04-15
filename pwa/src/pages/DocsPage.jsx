@@ -42,11 +42,15 @@ export default function DocsPage() {
         <div className="card-title">🚀 Quick Start</div>
         <ol style={{ paddingLeft: 20, lineHeight: 2.2, color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           <li>Download the scanner for your platform above</li>
-          <li>Requires Python 3.8+ (pre-installed on macOS and most Linux distros)</li>
           <li>
-            Run: {code('python3 s3c_scan_mac.py --quick')}
+            <strong>macOS/Linux</strong>: Requires Python 3.8+ (pre-installed on macOS and most Linux distros) &nbsp;·&nbsp;
+            <strong>Windows</strong>: Requires PowerShell (pre-installed on Windows 10+)
+          </li>
+          <li>
+            Run: {code('python3 s3c_scan_mac.py --quick')} (macOS/Linux)
+            &nbsp;or&nbsp; {code('.\\s3c_scan_windows.ps1 -Quick')} (Windows)
             <span style={{ display: 'block', fontSize: '0.8rem', marginTop: 2 }}>
-              Output: {code('~/Desktop/s3c_inventory_mac_YYYY-MM-DD.csv')}
+              Output: {code('s3c_inventory_[platform]_YYYY-MM-DD.csv')}
             </span>
           </li>
           <li>Log in and upload the CSV on the <a href="/s3c/">Upload page</a></li>
@@ -137,8 +141,8 @@ export default function DocsPage() {
              '"Unknown" means it isn\'t in the reference DB yet. It\'s queued for research and will resolve within 1–3 nightly cycles. Upload the same file again in a few days to see updated results.'],
             ['Can I upload multiple platforms?',
              'Each upload is one CSV from one platform. Upload separately for Mac, Linux, and Windows machines. All reports are in your account history.'],
-            ['What Python version is required?',
-             'Python 3.8 or newer. macOS includes Python 3 by default. On Windows, download from python.org.'],
+            ['What are the scanner prerequisites?',
+             'macOS and Linux: Python 3.8 or newer (pre-installed on macOS and most Linux distros). Windows: PowerShell 5.1 or newer, which is pre-installed on Windows 10 and 11 — no download required.'],
           ].map(([q, a]) => (
             <div key={q}>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{q}</div>
