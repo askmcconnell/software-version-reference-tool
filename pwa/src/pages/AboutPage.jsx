@@ -34,6 +34,70 @@ export default function AboutPage() {
 
       <Divider />
 
+      {/* ── Who's Behind This ──────────────────────────────────── */}
+      <Section>
+        <SectionLabel>Who's Behind This</SectionLabel>
+        <h2>Built by a security practitioner who got tired of doing this by hand</h2>
+
+        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 420px' }}>
+            <p>
+              S3C-Tool is built and maintained by{' '}
+              <a href="https://askmcconnell.com" target="_blank" rel="noopener noreferrer"
+                 style={{ color: 'var(--accent)', fontWeight: 600 }}>Jim McConnell</a>
+              {' '}— a security professional with a straightforward conviction: organizations
+              deserve better tools for understanding their own software risk, and those tools
+              should be accessible to everyone, not just enterprises with large security budgets.
+            </p>
+            <p>
+              The frustration was real. Running software EOL assessments meant the same painful
+              manual process every time: compile an inventory, search vendor lifecycle pages one
+              by one, piece together a spreadsheet, and repeat the whole thing next quarter.
+              S3C-Tool exists because there had to be a better way.
+            </p>
+            <p>
+              Every component of the infrastructure — the WordPress backend, the Raspberry Pi
+              research agent running 24/7, the AI API costs, the hosting — is funded and
+              operated by Ask McConnell out of a genuine belief that this capability should
+              exist and be free to use. The shared reference database grows with every scan:
+              the more people use it, the more accurate it becomes for everyone.
+            </p>
+          </div>
+
+          <div style={{ flex: '0 0 auto', minWidth: 200 }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius)', padding: 20, fontSize: '0.875rem' }}>
+              <div style={{ fontWeight: 600, marginBottom: 12, color: 'var(--text)' }}>Ask McConnell</div>
+              {[
+                ['Role', 'Primary contributor & infrastructure host'],
+                ['Focus', 'Security risk, software supply chain'],
+                ['Site', <a href="https://askmcconnell.com" target="_blank" rel="noopener noreferrer"
+                             style={{ color: 'var(--accent)' }}>askmcconnell.com</a>],
+                ['GitHub', <a href="https://github.com/askmcconnell" target="_blank" rel="noopener noreferrer"
+                              style={{ color: 'var(--accent)' }}>@askmcconnell</a>],
+              ].map(([label, value]) => (
+                <div key={label} style={{ display: 'flex', gap: 8, marginBottom: 8,
+                                          color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  <span style={{ minWidth: 52, flexShrink: 0, fontSize: '0.78rem',
+                                 fontWeight: 600, textTransform: 'uppercase',
+                                 letterSpacing: '0.05em', paddingTop: 2 }}>{label}</span>
+                  <span>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <CalloutBox>
+          The mission isn't just a better tool — it's a more secure internet. S3C-Tool is one
+          part of that: a practical utility anyone can use today. The standards initiative is
+          the other: pushing for a future where software lifecycle data is structured,
+          machine-readable, and published authoritatively by the people who actually know it.
+        </CalloutBox>
+      </Section>
+
+      <Divider />
+
       {/* ── The Problem ────────────────────────────────────────── */}
       <Section>
         <SectionLabel>The Problem</SectionLabel>
@@ -204,31 +268,6 @@ export default function AboutPage() {
             Discuss on GitHub
           </a>
         </div>
-      </Section>
-
-      <Divider />
-
-      {/* ── Origin ─────────────────────────────────────────────── */}
-      <Section>
-        <SectionLabel>Origin</SectionLabel>
-        <h2>Built by a security practitioner, for security practitioners</h2>
-        <p>
-          S3C-Tool was built out of frustration. Running software EOL assessments
-          for organizations meant the same painful manual process every time: compile
-          an inventory, search vendor lifecycle pages one by one, piece together a
-          spreadsheet, and repeat every quarter. There had to be a better way.
-        </p>
-        <p>
-          The shared reference database is the core insight. Every time S3C-Tool looks
-          up a product, the result is cached. The next user to scan the same software
-          gets an instant answer. Over time, the database grows toward complete coverage
-          of the enterprise software landscape — at effectively zero marginal cost per lookup.
-        </p>
-        <p>
-          The standards initiative grew from the same realization: the right long-term fix
-          isn't a better scraper. It's giving the people who <em>know</em> the lifecycle data —
-          the vendors and maintainers themselves — a simple, standard way to publish it.
-        </p>
       </Section>
 
       <Divider />
