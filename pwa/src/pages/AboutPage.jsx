@@ -186,8 +186,10 @@ export default function AboutPage() {
             icon="🌐"
             title="Well-Known URI (IETF Internet-Draft)"
             sub="For vendors and service operators"
-            desc="A proposed IETF standard that would establish /.well-known/software-status.json as a canonical location for any domain to publish lifecycle status for the software it runs or distributes. Following the RFC 8615 pattern used by security.txt and other well-known resources."
-            tag="Internet-Draft in progress"
+            desc="A proposed IETF standard establishing /.well-known/software-status.json as a canonical location for any domain to publish lifecycle status for the software it runs or distributes. Following the RFC 8615 pattern used by security.txt and other well-known resources."
+            tag="Filed with IETF"
+            href="https://datatracker.ietf.org/doc/draft-mcconnell-software-status-wellknown/"
+            hrefLabel="View on Datatracker →"
           />
           <StandardCard
             icon="🐙"
