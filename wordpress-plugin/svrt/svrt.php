@@ -257,6 +257,8 @@ function s3c_send_cors_headers(): void {
         'http://localhost:5173',
         'http://localhost:3000',
     ];
+    // Always strip WordPress core's wildcard first, then set ours only for known origins.
+    header_remove('Access-Control-Allow-Origin');
     if (in_array($origin, $allowed, true)) {
         header('Access-Control-Allow-Origin: ' . $origin);
         header('Vary: Origin');
@@ -264,6 +266,8 @@ function s3c_send_cors_headers(): void {
     header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
     header('Access-Control-Allow-Headers: Authorization, Content-Type');
     header('Access-Control-Max-Age: 86400');
+    // Suppress server version disclosure
+    header_remove('X-Powered-By');
 }
 
 add_action('init', function () {
@@ -274,10 +278,29 @@ add_action('init', function () {
     }
 });
 
+// Priority 20 — runs after WordPress core's rest_send_cors_headers (priority 10),
+// so header_remove() inside s3c_send_cors_headers() reliably strips the wildcard.
 add_filter('rest_pre_serve_request', function ($served, $result, $request) {
     s3c_send_cors_headers();
     return $served;
-}, 10, 3);
+}, 20, 3);
+
+// ============================================================
+// RATE LIMITING  (transient-based, per-IP)
+// ============================================================
+
+/**
+ * Returns true if the request is allowed, false if rate-limited.
+ * $limit attempts per $window seconds per IP per action key.
+ */
+function s3c_rate_limit_check(string $action, int $limit = 10, int $window = 300): bool {
+    $ip  = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $key = 's3c_rl_' . $action . '_' . md5($ip);
+    $count = (int) get_transient($key);
+    if ($count >= $limit) return false;
+    set_transient($key, $count + 1, $window);
+    return true;
+}
 
 // ============================================================
 // BEARER TOKEN AUTH  (Apache-safe — query-param fallback)
@@ -544,6 +567,11 @@ add_action('rest_api_init', function () {
 // ============================================================
 
 function s3c_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
+    // 3 attempts per IP per 15 minutes
+    if (!s3c_rate_limit_check('register', 3, 900)) {
+        return new WP_Error('rate_limited', 'Too many registration attempts. Please try again later.', ['status' => 429]);
+    }
+
     $email    = sanitize_email($req->get_param('email') ?? '');
     $password = $req->get_param('password') ?? '';
     $first    = sanitize_text_field($req->get_param('first_name') ?? '');
@@ -593,6 +621,11 @@ function s3c_api_register(WP_REST_Request $req): WP_REST_Response|WP_Error {
 }
 
 function s3c_api_login(WP_REST_Request $req): WP_REST_Response|WP_Error {
+    // 5 attempts per IP per 5 minutes
+    if (!s3c_rate_limit_check('login', 5, 300)) {
+        return new WP_Error('rate_limited', 'Too many login attempts. Please try again in a few minutes.', ['status' => 429]);
+    }
+
     $email    = sanitize_email($req->get_param('email') ?? '');
     $password = $req->get_param('password') ?? '';
 
@@ -1237,23 +1270,26 @@ function s3c_api_job_report(WP_REST_Request $req): WP_REST_Response|WP_Error {
         return new WP_Error('not_ready', 'Report not ready yet. Poll /job/' . $uuid . ' for status.', ['status' => 202]);
     }
 
-    // Get filter param: all | eol | unknown | supported
-    $filter = sanitize_text_field($req->get_param('filter') ?? 'all');
-    $where  = $wpdb->prepare("WHERE job_id = %d", $job['id']);
-    if (in_array($filter, ['eol', 'unknown', 'supported', 'lts', 'no_patch'], true)) {
-        $where .= $wpdb->prepare(" AND eol_status = %s", $filter);
-    }
+    // Get filter param: all | eol | unknown | supported | lts | no_patch
+    $filter       = sanitize_text_field($req->get_param('filter') ?? 'all');
+    $valid_filters = ['eol', 'unknown', 'supported', 'lts', 'no_patch'];
+    $select = "SELECT software_name, vendor, version, platform, file_type, parent_app,
+                      eol_status, eol_date, latest_version, latest_source_url,
+                      confidence, ref_source, ref_notes, hostname_hash, scan_date,
+                      cve_count, cve_critical, cve_high, cve_medium, cve_low
+               FROM {$wpdb->prefix}s3c_inventory_rows";
 
-    $rows = $wpdb->get_results(
-        "SELECT software_name, vendor, version, platform, file_type, parent_app,
-                eol_status, eol_date, latest_version, latest_source_url,
-                confidence, ref_source, ref_notes, hostname_hash, scan_date,
-                cve_count, cve_critical, cve_high, cve_medium, cve_low
-         FROM {$wpdb->prefix}s3c_inventory_rows
-         $where
-         ORDER BY eol_status ASC, software_name ASC",
-        ARRAY_A
-    );
+    if (in_array($filter, $valid_filters, true)) {
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "$select WHERE job_id = %d AND eol_status = %s ORDER BY eol_status ASC, software_name ASC",
+            $job['id'], $filter
+        ), ARRAY_A);
+    } else {
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "$select WHERE job_id = %d ORDER BY eol_status ASC, software_name ASC",
+            $job['id']
+        ), ARRAY_A);
+    }
 
     // Summary stats
     $stats = $wpdb->get_results($wpdb->prepare(
