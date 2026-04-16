@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#4a90d9" stop-opacity="0"/>
+      <stop offset="35%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="50%"  stop-color="#7ec8f5" stop-opacity="1"/>
+      <stop offset="65%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#4a90d9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shieldFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1a2540"/>
+      <stop offset="100%" stop-color="#0f1520"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="shieldClip">
+      <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"/>
+    </clipPath>
+    <!-- For interlocking chain link effect -->
+    <clipPath id="topHalf">
+      <rect x="0" y="0" width="200" height="97"/>
+    </clipPath>
+    <clipPath id="bottomHalf">
+      <rect x="0" y="97" width="200" height="103"/>
+    </clipPath>
+  </defs>
+
+  <!-- Shield body -->
+  <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"
+        fill="url(#shieldFill)"
+        stroke="#4a90d9"
+        stroke-width="2.5"
+        stroke-linejoin="round"/>
+
+  <!-- Inner shield border (subtle) -->
+  <path d="M100 30 L156 53 L156 102 C156 134 130 158 100 170 C70 158 44 134 44 102 L44 53 Z"
+        fill="none"
+        stroke="#2e4a6a"
+        stroke-width="1"
+        stroke-linejoin="round"/>
+
+  <!-- ── Interlocked chain links ── -->
+  <g clip-path="url(#shieldClip)">
+
+    <!-- Left link — bottom half (sits behind right link) -->
+    <g clip-path="url(#bottomHalf)">
+      <g transform="rotate(-22, 80, 97)">
+        <rect x="52" y="81" width="56" height="32" rx="16"
+              fill="#0e1624" stroke="#4a90d9" stroke-width="3.5"/>
+      </g>
+    </g>
+
+    <!-- Right link — full (middle layer) -->
+    <g transform="rotate(22, 120, 97)">
+      <rect x="92" y="81" width="56" height="32" rx="16"
+            fill="#0e1624" stroke="#4a90d9" stroke-width="3.5"/>
+    </g>
+
+    <!-- Left link — top half (sits in front of right link) -->
+    <g clip-path="url(#topHalf)">
+      <g transform="rotate(-22, 80, 97)">
+        <rect x="52" y="81" width="56" height="32" rx="16"
+              fill="#0e1624" stroke="#4a90d9" stroke-width="3.5"/>
+      </g>
+    </g>
+
+  </g>
+
+  <!-- Subtle grid lines (behind scan line, in front of links) -->
+  <g clip-path="url(#shieldClip)" opacity="0.06">
+    <line x1="32" y1="68"  x2="168" y2="68"  stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="82"  x2="168" y2="82"  stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="114" x2="168" y2="114" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="128" x2="168" y2="128" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="72"  y1="18" x2="72"  y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="100" y1="18" x2="100" y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="128" y1="18" x2="128" y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+  </g>
+
+  <!-- Scan line sweep — topmost layer, cuts through the chain links -->
+  <g clip-path="url(#shieldClip)" filter="url(#glow)">
+    <rect x="28" y="96" width="144" height="3"   fill="url(#scanGrad)" rx="1.5"/>
+    <rect x="28" y="90" width="144" height="1.5" fill="url(#scanGrad)" opacity="0.4" rx="0.75"/>
+    <rect x="28" y="85" width="144" height="1"   fill="url(#scanGrad)" opacity="0.15" rx="0.5"/>
+    <rect x="28" y="101" width="144" height="1.5" fill="url(#scanGrad)" opacity="0.3" rx="0.75"/>
+    <rect x="28" y="104" width="144" height="1"   fill="url(#scanGrad)" opacity="0.1" rx="0.5"/>
+  </g>
+
+</svg>

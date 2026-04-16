@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 80" width="340" height="80">
+  <defs>
+    <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#4a90d9" stop-opacity="0"/>
+      <stop offset="35%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="50%"  stop-color="#7ec8f5" stop-opacity="1"/>
+      <stop offset="65%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#4a90d9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shieldFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1a2540"/>
+      <stop offset="100%" stop-color="#0f1520"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="shieldClip">
+      <path d="M40 7 L67 18 L67 41 C67 56 55 67 40 73 C25 67 13 56 13 41 L13 18 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background (dark, matches app) -->
+  <rect width="340" height="80" fill="#0f1117" rx="10"/>
+
+  <!-- ── Shield mark ── -->
+  <path d="M40 7 L67 18 L67 41 C67 56 55 67 40 73 C25 67 13 56 13 41 L13 18 Z"
+        fill="url(#shieldFill)"
+        stroke="#4a90d9"
+        stroke-width="1.5"
+        stroke-linejoin="round"/>
+
+  <!-- Inner border -->
+  <path d="M40 13 L61 22 L61 41 C61 53 51 62 40 67 C29 62 19 53 19 41 L19 22 Z"
+        fill="none"
+        stroke="#2e4a6a"
+        stroke-width="0.75"
+        stroke-linejoin="round"/>
+
+  <!-- Scan line -->
+  <g clip-path="url(#shieldClip)" filter="url(#glow)">
+    <rect x="10" y="37" width="60" height="1.5" fill="url(#scanGrad)" rx="0.75"/>
+    <rect x="10" y="34" width="60" height="0.75" fill="url(#scanGrad)" opacity="0.4" rx="0.4"/>
+    <rect x="10" y="40" width="60" height="0.75" fill="url(#scanGrad)" opacity="0.25" rx="0.4"/>
+  </g>
+
+  <!-- Subtle grid inside shield -->
+  <g clip-path="url(#shieldClip)" opacity="0.08">
+    <line x1="13" y1="28" x2="67" y2="28" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="13" y1="48" x2="67" y2="48" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="40" y1="7"  x2="40" y2="73" stroke="#4a90d9" stroke-width="0.5"/>
+  </g>
+
+  <!-- ── Wordmark ── -->
+  <!-- S3C bold -->
+  <text x="84" y="46"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-size="28"
+        font-weight="700"
+        letter-spacing="0.5"
+        fill="#e8eaf0">S3C</text>
+
+  <!-- Accent dash -->
+  <rect x="84" y="53" width="52" height="2" fill="#4a90d9" rx="1" opacity="0.6"/>
+
+  <!-- Subtitle -->
+  <text x="84" y="66"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-size="8.5"
+        font-weight="400"
+        letter-spacing="1.8"
+        fill="#8892a4">SOFTWARE SECURITY SUPPLY CHAIN</text>
+
+  <!-- Divider -->
+  <line x1="152" y1="20" x2="152" y2="60" stroke="#2e3448" stroke-width="1"/>
+
+  <!-- Tagline right side -->
+  <text x="164" y="36"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-size="9"
+        font-weight="500"
+        fill="#4a90d9"
+        letter-spacing="0.3">EOL · NO-PATCH · CVE</text>
+  <text x="164" y="50"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-size="9"
+        font-weight="400"
+        fill="#5a6478"
+        letter-spacing="0.3">Software Inventory Scanner</text>
+
+</svg>

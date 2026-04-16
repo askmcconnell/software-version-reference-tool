@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>S3C Logo Concepts — Preview</title>
+<style>
+  body { background: #0f1117; color: #e8eaf0; font-family: -apple-system, sans-serif; padding: 40px; }
+  h2  { color: #8892a4; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; margin: 36px 0 14px; border-top: 1px solid #2e3448; padding-top: 24px; }
+  h1  { font-size: 1.1rem; margin-bottom: 4px; }
+  .row { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+  .box { background: #1a1f2e; border: 1px solid #2e3448; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .box.active { border-color: #4a90d9; }
+  .label { font-size: 0.7rem; color: #5a6478; letter-spacing: 0.06em; text-align: center; }
+  .concept-label { font-size: 0.8rem; color: #4a90d9; font-weight: 600; margin-bottom: 4px; }
+  .on-white { background: #fff !important; }
+  .on-white .label { color: #999; }
+  .divider { width: 1px; background: #2e3448; align-self: stretch; margin: 0 8px; }
+</style>
+</head>
+<body>
+
+<h1>S3C-Tool — Logo Concepts</h1>
+<p style="color:#5a6478; font-size:0.85rem; margin-bottom:8px;">Accent blue #4a90d9 · Dark navy palette · All SVG (scalable)</p>
+
+<!-- ─── Concept 1 ─── -->
+<h2>Concept A — Interlocked Chain Links + Scan Sweep</h2>
+<p style="color:#8892a4; font-size:0.85rem; margin-bottom:16px;">
+  Two interlocked chain links inside the shield. Scan line sweeps through them — visual metaphor for scanning the supply chain.
+</p>
+<div class="row">
+  <div class="box active">
+    <img src="s3c-logo-concept-v1.svg" width="200" height="200"/>
+    <div class="label">200px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v1.svg" width="96" height="96"/>
+    <div class="label">96px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v1.svg" width="64" height="64"/>
+    <div class="label">64px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v1.svg" width="32" height="32"/>
+    <div class="label">32px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v1.svg" width="16" height="16"/>
+    <div class="label">16px favicon</div>
+  </div>
+</div>
+
+<!-- ─── Concept 2 ─── -->
+<h2>Concept B — "S3C" Chain-Link Text + Scan Sweep</h2>
+<p style="color:#8892a4; font-size:0.85rem; margin-bottom:16px;">
+  Monospace "S3C" rendered as hollow outlined text — evokes the look of chain link lettering. Scan line sweeps below the text.
+</p>
+<div class="row">
+  <div class="box active">
+    <img src="s3c-logo-concept-v2.svg" width="200" height="200"/>
+    <div class="label">200px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v2.svg" width="96" height="96"/>
+    <div class="label">96px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v2.svg" width="64" height="64"/>
+    <div class="label">64px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v2.svg" width="32" height="32"/>
+    <div class="label">32px</div>
+  </div>
+  <div class="box">
+    <img src="s3c-logo-concept-v2.svg" width="16" height="16"/>
+    <div class="label">16px favicon</div>
+  </div>
+</div>
+
+<!-- ─── Full Lockup ─── -->
+<h2>Full Horizontal Lockup (Concept A)</h2>
+<p style="color:#8892a4; font-size:0.85rem; margin-bottom:16px;">Shield mark + wordmark — nav bar / header use.</p>
+<div class="row">
+  <div class="box">
+    <img src="s3c-logo-lockup-v1.svg" width="340" height="80"/>
+    <div class="label">Dark background (app nav)</div>
+  </div>
+</div>
+<div class="row" style="margin-top:14px;">
+  <div class="box on-white">
+    <img src="s3c-logo-lockup-v1.svg" width="340" height="80"/>
+    <div class="label" style="color:#aaa;">White background (LinkedIn / print)</div>
+  </div>
+</div>
+
+<!-- ─── Notes ─── -->
+<h2>Design Notes</h2>
+<ul style="color:#8892a4; font-size:0.85rem; line-height:2.2; max-width:600px;">
+  <li><strong style="color:#e8eaf0;">Concept A</strong> — More abstract / versatile. Chain links are recognizable but secondary to the shield. Works well at all sizes.</li>
+  <li><strong style="color:#e8eaf0;">Concept B</strong> — More literal branding. "S3C" is front and center. Loses some detail below 64px.</li>
+  <li>Both are pure SVG — no external fonts required at runtime.</li>
+  <li>Colors match the existing app palette exactly.</li>
+  <li>Next step: pick a direction, then a designer (or Figma/AI tool) can refine the chosen concept.</li>
+</ul>
+
+</body>
+</html>

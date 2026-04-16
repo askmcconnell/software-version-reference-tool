@@ -14,10 +14,52 @@ export default function Nav() {
   return (
     <nav className="nav">
       <Link to="/" className="nav-brand">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <ellipse cx="12" cy="5" rx="9" ry="3"/>
-          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        <svg width="32" height="32" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="nsg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor="#4a90d9" stopOpacity="0"/>
+              <stop offset="50%"  stopColor="#7ec8f5" stopOpacity="1"/>
+              <stop offset="100%" stopColor="#4a90d9" stopOpacity="0"/>
+            </linearGradient>
+            <linearGradient id="nsf" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stopColor="#1a2540"/>
+              <stop offset="100%" stopColor="#0f1520"/>
+            </linearGradient>
+            <linearGradient id="ncm" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stopColor="#7ec8f5"/>
+              <stop offset="40%"  stopColor="#4a90d9"/>
+              <stop offset="100%" stopColor="#2a5a8a"/>
+            </linearGradient>
+            <filter id="ngl">
+              <feGaussianBlur stdDeviation="2" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <clipPath id="nsc">
+              <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"/>
+            </clipPath>
+          </defs>
+          <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"
+                fill="url(#nsf)" stroke="#4a90d9" strokeWidth="2.5" strokeLinejoin="round"/>
+          <path d="M100 30 L156 53 L156 102 C156 134 130 158 100 170 C70 158 44 134 44 102 L44 53 Z"
+                fill="none" stroke="#2e4a6a" strokeWidth="1" strokeLinejoin="round"/>
+          <g clipPath="url(#nsc)">
+            <text x="100" y="108"
+                  fontFamily="'SF Mono','Fira Code','Consolas',monospace"
+                  fontSize="52" fontWeight="900" textAnchor="middle" letterSpacing="2"
+                  fill="none" stroke="#0e1624" strokeWidth="10" strokeLinejoin="round">S3C</text>
+            <text x="100" y="108"
+                  fontFamily="'SF Mono','Fira Code','Consolas',monospace"
+                  fontSize="52" fontWeight="900" textAnchor="middle" letterSpacing="2"
+                  fill="none" stroke="url(#ncm)" strokeWidth="5" strokeLinejoin="round">S3C</text>
+            <text x="100" y="108"
+                  fontFamily="'SF Mono','Fira Code','Consolas',monospace"
+                  fontSize="52" fontWeight="900" textAnchor="middle" letterSpacing="2"
+                  fill="#0a1020">S3C</text>
+          </g>
+          <g clipPath="url(#nsc)" filter="url(#ngl)">
+            <rect x="28" y="116" width="144" height="3"   fill="url(#nsg)" rx="1.5"/>
+            <rect x="28" y="121" width="144" height="1.5" fill="url(#nsg)" opacity="0.3" rx="0.75"/>
+          </g>
         </svg>
         <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
           <span style={{ fontWeight: 700, letterSpacing: '0.02em', fontSize: '1rem' }}>S3C-Tool</span>

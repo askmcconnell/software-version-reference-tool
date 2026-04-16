@@ -1,0 +1,128 @@
+<!-- Concept v2: S3C text inside shield with chain-link styling -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="scanGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#4a90d9" stop-opacity="0"/>
+      <stop offset="35%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="50%"  stop-color="#7ec8f5" stop-opacity="1"/>
+      <stop offset="65%"  stop-color="#4a90d9" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#4a90d9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="shieldFill2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1a2540"/>
+      <stop offset="100%" stop-color="#0f1520"/>
+    </linearGradient>
+    <!-- Metallic chain-link gradient for letter fill -->
+    <linearGradient id="chainMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#7ec8f5"/>
+      <stop offset="40%"  stop-color="#4a90d9"/>
+      <stop offset="100%" stop-color="#2a5a8a"/>
+    </linearGradient>
+    <filter id="glow2" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="textGlow" x="-15%" y="-30%" width="130%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="shieldClip2">
+      <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Shield body -->
+  <path d="M100 18 L168 46 L168 102 C168 140 138 168 100 182 C62 168 32 140 32 102 L32 46 Z"
+        fill="url(#shieldFill2)"
+        stroke="#4a90d9"
+        stroke-width="2.5"
+        stroke-linejoin="round"/>
+
+  <!-- Inner border -->
+  <path d="M100 30 L156 53 L156 102 C156 134 130 158 100 170 C70 158 44 134 44 102 L44 53 Z"
+        fill="none"
+        stroke="#2e4a6a"
+        stroke-width="1"
+        stroke-linejoin="round"/>
+
+  <!-- Subtle grid -->
+  <g clip-path="url(#shieldClip2)" opacity="0.06">
+    <line x1="32" y1="60"  x2="168" y2="60"  stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="80"  x2="168" y2="80"  stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="120" x2="168" y2="120" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="32" y1="140" x2="168" y2="140" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="72"  y1="18" x2="72"  y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="100" y1="18" x2="100" y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+    <line x1="128" y1="18" x2="128" y2="182" stroke="#4a90d9" stroke-width="0.5"/>
+  </g>
+
+  <!-- S3C text: chain-link style — shadow/glow layer first -->
+  <g clip-path="url(#shieldClip2)" filter="url(#textGlow)" opacity="0.4">
+    <text x="100" y="108"
+          font-family="'SF Mono', 'Fira Code', 'Consolas', monospace"
+          font-size="52"
+          font-weight="900"
+          text-anchor="middle"
+          letter-spacing="2"
+          fill="none"
+          stroke="#4a90d9"
+          stroke-width="8">S3C</text>
+  </g>
+
+  <!-- S3C text: outer stroke (dark, creates chain link "gap" effect) -->
+  <g clip-path="url(#shieldClip2)">
+    <text x="100" y="108"
+          font-family="'SF Mono', 'Fira Code', 'Consolas', monospace"
+          font-size="52"
+          font-weight="900"
+          text-anchor="middle"
+          letter-spacing="2"
+          fill="none"
+          stroke="#0e1624"
+          stroke-width="10"
+          stroke-linejoin="round">S3C</text>
+
+    <!-- S3C text: main stroke (blue, chain link "bar") -->
+    <text x="100" y="108"
+          font-family="'SF Mono', 'Fira Code', 'Consolas', monospace"
+          font-size="52"
+          font-weight="900"
+          text-anchor="middle"
+          letter-spacing="2"
+          fill="none"
+          stroke="url(#chainMetal)"
+          stroke-width="5"
+          stroke-linejoin="round">S3C</text>
+
+    <!-- S3C text: inner fill (dark navy — hollow, like a chain link ring) -->
+    <text x="100" y="108"
+          font-family="'SF Mono', 'Fira Code', 'Consolas', monospace"
+          font-size="52"
+          font-weight="900"
+          text-anchor="middle"
+          letter-spacing="2"
+          fill="#0a1020">S3C</text>
+
+    <!-- Small chain link connectors between letters (decorative ovals) -->
+    <!-- Between S and 3 -->
+    <ellipse cx="85" cy="108" rx="4" ry="2.5" fill="none" stroke="#4a90d9" stroke-width="1.2" opacity="0.5"/>
+    <!-- Between 3 and C -->
+    <ellipse cx="115" cy="108" rx="4" ry="2.5" fill="none" stroke="#4a90d9" stroke-width="1.2" opacity="0.5"/>
+  </g>
+
+  <!-- Scan line — topmost layer -->
+  <g clip-path="url(#shieldClip2)" filter="url(#glow2)">
+    <rect x="28" y="112" width="144" height="3"   fill="url(#scanGrad2)" rx="1.5"/>
+    <rect x="28" y="106" width="144" height="1.5" fill="url(#scanGrad2)" opacity="0.4" rx="0.75"/>
+    <rect x="28" y="101" width="144" height="1"   fill="url(#scanGrad2)" opacity="0.15" rx="0.5"/>
+    <rect x="28" y="117" width="144" height="1.5" fill="url(#scanGrad2)" opacity="0.3" rx="0.75"/>
+    <rect x="28" y="120" width="144" height="1"   fill="url(#scanGrad2)" opacity="0.1" rx="0.5"/>
+  </g>
+
+</svg>
