@@ -102,10 +102,52 @@ export default function UploadPage() {
   return (
     <div style={{ maxWidth: 680, margin: '0 auto' }}>
 
+      {/* ── Welcome hero ── */}
+      <div style={{ textAlign: 'center', padding: '32px 0 28px' }}>
+        <img
+          src="/s3c/icon.svg"
+          alt="S3C-Tool"
+          width="72"
+          height="72"
+          style={{ marginBottom: 16, filter: 'drop-shadow(0 0 12px rgba(74,144,217,0.35))' }}
+        />
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 8, letterSpacing: '-0.01em' }}>
+          Know Your Software. Secure Your Supply Chain.
+        </h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: 480, margin: '0 auto 20px' }}>
+          Upload a software inventory and instantly see what's end-of-life, unpatched, or carrying
+          known CVEs — powered by a continuously updated shared reference database.
+        </p>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
+          {[
+            { label: '🔴 EOL Detection',     color: 'var(--eol)' },
+            { label: '⚠️ No-Patch Alerts',   color: 'var(--no-patch)' },
+            { label: '🛡️ CVE Enrichment',    color: 'var(--accent)' },
+            { label: '🌐 Shared Reference DB', color: 'var(--supported)' },
+          ].map(({ label, color }) => (
+            <span key={label} style={{
+              fontSize: '0.78rem', fontWeight: 500,
+              padding: '4px 10px', borderRadius: 20,
+              border: `1px solid ${color}`,
+              color, background: 'transparent',
+              letterSpacing: '0.01em',
+            }}>{label}</span>
+          ))}
+        </div>
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+          Free &amp; open-source ·{' '}
+          <Link to="/about" style={{ color: 'var(--accent)' }}>About the project</Link>
+          {' '}·{' '}
+          <Link to="/docs" style={{ color: 'var(--accent)' }}>Docs &amp; scanners</Link>
+        </div>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', marginBottom: 24 }} />
+
       {/* Header */}
       <div className="mb-24">
-        <h1 style={{ fontSize: '1.75rem', marginBottom: 8 }}>Upload Inventory</h1>
-        <p className="text-muted">
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 6 }}>Upload Inventory</h2>
+        <p className="text-muted" style={{ fontSize: '0.9rem' }}>
           Upload an S3C-Tool CSV from your Mac, Linux, or Windows scanner.
           We'll match it against the reference database and email you the results.
         </p>
