@@ -128,6 +128,48 @@ export default function DocsPage() {
         </div>
       </div>
 
+      {/* For software vendors */}
+      <div className="card mb-24" style={{ borderColor: 'var(--accent)', borderWidth: 1, borderStyle: 'solid' }}>
+        <div className="card-title">🏭 Are You a Software Vendor or OSS Maintainer?</div>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+          Help your users get accurate lifecycle data — without relying on AI guesses or scraped docs.
+          Publish a single JSON file in your GitHub repository and security tools will use it as the
+          authoritative source for your software's EOL status.
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <a
+            href="https://github.com/askmcconnell/s3c-tool/blob/main/docs/manufacturer-adoption-guide.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary btn-sm"
+          >
+            📖 Adoption Guide — 5 min read
+          </a>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+            Part of the proposed IETF Well-Known URI standard ·{' '}
+            <a
+              href="https://datatracker.ietf.org/doc/draft-mcconnell-software-status-wellknown/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              draft-mcconnell-software-status-wellknown
+            </a>
+          </span>
+        </div>
+        <div style={{ marginTop: 16, background: 'var(--bg-input)', borderRadius: 'var(--radius)', padding: '12px 16px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Minimal example — add to your repo at <code style={{ textTransform: 'none' }}>.github/software-status.json</code></div>
+          <pre style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, overflowX: 'auto' }}>{`{
+  "schema_version": "1.0",
+  "name": "Your Project",
+  "vendor": "Your Org",
+  "versions": [
+    { "version": "3.0", "status": "active", "support_ends": null },
+    { "version": "2.x", "status": "eol",    "eol_date": "2024-06-30" }
+  ]
+}`}</pre>
+        </div>
+      </div>
+
       {/* FAQ */}
       <div className="card">
         <div className="card-title">❓ FAQ</div>
