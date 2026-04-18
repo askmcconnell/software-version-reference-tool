@@ -553,10 +553,16 @@ def main():
     }
 
     rows = []
-    print(f"SVRT Mac Scanner — {TODAY}", flush=True)
+    print(f"==========================================", flush=True)
+    print(f"  S3C-Tool — macOS Inventory Scanner", flush=True)
+    print(f"  Software Security Supply Chain Tool", flush=True)
+    print(f"==========================================", flush=True)
+    print(f"", flush=True)
+    print(f"  Scanning your installed software...", flush=True)
+    print(f"  This will take 1-3 minutes. Please wait.", flush=True)
+    print(f"", flush=True)
     print(f"  Platform : macOS {os_version} ({arch})", flush=True)
-    print(f"  Host hash: {hostname_hash}", flush=True)
-    print(f"  Output   : {output_path}", flush=True)
+    print(f"  Saving to: {output_path}", flush=True)
     print(f"  Mode     : {'Quick' if args.quick else 'Full'}", flush=True)
     print()
 
@@ -596,8 +602,22 @@ def main():
         writer.writerows(rows)
 
     size_kb = os.path.getsize(output_path) // 1024
-    print(f"  Done — {output_path} ({size_kb} KB, {len(rows)} rows)", flush=True)
-    print(f"\n  Upload to: https://askmcconnell.com/s3c", flush=True)
+    print(f"\n==========================================", flush=True)
+    print(f"  SCAN COMPLETE", flush=True)
+    print(f"==========================================", flush=True)
+    print(f"", flush=True)
+    print(f"  Found    : {len(rows)} software items", flush=True)
+    print(f"", flush=True)
+    print(f"  FILE SAVED TO:", flush=True)
+    print(f"  {output_path}  ({size_kb} KB)", flush=True)
+    print(f"", flush=True)
+    print(f"  Next step: upload this file at", flush=True)
+    print(f"  https://askmcconnell.com/s3c", flush=True)
+    print(f"", flush=True)
+
+    # Open Finder to the output folder
+    import subprocess as _sp
+    _sp.run(['open', os.path.dirname(output_path)], check=False)
 
 if __name__ == '__main__':
     main()

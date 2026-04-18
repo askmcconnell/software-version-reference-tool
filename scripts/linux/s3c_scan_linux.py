@@ -837,11 +837,14 @@ def main():
         'source':              '',
     }
 
-    print(f"\nSVRT Linux Inventory Scanner v1.0", flush=True)
+    print(f"\n==========================================", flush=True)
+    print(f"  S3C-Tool — Linux Inventory Scanner", flush=True)
+    print(f"  Software Security Supply Chain Tool", flush=True)
+    print(f"==========================================", flush=True)
+    print(f"", flush=True)
     print(f"  Platform : {os_ver} ({arch})", flush=True)
-    print(f"  Host hash: {hostname_hash}", flush=True)
-    print(f"  Output   : {output_path}", flush=True)
-    print(f"  Quick    : {args.quick}", flush=True)
+    print(f"  Saving to: {output_path}", flush=True)
+    print(f"  Mode     : {'Quick' if args.quick else 'Full'}", flush=True)
     print("", flush=True)
 
     rows = []
@@ -904,13 +907,17 @@ def main():
         t = row.get('file_type', 'unknown')
         by_type[t] = by_type.get(t, 0) + 1
 
-    print(f"\n{'─'*50}", flush=True)
-    print(f"  Total items : {len(rows):,}", flush=True)
-    for ftype, cnt in sorted(by_type.items(), key=lambda x: -x[1]):
-        print(f"  {ftype:<18}: {cnt:,}", flush=True)
-    print(f"{'─'*50}", flush=True)
-    print(f"\n  Output: {output_path}", flush=True)
-    print(f"  Upload this file at: https://askmcconnell.com/s3c\n", flush=True)
+    print(f"\n==========================================", flush=True)
+    print(f"  SCAN COMPLETE", flush=True)
+    print(f"==========================================", flush=True)
+    print(f"", flush=True)
+    print(f"  Found    : {len(rows):,} software items", flush=True)
+    print(f"", flush=True)
+    print(f"  FILE SAVED TO:", flush=True)
+    print(f"  {output_path}", flush=True)
+    print(f"", flush=True)
+    print(f"  Next step: upload this file at", flush=True)
+    print(f"  https://askmcconnell.com/s3c\n", flush=True)
 
 
 if __name__ == '__main__':
