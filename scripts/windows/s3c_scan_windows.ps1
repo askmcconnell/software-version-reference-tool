@@ -494,12 +494,16 @@ $arch         = Get-Arch
 $osVer        = Get-OSVersion
 
 Write-Host ""
-Write-Host "S3C-Tool — Software Security Supply Chain Tool" -ForegroundColor Green
-Write-Host "  Windows Inventory Scanner v1.1"
-Write-Host "  Platform : $osVer ($arch)"
-Write-Host "  Host hash: $hostnameHash"
-Write-Host "  Output   : $Output"
-Write-Host "  Quick    : $Quick"
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "  S3C-Tool — Windows Inventory Scanner"   -ForegroundColor Cyan
+Write-Host "  Software Security Supply Chain Tool"     -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  Scanning your installed software..."     -ForegroundColor White
+Write-Host "  This will take 1-3 minutes. Please wait." -ForegroundColor Gray
+Write-Host ""
+Write-Host "  Platform : $osVer ($arch)"              -ForegroundColor Gray
+Write-Host "  Saving to: $Output"                     -ForegroundColor Gray
 Write-Host ""
 
 $baseRow = @{
@@ -525,25 +529,17 @@ $baseRow = @{
 $rows = [System.Collections.Generic.List[hashtable]]::new()
 
 # Phase 0: Firmware
-Write-Host "Phase 0: Firmware" -ForegroundColor Yellow
+Write-Host "  [1/4] Scanning firmware and OS info..." -ForegroundColor Yellow
 Scan-Firmware         -Base $baseRow -Rows $rows
 
 # Phase 1: Registry + Store
-Write-Host "Phase 1: Registry" -ForegroundColor Yellow
+Write-Host "  [2/4] Scanning installed programs (registry, Store, .NET)..." -ForegroundColor Yellow
 Scan-Registry         -Base $baseRow -Rows $rows
 Scan-WindowsStore     -Base $baseRow -Rows $rows
 Scan-DotNetFrameworks -Base $baseRow -Rows $rows
 
-# Phase 2: WMI (disabled — Win32_Product can trigger MSI reconfiguration)
-if (-not $Quick) {
-    Write-Host ""
-    Write-Host "Phase 2: WMI/MSI" -ForegroundColor Yellow
-    Write-Host "  (Win32_Product scan skipped by default)" -ForegroundColor DarkGray
-}
-
 # Phase 3: File system
-Write-Host ""
-Write-Host "Phase 3: File System" -ForegroundColor Yellow
+Write-Host "  [3/4] Scanning Program Files..." -ForegroundColor Yellow
 if (-not $NoProgramFiles -and -not $Quick) {
     Scan-ProgramFiles  -Base $baseRow -Rows $rows
 }
@@ -552,8 +548,7 @@ if (-not $Quick) {
 }
 
 # Phase 4: Language runtimes
-Write-Host ""
-Write-Host "Phase 4: Language Runtimes" -ForegroundColor Yellow
+Write-Host "  [4/4] Scanning language runtimes (Python, npm)..." -ForegroundColor Yellow
 if (-not $NoPython) {
     Scan-PythonPackages -Base $baseRow -Rows $rows
 }
@@ -601,13 +596,25 @@ foreach ($row in $rows) {
 $byType = $rows | Group-Object { $_['file_type'] } | Sort-Object Count -Descending
 
 Write-Host ""
-Write-Host ('-' * 50) -ForegroundColor DarkGray
-Write-Host "  Total items : $($rows.Count)" -ForegroundColor White
-foreach ($g in $byType) {
-    Write-Host ("  {0,-18}: {1}" -f $g.Name, $g.Count)
+Write-Host "==========================================" -ForegroundColor Green
+Write-Host "  SCAN COMPLETE" -ForegroundColor Green
+Write-Host "==========================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Found    : $($rows.Count) software items" -ForegroundColor White
+Write-Host ""
+Write-Host "  FILE SAVED TO:" -ForegroundColor Cyan
+Write-Host "  $Output" -ForegroundColor White
+Write-Host ""
+Write-Host "  Next step: upload this file at" -ForegroundColor Gray
+Write-Host "  https://askmcconnell.com/s3c" -ForegroundColor Cyan
+Write-Host ""
+
+# Open File Explorer to the output folder so they can find the file easily
+$outputDir = Split-Path $Output -Parent
+if (Test-Path $outputDir) {
+    Invoke-Item $outputDir
 }
-Write-Host ('-' * 50) -ForegroundColor DarkGray
+
+Write-Host "  (File Explorer has been opened to your output folder.)" -ForegroundColor Gray
 Write-Host ""
-Write-Host "  Output: $Output"
-Write-Host "  Upload at: https://askmcconnell.com/s3c" -ForegroundColor Green
-Write-Host ""
+Read-Host "  Press Enter to close this window"
