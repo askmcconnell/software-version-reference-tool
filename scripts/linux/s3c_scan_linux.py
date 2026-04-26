@@ -2,7 +2,7 @@
 """
 S3C-Tool Linux File-Level Inventory Scanner
 S3C-Tool — Software Security Supply Chain Tool
-Version: 1.0.0
+Version: 1.1.0
 
 Scans at the FILE level — dpkg/rpm packages, binary executables, shared
 libraries, snap/flatpak, Python packages, Node global packages.
@@ -45,7 +45,8 @@ FIELDNAMES = [
     'source',              # dpkg | rpm | pacman | apk | cli | elf_header | pip | npm | snap | flatpak
 ]
 
-SVRT_FORMAT_VERSION = '1.0'
+SVRT_FORMAT_VERSION = '1.0'   # CSV schema version — bump only when columns change
+SCANNER_VERSION     = '1.1.0' # Tool version — follows SemVer (major.minor.patch)
 TODAY = date.today().isoformat()
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -99,7 +100,7 @@ def run_cmd(cmd, timeout=5):
 
 def run_version_flag(binary):
     """Try common version flags; return first meaningful line."""
-    for flag in ['--version', '-version', '-v', 'version', '--Version']:
+    for flag in ['--version', '-V', '-version', '-v', 'version', '--Version']:
         try:
             r = subprocess.run(
                 [binary, flag], capture_output=True, text=True, timeout=4,
@@ -113,6 +114,39 @@ def run_version_flag(binary):
         except Exception:
             pass
     return None
+
+
+def pkg_reverse_lookup(binary_path):
+    """Find version by asking package manager who owns this binary.
+    Returns (version_string, source_label) or (None, None).
+    """
+    # dpkg (Debian/Ubuntu)
+    out = run_cmd(['dpkg', '-S', binary_path], timeout=5)
+    if out and ':' in out:
+        pkg = out.split(':')[0].strip()
+        ver = run_cmd(['dpkg-query', '-W', '-f=${Version}', pkg], timeout=5)
+        if ver and ver.strip():
+            return ver.strip(), 'dpkg-reverse'
+
+    # rpm (RHEL/Fedora/CentOS)
+    out = run_cmd(['rpm', '-qf', binary_path, '--queryformat=%{VERSION}-%{RELEASE}'], timeout=5)
+    if out and 'not owned' not in out.lower() and 'no such' not in out.lower():
+        return out.strip(), 'rpm-reverse'
+
+    # apk (Alpine)
+    out = run_cmd(['apk', 'info', '--who-owns', binary_path], timeout=5)
+    if out and 'ERROR' not in out and 'owned by' in out:
+        # "usr/bin/curl is owned by curl-8.1.2-r0"
+        m = re.search(r'owned by (\S+)', out)
+        if m:
+            pkg_ver = m.group(1)
+            vm = re.match(r'^(.+?)-(\d+[\d.\-_a-zA-Z]*)$', pkg_ver)
+            if vm:
+                return vm.group(2), 'apk-reverse'
+
+    return None, None
+
+
 
 def extract_version(s):
     """Pull first semver-like string from a line of text."""
@@ -407,10 +441,15 @@ def scan_cli_binaries(base_row, rows, quick=False):
             source      = 'filesystem'
 
             if not quick:
+                # 1. CLI flag probing (--version, -V, -v, etc.)
                 ver_line = run_version_flag(fpath)
                 if ver_line:
                     version_str = extract_version(ver_line)
                     source = 'cli'
+
+                # 2. Package reverse-lookup fallback (dpkg/rpm/apk)
+                if not version_str and is_elf_bin:
+                    version_str, source = pkg_reverse_lookup(fpath)
 
             rows.append(make_row(base_row,
                 filename=name,
@@ -798,7 +837,7 @@ def has_cmd(cmd):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='S3C-Tool Linux File-Level Inventory Scanner v1.0'
+        description=f'S3C-Tool Linux File-Level Inventory Scanner v{SCANNER_VERSION}'
     )
     parser.add_argument('--output', '-o', help='Output CSV path')
     parser.add_argument('--quick', action='store_true',
@@ -838,7 +877,7 @@ def main():
     }
 
     print(f"\n==========================================", flush=True)
-    print(f"  S3C-Tool — Linux Inventory Scanner", flush=True)
+    print(f"  S3C-Tool — Linux Inventory Scanner v{SCANNER_VERSION}", flush=True)
     print(f"  Software Security Supply Chain Tool", flush=True)
     print(f"==========================================", flush=True)
     print(f"", flush=True)

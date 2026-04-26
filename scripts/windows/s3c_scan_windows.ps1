@@ -1,8 +1,8 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     S3C-Tool Windows File-Level Inventory Scanner
-    S3C-Tool — Software Security Supply Chain Tool v1.1
+    S3C-Tool - Software Security Supply Chain Tool v1.1.0
 
 .DESCRIPTION
     Scans installed programs, file version properties, Windows Store apps,
@@ -49,7 +49,8 @@ param(
 # Suppress non-critical errors from noisy cmdlets
 $ErrorActionPreference = 'SilentlyContinue'
 
-$SVRT_FORMAT_VERSION = '1.0'
+$SVRT_FORMAT_VERSION = '1.0'   # CSV schema version — bump only when columns change
+$SCANNER_VERSION     = '1.1.0' # Tool version — follows SemVer (major.minor.patch)
 $TODAY               = (Get-Date -Format 'yyyy-MM-dd')
 $PLATFORM            = 'windows'
 
@@ -241,7 +242,7 @@ function Scan-WindowsStore {
             $count++
         }
     } catch {
-        Write-Host "    (AppX unavailable — run as admin for all-user packages)" -ForegroundColor DarkGray
+        Write-Host "    (AppX unavailable - run as admin for all-user packages)" -ForegroundColor DarkGray
     }
     Write-Host "    -> $count AppX packages" -ForegroundColor Gray
 }
@@ -300,8 +301,7 @@ function Scan-SystemBinaries {
     $count = 0
     foreach ($dir in $dirs) {
         $exes = Get-ChildItem -Path $dir -Filter '*.exe' -ErrorAction SilentlyContinue |
-                Where-Object { $_.Length -gt 0 } |
-                Select-Object -First 500
+                Where-Object { $_.Length -gt 0 }
         foreach ($exe in $exes) {
             $fvi  = Get-FileVersion -Path $exe.FullName
             $ver  = Extract-Version ($fvi.ProductVersion -replace ',\s*', '.')
@@ -388,6 +388,112 @@ function Scan-NpmPackages {
         }
     } catch { }
     Write-Host "    -> $count npm global packages" -ForegroundColor Gray
+}
+
+
+function Scan-Winget {
+    param([hashtable]$Base, [System.Collections.Generic.List[hashtable]]$Rows)
+    Write-Host "  Scanning winget packages..." -ForegroundColor Cyan
+    $count = 0
+    try {
+        # --output json requires winget 1.4+; fall back to table parse if JSON fails
+        $jsonOut = & winget list --output json --accept-source-agreements 2>$null
+        if ($jsonOut) {
+            $data = $jsonOut | ConvertFrom-Json -ErrorAction Stop
+            foreach ($pkg in $data) {
+                $name = NullOr $pkg.Name
+                $id   = NullOr $pkg.Id
+                $ver  = NullOr $pkg.Version
+                if (-not $name) { $name = $id }
+                if (-not $name) { continue }
+                $Rows.Add((Make-Row $Base `
+                    -Filename      $id `
+                    -Filepath      "winget:$id" `
+                    -SoftwareName  $name `
+                    -Vendor        '' `
+                    -Version       $ver `
+                    -FileVersion   $ver `
+                    -FileSizeBytes 0 `
+                    -FileType      'package' `
+                    -ParentApp     '' `
+                    -InstallDate   '' `
+                    -Source        'winget'
+                ))
+                $count++
+            }
+        }
+    } catch { }
+    if ($count -eq 0) {
+        # Fallback: parse winget list table output (older winget or if JSON failed)
+        try {
+            $lines = & winget list --accept-source-agreements 2>$null
+            $inData = $false
+            foreach ($line in $lines) {
+                # Header separator line begins the data block
+                if ($line -match '^-{5}') { $inData = $true; continue }
+                if (-not $inData) { continue }
+                # Columns: Name, Id, Version, [Available], [Source]
+                # Split on 2+ spaces to handle column alignment
+                $parts = $line -split '\s{2,}'
+                if ($parts.Count -ge 3) {
+                    $name = $parts[0].Trim()
+                    $id   = $parts[1].Trim()
+                    $ver  = $parts[2].Trim()
+                    if (-not $name) { continue }
+                    $Rows.Add((Make-Row $Base `
+                        -Filename      $id `
+                        -Filepath      "winget:$id" `
+                        -SoftwareName  $name `
+                        -Vendor        '' `
+                        -Version       $ver `
+                        -FileVersion   $ver `
+                        -FileSizeBytes 0 `
+                        -FileType      'package' `
+                        -ParentApp     '' `
+                        -InstallDate   '' `
+                        -Source        'winget'
+                    ))
+                    $count++
+                }
+            }
+        } catch { }
+    }
+    Write-Host "    -> $count winget packages" -ForegroundColor Gray
+}
+
+
+function Scan-Chocolatey {
+    param([hashtable]$Base, [System.Collections.Generic.List[hashtable]]$Rows)
+    Write-Host "  Scanning Chocolatey packages..." -ForegroundColor Cyan
+    $count = 0
+    try {
+        $chocoOut = & choco list --local-only --no-progress 2>$null
+        if ($chocoOut) {
+            foreach ($line in $chocoOut) {
+                # Each line is "PackageName Version" e.g. "git 2.43.0"
+                # Skip summary line "N packages installed." and blank lines
+                if ($line -match '^(\S+)\s+([\d][^\s]*)$') {
+                    $name = $matches[1].Trim()
+                    $ver  = $matches[2].Trim()
+                    $Rows.Add((Make-Row $Base `
+                        -Filename      $name `
+                        -Filepath      "choco:$name" `
+                        -SoftwareName  $name `
+                        -Vendor        '' `
+                        -Version       $ver `
+                        -FileVersion   $ver `
+                        -FileSizeBytes 0 `
+                        -FileType      'package' `
+                        -ParentApp     '' `
+                        -InstallDate   '' `
+                        -Source        'choco'
+                    ))
+                    $count++
+                }
+            }
+        }
+    } catch { }
+    Write-Host "    -> $count Chocolatey packages" -ForegroundColor Gray
 }
 
 
@@ -495,8 +601,8 @@ $osVer        = Get-OSVersion
 
 Write-Host ""
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  S3C-Tool — Windows Inventory Scanner"   -ForegroundColor Cyan
-Write-Host "  Software Security Supply Chain Tool"     -ForegroundColor Cyan
+Write-Host "  S3C-Tool - Windows Inventory Scanner v$SCANNER_VERSION" -ForegroundColor Cyan
+Write-Host "  Software Security Supply Chain Tool"                     -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Scanning your installed software..."     -ForegroundColor White
@@ -528,18 +634,18 @@ $baseRow = @{
 
 $rows = [System.Collections.Generic.List[hashtable]]::new()
 
-# Phase 0: Firmware
-Write-Host "  [1/4] Scanning firmware and OS info..." -ForegroundColor Yellow
+# Phase 1: Firmware
+Write-Host "  [1/6] Scanning firmware and OS info..." -ForegroundColor Yellow
 Scan-Firmware         -Base $baseRow -Rows $rows
 
-# Phase 1: Registry + Store
-Write-Host "  [2/4] Scanning installed programs (registry, Store, .NET)..." -ForegroundColor Yellow
+# Phase 2: Registry + Store
+Write-Host "  [2/6] Scanning installed programs (registry, Store, .NET)..." -ForegroundColor Yellow
 Scan-Registry         -Base $baseRow -Rows $rows
 Scan-WindowsStore     -Base $baseRow -Rows $rows
 Scan-DotNetFrameworks -Base $baseRow -Rows $rows
 
 # Phase 3: File system
-Write-Host "  [3/4] Scanning Program Files..." -ForegroundColor Yellow
+Write-Host "  [3/6] Scanning Program Files and system binaries..." -ForegroundColor Yellow
 if (-not $NoProgramFiles -and -not $Quick) {
     Scan-ProgramFiles  -Base $baseRow -Rows $rows
 }
@@ -548,11 +654,55 @@ if (-not $Quick) {
 }
 
 # Phase 4: Language runtimes
-Write-Host "  [4/4] Scanning language runtimes (Python, npm)..." -ForegroundColor Yellow
+Write-Host "  [4/6] Scanning language runtimes (Python, npm)..." -ForegroundColor Yellow
 if (-not $NoPython) {
     Scan-PythonPackages -Base $baseRow -Rows $rows
 }
 Scan-NpmPackages -Base $baseRow -Rows $rows
+
+# Phase 5: Package managers (winget, Chocolatey)
+Write-Host "  [5/6] Scanning package managers (winget, Chocolatey)..." -ForegroundColor Yellow
+Scan-Winget      -Base $baseRow -Rows $rows
+Scan-Chocolatey  -Base $baseRow -Rows $rows
+
+Write-Host "  [6/6] Deduplicating and writing output..." -ForegroundColor Yellow
+
+# ==============================================================================
+# DEDUPLICATE
+# ==============================================================================
+# The Windows scanner collects from multiple sources. The same software can appear
+# in both the registry AND as a binary in Program Files / System32 (e.g. 7-Zip,
+# Internet Explorer components). Deduplicate by (software_name, version), keeping
+# the highest-priority source: registry/appx/pip/npm > file_version_info.
+
+$sourcePriority = @{
+    'registry'          = 0
+    'appx'              = 1
+    'winget'            = 1
+    'choco'             = 1
+    'pip'               = 1
+    'npm'               = 1
+    'cli'               = 1
+    'wmi'               = 2
+    'file_version_info' = 9
+}
+
+$rawCount = $rows.Count
+$sorted   = [System.Linq.Enumerable]::OrderBy(
+    [System.Collections.Generic.IEnumerable[hashtable]] $rows,
+    [Func[hashtable,int]] { param($r) if ($sourcePriority.ContainsKey($r['source'])) { $sourcePriority[$r['source']] } else { 5 } }
+)
+
+$seenPairs = @{}
+$deduped   = [System.Collections.Generic.List[hashtable]]::new()
+foreach ($row in $sorted) {
+    $key = ($row['software_name']).ToLower().Trim() + '|' + ($row['version']).ToLower().Trim()
+    if ($seenPairs.ContainsKey($key)) { continue }
+    $seenPairs[$key] = $true
+    $deduped.Add($row)
+}
+$rows = $deduped
+Write-Host "  Deduplication: $rawCount raw → $($rows.Count) unique items (removed $($rawCount - $rows.Count) duplicates)" -ForegroundColor Gray
 
 # ==============================================================================
 # WRITE CSV

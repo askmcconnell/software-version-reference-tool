@@ -2,7 +2,7 @@
 """
 S3C-Tool Mac File-Level Inventory Scanner
 S3C-Tool — Software Security Supply Chain Tool
-Version: 1.0.0
+Version: 1.1.0
 
 Scans at the FILE level — not just Applications folder or system_profiler.
 Captures: executables, frameworks, dylibs, Python/Node packages, CLI tools.
@@ -40,7 +40,8 @@ FIELDNAMES = [
     'source',              # how version was found: plist | cli | binary_header | package_db
 ]
 
-SVRT_FORMAT_VERSION = '1.0'
+SVRT_FORMAT_VERSION = '1.0'   # CSV schema version — bump only when columns change
+SCANNER_VERSION     = '1.1.0' # Tool version — follows SemVer (major.minor.patch)
 TODAY = date.today().isoformat()
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -79,8 +80,9 @@ def read_plist_safe(path):
 SKIP_VERSION_PROBE = {
     # Java GUI
     'java', 'javaws', 'jconsole', 'jvisualvm', 'appletviewer',
-    # Tcl/Tk — opens a blank window
-    'wish', 'wish8.6', 'wish8.5', 'tclsh', 'tclsh8.6',
+    # Tcl/Tk — opens a blank window (cover all versions macOS 10–15 might ship)
+    'wish', 'wish8.6', 'wish8.5', 'wish8.4', 'wish8.3',
+    'tclsh', 'tclsh8.6', 'tclsh8.5', 'tclsh8.4',
     # macOS keychain / security — triggers Passwords app or auth dialog
     'security', 'certtool', 'codesign', 'spctl', 'pkgutil',
     'systemkeychain', 'login-keychain',
@@ -108,8 +110,11 @@ def run_version_flag(binary):
     name_base = re.sub(r'[\d.]+$', '', name)
     if name in SKIP_VERSION_PROBE or name_base in SKIP_VERSION_PROBE:
         return None
+    # Pattern-block entire families regardless of version suffix
+    if re.match(r'^(wish|tclsh)\d', name):
+        return None
 
-    for flag in ['--version', '-version']:
+    for flag in ['--version', '-V', '-version', '-v']:
         try:
             r = subprocess.run(
                 [binary, flag],
@@ -124,6 +129,40 @@ def run_version_flag(binary):
         except Exception:
             pass
     return None
+
+def pkgutil_reverse_lookup(binary_path):
+    """Find version via Apple pkgutil package receipts database.
+    Equivalent to dpkg -S on Linux. Returns (version, 'pkgutil') or (None, None).
+    Most useful for Apple-provided system binaries in /usr/bin/ that ignore version flags.
+    """
+    try:
+        r = subprocess.run(
+            ['pkgutil', '--file-info', binary_path],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.returncode != 0 or not r.stdout:
+            return None, None
+        # Extract package id, then query its version
+        pkg_id = None
+        for line in r.stdout.splitlines():
+            if line.startswith('pkgid:'):
+                pkg_id = line.split(':', 1)[1].strip()
+                break
+        if not pkg_id:
+            return None, None
+        r2 = subprocess.run(
+            ['pkgutil', '--pkg-info', pkg_id],
+            capture_output=True, text=True, timeout=5
+        )
+        for line in r2.stdout.splitlines():
+            if line.startswith('version:'):
+                ver = line.split(':', 1)[1].strip()
+                if ver:
+                    return ver, 'pkgutil'
+    except Exception:
+        pass
+    return None, None
+
 
 def extract_version_from_string(s):
     """Pull first semver-like string from a line of text."""
@@ -278,8 +317,16 @@ def scan_cli_binaries(base_row, rows):
             if '.' in fname and not fname.endswith(('.py','.sh','.rb','.pl')):
                 continue
             seen.add(fpath)
+            # 1. CLI flag probing (--version, -V, -version, -v)
             ver_line = run_version_flag(fpath)
             version  = extract_version_from_string(ver_line)
+            source   = 'cli' if version else 'filesystem'
+
+            # 2. pkgutil reverse-lookup for Apple system binaries
+            if not version and fpath.startswith(('/usr/bin', '/usr/sbin')):
+                version, source = pkgutil_reverse_lookup(fpath)
+                version = version or ''
+                source  = source or 'filesystem'
 
             rows.append(make_row(base_row,
                 filename=fname,
@@ -292,7 +339,7 @@ def scan_cli_binaries(base_row, rows):
                 file_type='binary',
                 parent_app='',
                 install_date=file_mtime_date(fpath),
-                source='cli' if version else 'filesystem',
+                source=source,
             ))
 
 
@@ -554,7 +601,7 @@ def main():
 
     rows = []
     print(f"==========================================", flush=True)
-    print(f"  S3C-Tool — macOS Inventory Scanner", flush=True)
+    print(f"  S3C-Tool — macOS Inventory Scanner v{SCANNER_VERSION}", flush=True)
     print(f"  Software Security Supply Chain Tool", flush=True)
     print(f"==========================================", flush=True)
     print(f"", flush=True)
